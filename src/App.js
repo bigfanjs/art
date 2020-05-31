@@ -1,25 +1,28 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { useEffect } from "react";
+import { useUpdate } from "./canvas-renderer";
 
 function App() {
+  const controls = useUpdate({ x: 10 });
+
+  useEffect(() => {
+    controls.start(({ time }) => {
+      return { x: time * 0.01 };
+    });
+  }, [controls]);
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <>
+      <rect
+        x={10}
+        y={10}
+        width={100}
+        height={100}
+        color="red"
+        update={controls}
+        transform={{ rotate: Math.PI * 0.1 }}
+      />
+      <rect x={40} y={120} width={100} height={100} color="green" />
+    </>
   );
 }
 

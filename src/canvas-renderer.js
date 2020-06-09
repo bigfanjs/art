@@ -34,8 +34,10 @@ const Obj = {
     if (this.transform) ctx.restore();
   },
   setPos: function setPos(x, y) {
-    this.props.x = x;
-    this.props.y = y;
+    this.props.x = 10 + x;
+    this.props.y = 10 + y;
+
+    return this;
   },
 };
 
@@ -57,8 +59,56 @@ const Animation = {
   },
 };
 
+const Group = {
+  x: 0,
+  y: 0,
+  transform: null,
+  type: "group",
+  hint: 0,
+  update: null,
+  pos: function pos() {
+    if (this.update && this.update.props) {
+      this.update.props.x && (this.x = this.update.props.x);
+      this.update.props.y && (this.y = this.update.props.y);
+    }
+
+    return this;
+  },
+  setPos: function setPos(group) {
+    this.x = this.x + group.x;
+    this.y = this.y + group.y;
+  },
+  add: function add(child) {
+    // console.log("time");
+    this.followers.push(child);
+  },
+  attach: function (child) {
+    if (child.type === "group") {
+      this.setPos(child);
+      return child;
+    } else {
+      // if (child.type === "rect" && child.props.color === "blue")
+      //   console.log({ child, group: this });
+      child.setPos(this.x, this.y);
+      return child;
+    }
+  },
+  draw: function (ctx) {
+    ctx.beginPath();
+    ctx.strokeStyle = "red";
+    ctx.moveTo(this.x, this.y);
+    ctx.lineTo(this.x + this.hint, this.y);
+    ctx.stroke();
+    ctx.closePath();
+    ctx.beginPath();
+    ctx.strokeStyle = "green";
+    ctx.moveTo(this.x, this.y);
+    ctx.lineTo(this.x, this.y + this.hint);
+    ctx.stroke();
+  },
+};
+
 const primitives = {
-  group: () => {},
   rect: (ctx, { x, y, width, height, color }) => {
     ctx.beginPath();
     ctx.fillStyle = color;
@@ -93,7 +143,7 @@ const primitives = {
 
     ctx.fillStyle = color;
     ctx.moveTo(array[0].x, array[0].y);
-    array.filter((_, idx) => idx != 0).forEach(({ x, y }) => ctx.lineTo(x, y));
+    array.filter((_, idx) => idx !== 0).forEach(({ x, y }) => ctx.lineTo(x, y));
     ctx.closePath();
 
     ctx.fill();
@@ -117,37 +167,92 @@ const createReconciler = (ctx) => {
       _currentHostContext,
       workInProgress
     ) => {
-      const obj = Object.create(Obj, {
-        props: {
-          value: {
-            x: props.x,
-            y: props.y,
-            width: props.width,
-            height: props.height,
-            color: props.color,
-          },
-          configurable: true,
-          enumerable: true,
-          writable: true,
-        },
-      });
+      if (type === "group") {
+        const configs = Object.keys(props).reduce(
+          (sum, prop) => ({
+            ...sum,
+            [prop]: {
+              value: props[prop],
+              configurable: true,
+              enumerable: true,
+              writable: true,
+            },
+            followers: {
+              value: [],
+              configurable: true,
+              enumerable: true,
+              writable: true,
+            },
+          }),
+          {}
+        );
 
-      obj.type = type;
-      obj.update = props.update;
-      obj.transform = props.transform;
+        const group = Object.create(Group, configs);
 
-      if (type) drawQueue.push(obj);
+        return group;
+      } else {
+        let obj;
 
-      return obj;
+        switch (type) {
+          case "rect":
+            obj = Object.create(Obj, {
+              props: {
+                value: {
+                  x: props.x,
+                  y: props.y,
+                  width: props.width,
+                  height: props.height,
+                  color: props.color,
+                },
+                configurable: true,
+                enumerable: true,
+                writable: true,
+              },
+            });
+            break;
+          case "arc":
+            obj = Object.create(Obj, {
+              props: {
+                value: {
+                  x: props.x,
+                  y: props.y,
+                  radius: props.radius,
+                  start: props.start,
+                  end: props.end,
+                  color: props.color,
+                  isCounterclockwise: props.isCounterclockwise,
+                },
+                configurable: true,
+                enumerable: true,
+                writable: true,
+              },
+            });
+            break;
+          default:
+            return;
+        }
+
+        obj.type = type;
+        obj.update = props.update;
+        obj.transform = props.transform;
+
+        // if (type) drawQueue.push(obj);
+
+        return obj;
+      }
     },
-    prepareForCommit: () => {
+    prepareForCommit: (parent, child) => {
       // console.log("Update me prepareForCommit");
     },
-    appendChildToContainer: () => {
+    appendChildToContainer: (_, child) => {
+      // console.log(group, child);
+      drawQueue.push(child);
+
       // console.log("Update me appendChildToContainer");
     },
-    appendInitialChild: () => {
-      // console.log("Update me appendInitialChild");
+    appendInitialChild: (group, child) => {
+      // console.log({ group, child });
+      group.add(child);
     },
     createTextInstance: () => {
       // console.log("Update me createTextInstance");
@@ -157,9 +262,7 @@ const createReconciler = (ctx) => {
     prepareUpdate: (instance, type, oldProps, newProps) => {
       let payload;
 
-      if (oldProps.x !== newProps.x) {
-        payload = { x: newProps.x };
-      }
+      if (oldProps.x !== newProps.x) payload = { x: newProps.x };
 
       if (oldProps.color !== newProps.color) {
         payload = { color: newProps.color };
@@ -233,7 +336,85 @@ let CanvasRenderer = {
       updateQueue.forEach((animation) => animation.run(time));
 
       // drawing
-      drawQueue.forEach((elem) => elem.draw(ctx));
+      // drawQueue.forEach((elem) => elem.draw(ctx));
+
+      // help
+      function draw(elem) {
+        // console.log(elem);
+
+        if (elem.type === "group") {
+          // console.log(elem);
+          if (elem.transform || elem.update) {
+            ctx.save();
+
+            const { x, y, ...transform } = elem.transform || {};
+            const transforms = { translate: x && y && { x, y }, ...transform };
+
+            let arr =
+              elem.update && elem.update.props
+                ? Object.keys(elem.update.props)
+                : [];
+
+            for (let i = 0; i < arr.length; i++) {
+              const transos = Object.keys(transforms);
+              const reso = transos.find((trans) => trans === arr[i]);
+
+              if (!reso) transforms[arr[i]] = elem.update.props[arr[i]];
+            }
+
+            Object.keys(transforms).forEach((key) => {
+              const value = transforms[key];
+
+              // console.log(elem.update);
+
+              if (ctx[key]) {
+                if (key === "scale") {
+                  let scale = 0;
+
+                  if (elem.update && elem.update.props) {
+                    elem.update.props.scale &&
+                      (scale = elem.update.props.scale);
+                  }
+
+                  ctx.scale(value, value + scale);
+                }
+                if (key === "translate") {
+                  let x = 0;
+                  let y = 0;
+
+                  if (elem.update && elem.update.props) {
+                    elem.update.props.x && (x = elem.update.props.x);
+                    elem.update.props.y && (y = elem.update.props.y);
+                  }
+
+                  ctx.translate(value.x + x, value.y + y);
+                } else {
+                  let val = 0;
+
+                  if (elem.update && elem.update.props) {
+                    elem.update.props[key] && (val = elem.update.props[key]);
+                    // console.log("key", elem.update.props.rotate);
+                  }
+
+                  ctx[key](value + val);
+                }
+              }
+            });
+          }
+
+          // draw group:
+          if (elem.hint) elem.draw(ctx);
+
+          // draw elements
+          elem.followers.forEach((child) => {
+            draw(elem.attach(child));
+          });
+
+          if (elem.transform) ctx.restore();
+        } else elem.draw(ctx);
+      }
+
+      drawQueue.forEach((elem) => draw(elem));
 
       window.requestAnimationFrame(looper);
     }
@@ -245,14 +426,6 @@ let CanvasRenderer = {
     });
   },
 };
-
-// export function useUpdate() {
-//   const start = useCallback((update) => {
-//     updateQueue.push(update);
-//   }, []);
-
-//   return { start };
-// }
 
 export function useUpdate(props = {}) {
   const ref = useRef();

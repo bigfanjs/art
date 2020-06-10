@@ -1,9 +1,12 @@
 import React, { useEffect } from "react";
-import { useUpdate } from "./canvas-renderer";
+import { useUpdate, useContext2D } from "./canvas-renderer";
 
 function App() {
+  const props = useContext2D();
   const controls = useUpdate({ x: 10 });
   const controls2 = useUpdate({ rotate: 0 });
+
+  console.log(props);
 
   useEffect(() => {
     controls.start(({ time }) => {

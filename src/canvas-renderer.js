@@ -1,9 +1,11 @@
 import ReactReconciler from "react-reconciler";
-import { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useContext, createContext } from "react";
 
 const drawQueue = [];
 const updateQueue = [];
 const clickHandlerQueue = [];
+
+const Context = createContext({});
 
 const Obj = {
   props: null,
@@ -34,8 +36,8 @@ const Obj = {
     if (this.transform) ctx.restore();
   },
   setPos: function setPos(x, y) {
-    this.props.x = 10 + x;
-    this.props.y = 10 + y;
+    this.props.x = this.props.x + x;
+    this.props.y = this.props.y + y;
 
     return this;
   },
@@ -154,6 +156,21 @@ const primitives = {
     ctx.font = `${size}px ${fontFamily}`;
     ctx.fillText(text, x, y);
   },
+  hexagon: (ctx, { x, y, radius, color }) => {
+    // console.log({ x, y });
+    ctx.beginPath();
+    ctx.moveTo(x + radius * Math.cos(0), y + radius * Math.sin(0));
+
+    for (let side = 0; side < 7; side++) {
+      ctx.lineTo(
+        x + radius * Math.cos((side * 2 * Math.PI) / 6),
+        y + radius * Math.sin((side * 2 * Math.PI) / 6)
+      );
+    }
+
+    ctx.fillStyle = color;
+    ctx.fill();
+  },
 };
 
 const createReconciler = (ctx) => {
@@ -228,6 +245,21 @@ const createReconciler = (ctx) => {
               },
             });
             break;
+          case "hexagon":
+            obj = Object.create(Obj, {
+              props: {
+                value: {
+                  x: props.x,
+                  y: props.y,
+                  radius: props.radius,
+                  color: props.color,
+                },
+                configurable: true,
+                enumerable: true,
+                writable: true,
+              },
+            });
+            break;
           default:
             return;
         }
@@ -235,8 +267,6 @@ const createReconciler = (ctx) => {
         obj.type = type;
         obj.update = props.update;
         obj.transform = props.transform;
-
-        // if (type) drawQueue.push(obj);
 
         return obj;
       }
@@ -327,7 +357,13 @@ let CanvasRenderer = {
 
     let container = reconciler.createContainer(canvas, false, false);
 
-    reconciler.updateContainer(element, container, null, null);
+    const newElement = React.createElement(
+      Context.Provider,
+      { value: { width: canvas.width, height: canvas.height } },
+      element
+    );
+
+    reconciler.updateContainer(newElement, container, null, null);
 
     function looper(time) {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -402,13 +438,13 @@ let CanvasRenderer = {
             });
           }
 
-          // draw group:
-          if (elem.hint) elem.draw(ctx);
-
           // draw elements
           elem.followers.forEach((child) => {
             draw(elem.attach(child));
           });
+
+          // draw group:
+          if (elem.hint) elem.draw(ctx);
 
           if (elem.transform) ctx.restore();
         } else elem.draw(ctx);
@@ -442,6 +478,12 @@ export function useUpdate(props = {}) {
   }, []);
 
   return ref.current;
+}
+
+export function useContext2D() {
+  const context = useContext(Context);
+
+  return context;
 }
 
 // Regesters the coming handler in the handler queue [DONE]

@@ -2,7 +2,8 @@ import React from "react";
 // import ReactDOM from "react-dom";
 import Art from "./canvas-renderer";
 import "./index.css";
-import App from "./App";
+// import App from "./App";
+import SolarSystem from "./SolarSystem";
 // import App from "./DOMApp";
 import * as serviceWorker from "./serviceWorker";
 
@@ -13,6 +14,6 @@ import * as serviceWorker from "./serviceWorker";
 //   document.getElementById("root")
 // );
 
-Art.render(<App />, document.getElementById("canvas"));
+Art.render(<SolarSystem />, document.getElementById("canvas"));
 
 serviceWorker.unregister();

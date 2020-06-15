@@ -1,8 +1,10 @@
 import React, { useEffect } from "react";
-import { useUpdate, useContext2D } from "./canvas-renderer";
+
+import useUpdate from "./art/useUpdate";
+import useArt from "./art/useArt";
 
 export default function SolarSystem() {
-  const { width, height } = useContext2D();
+  const { width, height } = useArt();
   const controls = useUpdate({ rotate: 0 });
 
   useEffect(() => {
@@ -13,12 +15,23 @@ export default function SolarSystem() {
 
   return (
     <group
+      x={0}
+      y={0}
       transform={{ x: width / 2, y: height / 2 }}
-      hint={150}
+      hint={0}
       update={controls}
     >
-      <hexagon x={0} y={0} color="yellow" radius={50} />
-      <hexagon x={200} y={0} color="skyblue" radius={15} />
+      <hexagon x={0} y={0} color="gold" radius={50} />
+      <group
+        x={0}
+        y={0}
+        transform={{ x: 150, y: 0 }}
+        update={controls}
+        hint={0}
+      >
+        <hexagon x={0} y={0} color="skyblue" radius={15} />
+        <hexagon x={30} y={0} color="darkgray" radius={8} update={controls} />
+      </group>
     </group>
   );
 }

@@ -1,6 +1,7 @@
 import React from "react";
 // import ReactDOM from "react-dom";
-import Art from "./canvas-renderer";
+// import Art from "./canvas-renderer";
+import Art from "./art/art";
 import "./index.css";
 // import App from "./App";
 import SolarSystem from "./SolarSystem";

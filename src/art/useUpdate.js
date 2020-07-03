@@ -8,7 +8,7 @@ export default function useUpdate(props = {}, configs = {}) {
   if (ref.current === undefined) {
     ref.current = Object.create(Anime, {
       props: { value: props, writable: true },
-      configs: { value: configs },
+      offset: { value: configs.offset },
     });
   }
 

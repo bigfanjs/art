@@ -9,7 +9,7 @@ export default function SolarSystem() {
 
   useEffect(() => {
     controls.start(({ time }) => {
-      return { rotate: Math.PI * time * 0.0001 };
+      return { rotate: Math.PI * time * 0.0002 };
     });
   }, [controls]);
 
@@ -21,7 +21,7 @@ export default function SolarSystem() {
       hint={0}
       update={controls}
     >
-      <hexagon x={0} y={0} color="gold" radius={50} />
+      <hexagon x={0} y={0} color="gold" radius={50} update={controls} />
       <group
         x={0}
         y={0}

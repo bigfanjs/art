@@ -1,16 +1,19 @@
-import React from "react";
+import React, { useRef } from "react";
 
 import Point from "./Point";
 import Constraint from "./Constraint";
 import Depth from "./Depth";
 import LastPie from "./LastPie";
 
-export default function Web({ radius, resolution, depth, offset }) {
-  const angle = Math.PI / 4;
-  const createPoint = ({ x, y, radius, width, height }) => ({
-    x: width / 2 + x * radius * Math.cos(y * angle),
-    y: height / 2 + x * radius * Math.sin(y * angle),
-  });
+const angle = Math.PI / 4;
+
+const createPoint = ({ x, y, radius, width, height }) => ({
+  x: width / 2 + x * radius * Math.cos(y * angle),
+  y: height / 2 + x * radius * Math.sin(y * angle),
+});
+
+export default function SpiderWeb({ radius, resolution, depth, offset }) {
+  const ref = useRef();
 
   return (
     <group>
@@ -34,9 +37,18 @@ export default function Web({ radius, resolution, depth, offset }) {
 
           return (
             <group key={key}>
-              <Point point={current_point} pin={x > depth} />
+              <Point
+                point={current_point}
+                pin={x > depth}
+                hidden={true}
+                ref={ref}
+              />
               {x > 0 && (
-                <Constraint current={current_point} previous={previous_point} />
+                <Constraint
+                  current={current_point}
+                  previous={previous_point}
+                  point={ref}
+                />
               )}
               {y > 0 && x < depth && (
                 <Depth

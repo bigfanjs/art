@@ -7,6 +7,8 @@ const Element = {
   transform: null,
   draw: function (ctx) {
     const primitive = primitives[this.type];
+    const offset = this.update && this.update.offset;
+
     let shouldrestore = false;
 
     if (this.transform || this.update) {
@@ -29,8 +31,6 @@ const Element = {
         if (!reso) transforms[arr[i]] = this.update.props[arr[i]];
       }
 
-      // console.log({ transforms });
-
       Object.keys(transforms).forEach((key) => {
         const value = transforms[key];
 
@@ -38,7 +38,7 @@ const Element = {
           if (key === "scale") {
             let scale = 0;
 
-            if (this.update && this.update.props) {
+            if (this.update && !offset && this.update.props) {
               this.update.props.scale && (scale = this.update.props.scale);
             }
 
@@ -48,7 +48,7 @@ const Element = {
             let x = 0;
             let y = 0;
 
-            if (this.update && this.update.props) {
+            if (this.update && !offset && this.update.props) {
               this.update.props.x && (x = this.update.props.x);
               this.update.props.y && (y = this.update.props.y);
             }
@@ -57,9 +57,8 @@ const Element = {
           } else {
             let val = 0;
 
-            if (this.update && this.update.props) {
+            if (this.update && !offset && this.update.props) {
               this.update.props[key] && (val = this.update.props[key]);
-              // console.log("key", elem.update.props.rotate);
             }
 
             ctx[key](value + val);
@@ -70,7 +69,7 @@ const Element = {
 
     primitive(ctx, {
       ...this.props,
-      ...(this.update ? this.update.props : {}),
+      ...(this.update && offset ? this.update.props : {}),
     });
 
     if (shouldrestore) ctx.restore();

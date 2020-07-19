@@ -96,6 +96,22 @@ const createReconciler = (ctx) => {
               },
             });
             break;
+          case "line":
+            element = Object.create(Element, {
+              props: {
+                value: {
+                  x1: props.x1,
+                  y1: props.y1,
+                  x2: props.x2,
+                  y2: props.y2,
+                  color: props.color,
+                },
+                configurable: true,
+                enumerable: true,
+                writable: true,
+              },
+            });
+            break;
           default:
             return;
         }

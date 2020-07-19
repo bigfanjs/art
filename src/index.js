@@ -4,7 +4,9 @@ import React from "react";
 import Art from "./art/art";
 import "./index.css";
 // import App from "./App";
-import SolarSystem from "./SolarSystem";
+// import SolarSystem from "./SolarSystem";
+// import Test from "./components/test/test2.js";
+import Test from "./components/test/test3.js";
 // import App from "./DOMApp";
 import * as serviceWorker from "./serviceWorker";
 
@@ -15,6 +17,10 @@ import * as serviceWorker from "./serviceWorker";
 //   document.getElementById("root")
 // );
 
-Art.render(<SolarSystem />, document.getElementById("canvas"));
+// Art.render(<SolarSystem />, document.getElementById("canvas"));
+Art.render(
+  <Test resolution={8} depth={7} />,
+  document.getElementById("canvas")
+);
 
 serviceWorker.unregister();

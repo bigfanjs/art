@@ -7,23 +7,25 @@ const Element = {
   transform: null,
   draw: function (ctx) {
     const primitive = primitives[this.type];
-    const offset = this.update && this.update.offset;
+    const offsets = this.update && this.update.offsets;
 
     let shouldrestore = false;
 
+    // transform
     if (this.transform || this.update) {
       ctx.save();
       shouldrestore = true;
 
       const { x, y, ...transform } = this.transform || {};
       const transforms = {
-        ...(x && y ? { translate: { x, y } } : {}),
+        ...(x && y && !offsets ? { translate: { x, y } } : {}),
         ...transform,
       };
 
       let arr =
         this.update && this.update.props ? Object.keys(this.update.props) : [];
 
+      // check if a transformation exists on update but not on transform, and then add it.
       for (let i = 0; i < arr.length; i++) {
         const transos = Object.keys(transforms);
         const reso = transos.find((trans) => trans === arr[i]);
@@ -38,7 +40,7 @@ const Element = {
           if (key === "scale") {
             let scale = 0;
 
-            if (this.update && !offset && this.update.props) {
+            if (this.update && this.update.props) {
               this.update.props.scale && (scale = this.update.props.scale);
             }
 
@@ -48,7 +50,7 @@ const Element = {
             let x = 0;
             let y = 0;
 
-            if (this.update && !offset && this.update.props) {
+            if (this.update && this.update.props) {
               this.update.props.x && (x = this.update.props.x);
               this.update.props.y && (y = this.update.props.y);
             }
@@ -57,7 +59,7 @@ const Element = {
           } else {
             let val = 0;
 
-            if (this.update && !offset && this.update.props) {
+            if (this.update && this.update.props) {
               this.update.props[key] && (val = this.update.props[key]);
             }
 
@@ -67,9 +69,12 @@ const Element = {
       });
     }
 
+    // console.log({ props: this.update.props });
+
+    // draw
     primitive(ctx, {
       ...this.props,
-      ...(this.update && offset ? this.update.props : {}),
+      ...(this.update && offsets ? this.update.props : {}),
     });
 
     if (shouldrestore) ctx.restore();

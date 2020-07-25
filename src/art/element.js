@@ -71,6 +71,8 @@ const Element = {
 
     // console.log({ props: this.update.props });
 
+    // console.log({ update: this.update });
+
     // draw
     primitive(ctx, {
       ...this.props,

@@ -111,6 +111,7 @@ const createReconciler = (ctx) => {
                 writable: true,
               },
             });
+            // console.log({ update: props.update });
             break;
           default:
             return;
@@ -251,6 +252,8 @@ const Art = {
           elem.followers.forEach((child) => {
             draw(elem.attach(child));
           });
+
+          // console.log({ followers: elem.followers });
 
           // draw group:
           if (elem.hint) elem.draw(ctx);

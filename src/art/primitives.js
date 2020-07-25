@@ -59,6 +59,7 @@ const primitives = {
     ctx.fill();
   },
   line: (ctx, { x1, y1, x2, y2, color }) => {
+    // console.log({ x1, y1, x2, y2 });
     ctx.beginPath();
     ctx.strokeStyle = color;
     ctx.moveTo(x1, y1);

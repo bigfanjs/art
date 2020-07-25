@@ -26,8 +26,26 @@ export default function useUpdate(
             return Object.create(Anime, {
               default: { value: defaultProps, writable: true },
               offsets: { value: configs.offsets },
+              attached: {
+                value: [],
+                configurable: true,
+                enumerable: true,
+                writable: true,
+              },
+              updates: {
+                value: ["z"],
+                configurable: true,
+                enumerable: true,
+                writable: true,
+              },
             });
           }),
+        },
+        updates: {
+          value: [],
+          configurable: true,
+          enumerable: true,
+          writable: true,
         },
       });
     } else if (Array.isArray(configs.count)) {
@@ -39,14 +57,50 @@ export default function useUpdate(
             return Object.create(Anime, {
               default: { value: elem, writable: true },
               offsets: { value: configs.offsets },
+              attached: {
+                value: [],
+                configurable: true,
+                enumerable: true,
+                writable: true,
+              },
+              updates: {
+                value: [],
+                configurable: true,
+                enumerable: true,
+                writable: true,
+              },
             });
           }),
+        },
+        updates: {
+          value: [],
+          configurable: true,
+          enumerable: true,
+          writable: true,
         },
       });
     } else {
       ref.current = Object.create(Anime, {
         default: { value: props, writable: true },
         offsets: { value: configs.offsets },
+        attached: {
+          value: [],
+          configurable: true,
+          enumerable: true,
+          writable: true,
+        },
+        updates: {
+          value: [],
+          configurable: true,
+          enumerable: true,
+          writable: true,
+        },
+        elements: {
+          value: [],
+          configurable: true,
+          enumerable: true,
+          writable: true,
+        },
       });
     }
   }

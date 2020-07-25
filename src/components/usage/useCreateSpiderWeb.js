@@ -19,6 +19,8 @@ export default function useCreateSpiderWeb({ depth, resolution }) {
       }
     }
 
+    //console.log({ length: points.length });
+
     return points;
   }, [height, width, depth, resolution]);
 }

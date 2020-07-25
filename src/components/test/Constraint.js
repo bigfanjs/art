@@ -3,7 +3,7 @@ import React, { useEffect } from "react";
 import useUpdate from "../../art/useUpdate";
 import useResolveConstraints from "./useResolveConstraints";
 
-export default function Constraint({ p1, p2, length }) {
+export default function Constraint({ p1, p2 }) {
   const resolveConstraints = useResolveConstraints();
   const attach = useUpdate(null, { attach: true });
   const controls = useUpdate(null, { map: true }); // creates a new instance and chain

@@ -5,7 +5,7 @@ import useArt from "../../art/useArt";
 
 export default function useCreateConstraints({ depth, resolution }) {
   const { width, height } = useArt();
-  const controls = useUpdate();
+  const controls = useUpdate(null, { loop: true });
 
   return useMemo(() => {
     const spacing = 20;

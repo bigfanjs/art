@@ -20,13 +20,8 @@ const Anime = {
       return callback(element, index);
     });
   },
-  start: function (attached, update) {
-    const newUpdate =
-      typeof attached !== "function" ? { attached, update } : attached;
-
-    // console.log({ attached, update, newUpdate });
-
-    this.updates = [...this.updates, newUpdate];
+  start: function (update) {
+    this.updates = [...this.updates, update];
   },
   attach: function (update) {
     if (Array.isArray(update)) {
@@ -40,11 +35,6 @@ const Anime = {
 
     return this;
   },
-  // reduce: function (callback) {
-  //   const props = callback(this.attached.map((anime) => anime.props));
-
-  //   this.props = props;
-  // },
   create: function create(defaults) {
     const prototype = Object.getPrototypeOf(this);
     const anime = Object.create(prototype, {
@@ -71,57 +61,27 @@ const Anime = {
       this.updates.forEach((update, i) => {
         this.props = this.attached.forEach((elem, index) => {
           const newProps = elem.props ? elem.props : elem.default;
-          const isObj = typeof update === "object";
-          const newUpdate = isObj ? update.update : update;
-          let attached =
-            isObj && update.attached
-              ? [...elem.attached, update.attached]
-              : elem.attached;
 
-          const props = newUpdate({
+          const props = update({
             time,
             index,
             props: newProps,
-            attached: attached.map((att) =>
+            attached: elem.attached.map((att) =>
               att.props ? att.props : att.default
             ),
           });
 
-          // console.log({ props });
-
           elem.props = { ...elem.props, ...props };
         });
-
-        // console.log("Woa", { props: this.props });
       });
     } else {
       this.updates.forEach((update, i) => {
-        // console.log({ update, props: this.props, default: this.default });
-
-        // console.log({ updates: this.updates, update });
-
         const newProps = this.props ? this.props : this.default;
-        const isObj = typeof update === "object";
-        const newUpdate = isObj ? update.update : update;
-        let attached =
-          isObj && update.attached
-            ? [...this.attached, update.attached]
-            : this.attached;
 
-        // console.log({ newProps });
-
-        // if (!newProps) return;
-
-        // console.log({
-        //   coolattached: this.attached.map((att) =>
-        //     att.props ? att.props : att.default
-        //   ),
-        // });
-
-        const props = newUpdate({
+        const props = update({
           time,
           props: newProps,
-          attached: attached.map((att) =>
+          attached: this.attached.map((att) =>
             att.props ? att.props : att.default
           ),
         });

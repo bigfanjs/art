@@ -12,8 +12,8 @@ export default function Constraint({ p1, p2 }) {
   useEffect(() => {
     const { dist } = calcDistance(p1.get(), p2.get());
 
-    p1.start(p2, resolveConstraints(1, dist));
-    p2.start(p1, resolveConstraints(-1, dist));
+    p1.start(resolveConstraints({ attached: p2, length: dist }));
+    p2.start(resolveConstraints({ attached: p1, length: dist }));
 
     controls.start(({ attached: [p1, p2] }) => {
       return {

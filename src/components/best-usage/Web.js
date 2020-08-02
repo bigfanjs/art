@@ -4,7 +4,7 @@ import useCreateSiderWeb from "./useCreateSiderWeb";
 import Constraint from "./Constraint";
 
 export default function Web({ radius, resolution, depth, curve }) {
-  const [points, constraints] = useCreateSiderWeb({ depth, resolution });
+  const points = useCreateSiderWeb({ depth, resolution });
 
   useEffect(() => {
     points.start(({ props: { x, y, px, py, pinx, piny } }) => {
@@ -22,23 +22,16 @@ export default function Web({ radius, resolution, depth, curve }) {
 
       const nx = x + (x - px) + 0 * delta;
       const ny = y + (y - py) + 8.9 * delta;
-      // const ny = y + (y - py) + 0 * delta; // test 0 gravity
 
-      setTimeout(() => {
-        debugger;
-      }, 1000);
-
-      return { x, y, px, py };
-      // return { x: nx, y: ny, px: x, py: y };
+      return { x: nx, y: ny, px: x, py: y };
     });
   }, [points]);
 
   return (
     <group>
-      {constraints.map(([p1, p2], i) => {
-        // <arc key={i} color="#fff" radius={3} update={point} />
-        return <Constraint key={i} p1={p1} p2={p2} />;
-      })}
+      {points.map((point, i) =>
+        point.map((p2) => <Constraint key={i} p1={point} p2={p2} />)
+      )}
     </group>
   );
 }

@@ -6,8 +6,8 @@ export default function useResolveConstraints() {
   const calcDistance = useCalcDistance();
 
   return useCallback(
-    (dir, length) => ({ props: { x, y, px, py, pinx, piny }, attached }) => {
-      const { dist, diffX, diffY } = calcDistance({ x, y }, attached[0]);
+    ({ length, attached }) => ({ props: { x, y, px, py, pinx, piny } }) => {
+      const { dist, diffX, diffY } = calcDistance({ x, y }, attached.get());
       const diff = (length - dist) / dist;
 
       if (pinx && piny)
@@ -20,12 +20,12 @@ export default function useResolveConstraints() {
           piny,
         };
 
-      const dx = diffX * diff * 0.05;
-      const dy = diffY * diff * 0.05;
+      const dx = diffX * diff * 0.5;
+      const dy = diffY * diff * 0.5;
 
       return {
-        x: x + dx * dir,
-        y: y + dy * dir,
+        x: x + dx,
+        y: y + dy,
         px: px,
         py: py,
       };

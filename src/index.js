@@ -6,7 +6,8 @@ import "./index.css";
 // import App from "./App";
 // import SolarSystem from "./SolarSystem";
 // import Test from "./components/test/test2.js";
-import Test from "./components/another-usage/Web";
+// import Test from "./components/another-usage/Web";
+import Test from "./components/best-usage/Web";
 // import App from "./DOMApp";
 import * as serviceWorker from "./serviceWorker";
 
@@ -19,7 +20,7 @@ import * as serviceWorker from "./serviceWorker";
 
 // Art.render(<SolarSystem />, document.getElementById("canvas"));
 Art.render(
-  <Test resolution={3} depth={4} />,
+  <Test resolution={7} depth={6} />,
   document.getElementById("canvas")
 );
 

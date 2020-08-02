@@ -19,7 +19,7 @@ export default function useUpdate(
   if (ref.current === undefined) {
     if (configs.count && !Array.isArray(configs.count)) {
       ref.current = Object.create(Anime, {
-        elements: {
+        attached: {
           value: Array.from(Array(configs.count)).map((_, n) => {
             const defaultProps = typeof props === "function" ? props(n) : props;
 
@@ -33,7 +33,7 @@ export default function useUpdate(
                 writable: true,
               },
               updates: {
-                value: ["z"],
+                value: [],
                 configurable: true,
                 enumerable: true,
                 writable: true,
@@ -52,7 +52,7 @@ export default function useUpdate(
       const elements = props(...configs.count);
 
       ref.current = Object.create(Anime, {
-        elements: {
+        attached: {
           value: elements.map((elem) => {
             return Object.create(Anime, {
               default: { value: elem, writable: true },
@@ -80,22 +80,23 @@ export default function useUpdate(
         },
       });
     } else {
+      const defaults = props && !Anime.isPrototypeOf(props) ? props : undefined;
+      let attached = [];
+
+      if (props && Anime.isPrototypeOf(props)) attached = [props];
+      else if (props && Array.isArray(props)) attached = props;
+
       ref.current = Object.create(Anime, {
-        default: { value: props, writable: true },
+        default: { value: defaults, writable: true },
         offsets: { value: configs.offsets },
+        loop: { value: configs.loop },
         attached: {
-          value: [],
+          value: attached,
           configurable: true,
           enumerable: true,
           writable: true,
         },
         updates: {
-          value: [],
-          configurable: true,
-          enumerable: true,
-          writable: true,
-        },
-        elements: {
           value: [],
           configurable: true,
           enumerable: true,

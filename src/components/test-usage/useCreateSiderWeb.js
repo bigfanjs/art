@@ -3,14 +3,13 @@ import { useMemo } from "react";
 import useUpdate from "../../art/useUpdate";
 import useArt from "../../art/useArt";
 
-export default function useCreateConstraints({ depth, resolution }) {
+export default function useCreateSpiderWeb({ depth, resolution }) {
   const { width, height } = useArt();
   const controls = useUpdate(null, { offsets: true, loop: true });
 
   return useMemo(() => {
     const spacing = 20;
     const angle = (Math.PI * 2) / (resolution + 1);
-    const constraints = [];
 
     for (let i = 0; i <= resolution; i++) {
       for (let j = 1 % (i + 1); j <= depth; j++) {
@@ -22,17 +21,15 @@ export default function useCreateConstraints({ depth, resolution }) {
         const anime = controls.create({ x, y, px: x, py: y, ...pin });
         const attached = controls.attached;
 
-        if (j > 0)
-          constraints.push([anime, attached[(attached.length - 1) * (1 % j)]]);
-        if (i > 0 && j < depth)
-          constraints.push([anime, attached[j + (i - 1) * depth]]);
+        if (j > 0) anime.attach(attached[(attached.length - 1) * (1 % j)]);
+        if (i > 0 && j < depth) anime.attach(attached[j + (i - 1) * depth]);
         if (i >= resolution && j < depth)
-          constraints.push([anime, attached[j + (i - resolution) * depth]]);
+          anime.attach(attached[j + (i - resolution) * depth]);
 
         controls.attach(anime);
       }
     }
 
-    return [controls, constraints];
+    return controls;
   }, [height, width, depth, resolution, controls]);
 }

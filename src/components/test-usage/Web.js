@@ -1,10 +1,10 @@
 import React, { useEffect } from "react";
 
-import useCreateSiderWeb from "./useCreateSiderWeb";
+import useCreateSpiderWeb from "./useCreateSpiderWeb";
 import Constraint from "./Constraint";
 
 export default function Web({ radius, resolution, depth, curve }) {
-  const points = useCreateSiderWeb({ depth, resolution });
+  const points = useCreateSpiderWeb({ depth, resolution });
 
   useEffect(() => {
     points.start(({ props: { x, y, px, py, pinx, piny } }) => {
@@ -30,7 +30,7 @@ export default function Web({ radius, resolution, depth, curve }) {
   return (
     <group>
       {points.map((point, i) =>
-        point.map((p2) => <Constraint key={i} p1={point} p2={p2} />)
+        point.map((p2, j) => <Constraint key={j} p1={point} p2={p2} />)
       )}
     </group>
   );

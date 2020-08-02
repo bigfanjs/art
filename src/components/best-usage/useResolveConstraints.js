@@ -20,8 +20,8 @@ export default function useResolveConstraints() {
           piny,
         };
 
-      const dx = diffX * diff * 0.5;
-      const dy = diffY * diff * 0.5;
+      const dx = diffX * diff * 0.1;
+      const dy = diffY * diff * 0.1;
 
       return {
         x: x + dx,

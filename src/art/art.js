@@ -6,7 +6,7 @@ import Element from "./element";
 
 export const drawQueue = [];
 export const updateQueue = [];
-export const clickHandlerQueue = [];
+export const eventQueue = [];
 
 export const Context = createContext({});
 
@@ -176,7 +176,7 @@ const Art = {
     const container = reconciler.createContainer(canvas, false, false);
     const Provider = React.createElement(
       Context.Provider,
-      { value: { width: canvas.width, height: canvas.height, ctx } },
+      { value: { canvas, width: canvas.width, height: canvas.height, ctx } },
       element
     );
 
@@ -268,10 +268,6 @@ const Art = {
     }
 
     renderLoop();
-
-    canvas.addEventListener("click", () => {
-      clickHandlerQueue.forEach((handler) => handler());
-    });
   },
 };
 

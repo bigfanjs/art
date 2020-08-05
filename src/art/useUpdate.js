@@ -12,7 +12,7 @@ import Anime from "./Anime";
 
 export default function useUpdate(
   props,
-  configs = { offsets: false, count: undefined }
+  configs = { offsets: false, count: undefined, event: null }
 ) {
   const ref = useRef();
 
@@ -43,6 +43,12 @@ export default function useUpdate(
         },
         updates: {
           value: [],
+          configurable: true,
+          enumerable: true,
+          writable: true,
+        },
+        event: {
+          value: configs.event,
           configurable: true,
           enumerable: true,
           writable: true,
@@ -78,6 +84,12 @@ export default function useUpdate(
           enumerable: true,
           writable: true,
         },
+        event: {
+          value: configs.event,
+          configurable: true,
+          enumerable: true,
+          writable: true,
+        },
       });
     } else {
       const defaults = props && !Anime.isPrototypeOf(props) ? props : undefined;
@@ -98,6 +110,12 @@ export default function useUpdate(
         },
         updates: {
           value: [],
+          configurable: true,
+          enumerable: true,
+          writable: true,
+        },
+        event: {
+          value: configs.event,
           configurable: true,
           enumerable: true,
           writable: true,

@@ -35,7 +35,7 @@ const Anime = {
 
     return this;
   },
-  create: function create(defaults) {
+  create: function create(defaults, event) {
     const prototype = Object.getPrototypeOf(this);
     const anime = Object.create(prototype, {
       default: { value: defaults, writable: true },
@@ -48,6 +48,12 @@ const Anime = {
       },
       updates: {
         value: [],
+        configurable: true,
+        enumerable: true,
+        writable: true,
+      },
+      event: {
+        value: event,
         configurable: true,
         enumerable: true,
         writable: true,
@@ -66,6 +72,7 @@ const Anime = {
             time,
             index,
             props: newProps,
+            event: this.event && (this.event.props || this.event.defaults),
             attached: elem.attached.map((att) =>
               att.props ? att.props : att.default
             ),
@@ -75,12 +82,13 @@ const Anime = {
         });
       });
     } else {
-      this.updates.forEach((update, i) => {
+      this.updates.forEach((update) => {
         const newProps = this.props ? this.props : this.default;
 
         const props = update({
           time,
           props: newProps,
+          event: this.event && (this.event.props || this.event.defaults),
           attached: this.attached.map((att) =>
             att.props ? att.props : att.default
           ),

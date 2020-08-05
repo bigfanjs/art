@@ -3,7 +3,7 @@ import { useMemo } from "react";
 import useUpdate from "../../art/useUpdate";
 import useArt from "../../art/useArt";
 
-export default function useCreateSpiderWeb({ depth, resolution }) {
+export default function useCreateSpiderWeb({ depth, resolution, event }) {
   const { width, height } = useArt();
   const controls = useUpdate(null, { offsets: true, loop: true });
 
@@ -20,7 +20,7 @@ export default function useCreateSpiderWeb({ depth, resolution }) {
         const pin = j >= depth ? { pinx: x, piny: y } : {};
 
         // create a new instance
-        const anime = controls.create({ x, y, px: x, py: y, ...pin });
+        const anime = controls.create({ x, y, px: x, py: y, ...pin }, event);
         const attached = controls.attached;
 
         if (j > 0) anime.attach(attached[(attached.length - 1) * (1 % j)]);
@@ -33,5 +33,5 @@ export default function useCreateSpiderWeb({ depth, resolution }) {
     }
 
     return controls;
-  }, [height, width, depth, resolution, controls]);
+  }, [height, width, depth, resolution, controls, event]);
 }

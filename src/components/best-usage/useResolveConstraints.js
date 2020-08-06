@@ -12,7 +12,7 @@ export default function useResolveConstraints() {
     }) => {
       const { dist: disto } = calcDistance(event, { x, y });
       const { dist, diffX, diffY } = calcDistance({ x, y }, attached.get());
-      const diff = (length - dist) / dist;
+      const diff = (length - dist) / Math.max(dist, 0.001);
 
       if (disto < 10) return { px, py, x: event.x, y: event.y };
       if (pinx && piny) return { x: pinx, y: piny, px: x, py: y, pinx, piny };

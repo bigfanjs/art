@@ -78,7 +78,7 @@ const Anime = {
             ),
           });
 
-          elem.props = { ...elem.props, ...props };
+          elem.props = { ...newProps, ...props };
         });
       });
     } else {
@@ -94,7 +94,7 @@ const Anime = {
           ),
         });
 
-        this.props = { ...this.props, ...props };
+        this.props = { ...newProps, ...props };
       });
     }
   },

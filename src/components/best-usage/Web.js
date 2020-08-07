@@ -6,7 +6,7 @@ import useCalcDistance from "./useCalcDistance";
 import useEvent from "../../art/useEvent";
 import useArt from "../../art/useArt";
 
-export default function Web({ radius, resolution, depth, curve }) {
+export default function Web({ resolution, depth }) {
   const { canvas } = useArt();
   const mouse = useEvent({ x: 0, y: 0, px: 0, py: 0 });
   const points = useCreateSiderWeb({ depth, resolution, event: mouse });
@@ -31,7 +31,7 @@ export default function Web({ radius, resolution, depth, curve }) {
 
   return (
     <group>
-      {points.map((point, i) =>
+      {points.map((point) =>
         point.map((p2, j) => <Constraint key={j} p1={point} p2={p2} />)
       )}
     </group>

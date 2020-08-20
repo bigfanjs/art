@@ -1,114 +1,29 @@
-import primitives from "./primitives";
+import { isPointInRect, isPointInCircle } from "./isPointInside";
+import { eventQueue } from "./art";
 
-const Element = {
-  props: null,
-  type: null,
-  update: null,
-  transform: null,
-  draggable: false,
-  mouse: null,
-  currMouse: null,
-  isPath: false,
-  eventHandlers: [],
-  zIndex: 1,
-  draw: function (ctx) {
-    const primitive = primitives[this.type];
-    const offsets = this.update && this.update.offsets;
+export default class Event {
+  props = null;
+  click = null;
+  mousemove = null;
+  mousedown = null;
+  type = null;
+  index = null;
+  isIn = false;
+  isPreviousMouseIn = false;
 
-    let shouldrestore = false;
+  constructor() {
+    eventQueue.push(this);
+  }
 
-    // transform
-    if (this.transform || this.update) {
-      ctx.save();
-      shouldrestore = true;
-
-      const { x, y, ...transform } = this.transform || {};
-      const transforms = {
-        ...(x && y && !offsets ? { translate: { x, y } } : {}),
-        ...transform,
-      };
-
-      let arr =
-        this.update && this.update.props ? Object.keys(this.update.props) : [];
-
-      // check if a transformation exists on update but not on transform, and then add it.
-      for (let i = 0; i < arr.length; i++) {
-        const transos = Object.keys(transforms);
-        const reso = transos.find((trans) => trans === arr[i]);
-
-        if (!reso) transforms[arr[i]] = this.update.props[arr[i]];
-      }
-
-      Object.keys(transforms).forEach((key) => {
-        const value = transforms[key];
-
-        if (ctx[key]) {
-          if (key === "scale") {
-            let scale = 0;
-
-            if (this.update && this.update.props) {
-              this.update.props.scale && (scale = this.update.props.scale);
-            }
-
-            ctx.scale(value, value + scale);
-          }
-          if (key === "translate") {
-            let x = 0;
-            let y = 0;
-
-            if (this.update && this.update.props) {
-              this.update.props.x && (x = this.update.props.x);
-              this.update.props.y && (y = this.update.props.y);
-            }
-
-            ctx.translate(value.x + x, value.y + y);
-          } else {
-            let val = 0;
-
-            if (this.update && this.update.props) {
-              this.update.props[key] && (val = this.update.props[key]);
-            }
-
-            ctx[key](value + val);
-          }
-        }
-      });
-    }
-
-    // draw
-    this.path = primitive(ctx, {
-      ...this.props,
-      ...(this.update && offsets ? this.update.props : {}),
-    });
-
-    if (shouldrestore) ctx.restore();
-  },
-  setPos: function setPos(x, y) {
-    this.props.x = this.props.x + x;
-    this.props.y = this.props.y + y;
-
-    return this;
-  },
-  onClick: function onClick(canvas, handler) {
-    canvas.removeEventListener("click", handler, false);
-    canvas.addEventListener("click", handler, false);
-  },
-  makeDrag: function (canvas, ctx) {
-    // console.log({ type: this.type });
-
+  startDrag(canvas, ctx) {
     if (this.type === "rect") {
       const mousedown = (e) => {
         const rect = canvas.getBoundingClientRect();
         const mouse = { x: e.clientX - rect.left, y: e.clientY - rect.top };
 
-        if (
-          mouse.x >= this.props.x &&
-          mouse.y >= this.props.y &&
-          mouse.x < this.props.x + this.props.width &&
-          mouse.y < this.props.y + this.props.height
-        ) {
+        if (isPointInRect(this.props, mouse)) {
           this.draggable = true;
-          this.mouse = mouse;
+          this.mouse = { ...this.mouse, px: mouse.x, py: mouse.y };
         }
       };
       const mouseup = () => (this.draggable = false);
@@ -117,10 +32,10 @@ const Element = {
         const mouse = { x: e.clientX - rect.left, y: e.clientY - rect.top };
 
         if (this.draggable) {
-          const diffx = mouse.x - this.mouse.x;
-          const diffy = mouse.y - this.mouse.y;
+          const diffx = mouse.x - this.mouse.px;
+          const diffy = mouse.y - this.mouse.py;
 
-          this.mouse = mouse;
+          this.mouse = { ...this.mouse, ...mouse };
 
           this.props.x = this.props.x + diffx;
           this.props.y = this.props.y + diffy;
@@ -211,12 +126,33 @@ const Element = {
         { name: "mousemove", handler: mousemove },
       ];
     }
-  },
-  endDrag: function (canvas) {
-    this.eventHandlers.forEach(({ name, handler }) => {
-      canvas.removeEventListener(name, handler);
-    });
-  },
-};
+  }
+  endDrag() {}
+  checkBoundries(mouse) {
+    this.isPreviousMouseIn = this.isIn;
 
-export default Element;
+    switch (this.type) {
+      case "rect":
+        this.isIn = isPointInRect(this.props, mouse);
+        break;
+      case "arc":
+        this.isIn = isPointInCircle(this.props, mouse);
+        break;
+      default:
+        return;
+    }
+  }
+  onClick(handler) {
+    this.click = handler;
+  }
+  onMouseMove(handler) {
+    this.mousemove = handler;
+  }
+  onMouseOver(handler) {
+    this.mouseover = handler;
+  }
+  onMouseDown(handler) {
+    this.mousedown = handler;
+  }
+  onMouseUp() {}
+}

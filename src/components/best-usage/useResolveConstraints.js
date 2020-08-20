@@ -6,19 +6,29 @@ export default function useResolveConstraints() {
   const calcDistance = useCalcDistance();
 
   return useCallback(
-    ({ length, attached }) => ({ props, event }) => {
-      const { x, y, px, py, pinx, piny } = props;
-      const mouse = calcDistance(event, { x, y });
+    ({ length, attached }) => ({ props: { x, y, px, py, pinx, piny } }) => {
       const { dist, diffX, diffY } = calcDistance({ x, y }, attached.get());
-      const diff = (length - dist) / Math.max(dist, 0.001);
+      const diff = (length - dist) / dist;
 
-      if (mouse.dist < 10) return { px, py, x: event.x, y: event.y };
-      if (pinx && piny) return { x: pinx, y: piny, px: x, py: y, pinx, piny };
+      if (pinx && piny)
+        return {
+          x: pinx,
+          y: piny,
+          px: x,
+          py: y,
+          pinx,
+          piny,
+        };
 
       const dx = diffX * diff * 0.1;
       const dy = diffY * diff * 0.1;
 
-      return { x: x + dx, y: y + dy };
+      return {
+        x: x + dx,
+        y: y + dy,
+        px: px,
+        py: py,
+      };
     },
     [calcDistance]
   );

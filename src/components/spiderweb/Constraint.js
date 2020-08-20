@@ -1,32 +1,27 @@
 import React, { useEffect } from "react";
 
-import useUpdate from "./art/useUpdate";
+import useUpdate from "../../art/useUpdate";
+import useResolveConstraints from "./useResolveConstraints";
 import useCalcDistance from "./useCalcDistance";
 
-export default function Constraint({ p1, p2, cp, length, point }) {
-  const controls = useUpdate();
+export default function Constraint({ p1, p2 }) {
   const calcDistance = useCalcDistance();
+  const resolveConstraints = useResolveConstraints();
+  const controls = useUpdate([p1, p2], { offsets: true });
 
   useEffect(() => {
-    controls.start(({ time }) => {
-      const { dist, diffX, diffY } = calcDistance(p1, p1);
-      const diff = (length - dist) / dist;
+    const { dist } = calcDistance(p1.get(), p2.get());
 
-      const px = diffX * diff * 0.5;
-      const py = diffY * diff * 0.5;
+    p1.start(resolveConstraints({ attached: p2, length: dist }));
+    p2.start(resolveConstraints({ attached: p1, length: dist }));
 
-      p1.x += px;
-      p1.y += py;
-      p2.x -= px;
-      p2.y -= py;
-    });
-  });
+    controls.start(({ attached: [p1, p2] }) => ({
+      x1: p1.x,
+      y1: p1.y,
+      x2: p2.x,
+      y2: p2.y,
+    }));
+  }, [controls, p1, p2, resolveConstraints, calcDistance]);
 
-  return <line update={controls} />;
-
-  //   return ({ ctx }) => {
-  //     ctx.moveTo(p1.x, p1.y);
-
-  //     cp ? ctx.quadraticCurveTo(cp.x, cp.y, p2.x, p2.y) : ctx.lineTo(p2.x, p2.y);
-  //   };
+  return <line update={controls} color="#fff" />;
 }

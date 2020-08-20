@@ -1,76 +1,38 @@
-import React, { useRef } from "react";
+import React, { useEffect } from "react";
 
-import Point from "./Point";
+import useCreateSpiderWeb from "./useCreateSpiderWeb";
 import Constraint from "./Constraint";
-import Depth from "./Depth";
-import LastPie from "./LastPie";
+import useCalcDistance from "./useCalcDistance";
+import useEvent from "../../art/useEvent";
+import useArt from "../../art/useArt";
 
-const angle = Math.PI / 4;
+export default function Web({ resolution, depth }) {
+  const { canvas } = useArt();
+  const mouse = useEvent({ x: 0, y: 0, px: 0, py: 0 });
+  const points = useCreateSpiderWeb({ depth, resolution, event: mouse });
+  const calcDistance = useCalcDistance({ depth, resolution });
 
-const createPoint = ({ x, y, radius, width, height }) => ({
-  x: width / 2 + x * radius * Math.cos(y * angle),
-  y: height / 2 + x * radius * Math.sin(y * angle),
-});
+  useEffect(() => {
+    mouse.start("mousemove", ({ event }) => {
+      const rect = canvas.getBoundingClientRect();
 
-export default function SpiderWeb({ radius, resolution, depth, offset }) {
-  const ref = useRef();
+      return { x: event.clientX - rect.left, y: event.clientY - rect.top };
+    });
+
+    points.start(({ props: { x, y, px, py } }) => {
+      const delta = 1 / 60;
+
+      const nx = x + (x - px) + 0 * delta;
+      const ny = y + (y - py) + 8.9 * delta;
+
+      return { x: nx, y: ny, px: x, py: y };
+    });
+  }, [points, calcDistance, canvas, mouse]);
 
   return (
     <group>
-      {Array.from(Array(resolution)).map((y) =>
-        Array.from(Array(depth)).map((x) => {
-          const key = x + depth * y;
-          const current_point = createPoint({
-            x,
-            y,
-            radius,
-            width: 100,
-            height: 100,
-          });
-          const previous_point = createPoint({
-            x: key * (1 % x) || 0,
-            y: key * (1 % y) || 0,
-            radius,
-            width: 100,
-            height: 100,
-          });
-
-          return (
-            <group key={key}>
-              <Point
-                point={current_point}
-                pin={x > depth}
-                hidden={true}
-                ref={ref}
-              />
-              {x > 0 && (
-                <Constraint
-                  current={current_point}
-                  previous={previous_point}
-                  point={ref}
-                />
-              )}
-              {y > 0 && x < depth && (
-                <Depth
-                  x={x}
-                  y={y}
-                  depth={depth}
-                  offset={offset}
-                  angle={angle}
-                />
-              )}
-              {y >= resolution && x < depth && (
-                <LastPie
-                  x={x}
-                  y={y}
-                  depth={depth}
-                  offset={offset}
-                  angle={angle}
-                />
-              )}
-            </group>
-          );
-        })
+      {points.map((point) =>
+        point.map((p2, j) => <Constraint key={j} p1={point} p2={p2} />)
       )}
     </group>
   );

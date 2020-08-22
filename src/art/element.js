@@ -1,4 +1,5 @@
 import primitives from "./primitives";
+import { isPointInRect, isPointInCircle } from "./isPointInside";
 
 const Element = {
   props: null,
@@ -216,6 +217,22 @@ const Element = {
     this.eventHandlers.forEach(({ name, handler }) => {
       canvas.removeEventListener(name, handler);
     });
+  },
+  checkBoundries: function checkBoundries(point) {
+    let isPointInPath;
+
+    switch (this.type) {
+      case "rect":
+        isPointInPath = this.props ? isPointInRect(this.props, point) : false;
+        break;
+      case "arc":
+        isPointInPath = this.props ? isPointInCircle(this.props, point) : false;
+        break;
+      default:
+        return;
+    }
+
+    return isPointInPath;
   },
 };
 

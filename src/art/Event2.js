@@ -1,8 +1,7 @@
-import { isPointInRect, isPointInCircle } from "./isPointInside";
 import { eventQueue } from "./art";
 
 export default class Event {
-  props = null;
+  props = { x: 0, y: 0 };
   click = null;
   mousemove = null;
   mousedown = null;
@@ -10,85 +9,60 @@ export default class Event {
   index = null;
   isIn = false;
   isPreviousMouseIn = false;
+  dragginghandlers = null;
+  draggable = false;
 
-  constructor() {
+  constructor({ checkBoundries }) {
     eventQueue.push(this);
+
+    if (checkBoundries) {
+      this.checkBoundries = (point) => {
+        if (this.draggable) return;
+
+        this.isPreviousMouseIn = this.isIn;
+
+        this.isIn = checkBoundries(point);
+      };
+    }
   }
 
   startDrag(canvas, ctx) {
     if (this.type === "rect") {
-      const mousedown = (e) => {
-        const rect = canvas.getBoundingClientRect();
-        const mouse = { x: e.clientX - rect.left, y: e.clientY - rect.top };
-
-        if (isPointInRect(this.props, mouse)) {
-          this.draggable = true;
-          this.mouse = { ...this.mouse, px: mouse.x, py: mouse.y };
-        }
+      const mousedown = (mouse) => {
+        this.draggable = true;
+        this.mouse = mouse;
       };
       const mouseup = () => (this.draggable = false);
-      const mousemove = (e) => {
-        const rect = canvas.getBoundingClientRect();
-        const mouse = { x: e.clientX - rect.left, y: e.clientY - rect.top };
-
-        if (this.draggable) {
-          const diffx = mouse.x - this.mouse.px;
-          const diffy = mouse.y - this.mouse.py;
-
-          this.mouse = { ...this.mouse, ...mouse };
-
-          this.props.x = this.props.x + diffx;
-          this.props.y = this.props.y + diffy;
-        }
-      };
-
-      canvas.addEventListener("mousedown", mousedown, false);
-      canvas.addEventListener("mouseup", mouseup, false);
-      canvas.addEventListener("mousemove", mousemove, false);
-
-      this.eventHandlers = [
-        { name: "mousedown", handler: mousedown },
-        { name: "mouseup", handler: mouseup },
-        { name: "mousemove", handler: mousemove },
-      ];
-    } else if (this.type === "arc") {
-      const mousedown = (e) => {
-        const rect = canvas.getBoundingClientRect();
-        const mouse = { x: e.clientX - rect.left, y: e.clientY - rect.top };
-        const diffX = mouse.x - this.props.x;
-        const diffY = mouse.y - this.props.y;
-        const dist = Math.sqrt(diffX * diffX + diffY * diffY);
-
-        if (dist <= this.props.radius) {
-          this.draggable = true;
-          this.mouse = mouse;
-        }
-      };
-      const mouseup = () => (this.draggable = false);
-      const mousemove = (e) => {
-        const rect = canvas.getBoundingClientRect();
-        const mouse = { x: e.clientX - rect.left, y: e.clientY - rect.top };
-
+      const mousemove = (mouse) => {
         if (this.draggable) {
           const diffx = mouse.x - this.mouse.x;
           const diffy = mouse.y - this.mouse.y;
 
           this.mouse = mouse;
 
-          this.props.x = this.props.x + diffx;
-          this.props.y = this.props.y + diffy;
+          this.update(diffx, diffy);
         }
       };
 
-      canvas.addEventListener("mousedown", mousedown, false);
-      canvas.addEventListener("mouseup", mouseup, false);
-      canvas.addEventListener("mousemove", mousemove, false);
+      this.dragginghandlers = { mousedown, mousemove, mouseup };
+    } else if (this.type === "arc") {
+      const mousedown = (mouse) => {
+        this.draggable = true;
+        this.mouse = mouse;
+      };
+      const mouseup = () => (this.draggable = false);
+      const mousemove = (mouse) => {
+        if (this.draggable) {
+          const diffx = mouse.x - this.mouse.x;
+          const diffy = mouse.y - this.mouse.y;
 
-      this.eventHandlers = [
-        { name: "mousedown", handler: mousedown },
-        { name: "mouseup", handler: mouseup },
-        { name: "mousemove", handler: mousemove },
-      ];
+          this.mouse = mouse;
+
+          this.update(diffx, diffy);
+        }
+      };
+
+      this.dragginghandlers = { mousedown, mousemove, mouseup };
     } else {
       const mousedown = (e) => {
         const rect = canvas.getBoundingClientRect();
@@ -116,32 +90,10 @@ export default class Event {
         }
       };
 
-      canvas.addEventListener("mousedown", mousedown, false);
-      canvas.addEventListener("mouseup", mouseup, false);
-      canvas.addEventListener("mousemove", mousemove, false);
-
-      this.eventHandlers = [
-        { name: "mousedown", handler: mousedown },
-        { name: "mouseup", handler: mouseup },
-        { name: "mousemove", handler: mousemove },
-      ];
+      this.dragginghandlers = { mousedown, mousemove, mouseup };
     }
   }
   endDrag() {}
-  checkBoundries(mouse) {
-    this.isPreviousMouseIn = this.isIn;
-
-    switch (this.type) {
-      case "rect":
-        this.isIn = isPointInRect(this.props, mouse);
-        break;
-      case "arc":
-        this.isIn = isPointInCircle(this.props, mouse);
-        break;
-      default:
-        return;
-    }
-  }
   onClick(handler) {
     this.click = handler;
   }
@@ -154,5 +106,7 @@ export default class Event {
   onMouseDown(handler) {
     this.mousedown = handler;
   }
-  onMouseUp() {}
+  onMouseUp(handler) {
+    this.mouseup = handler;
+  }
 }

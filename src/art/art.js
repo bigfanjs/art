@@ -14,38 +14,6 @@ export const eventQueue = [];
 export const Context = createContext({});
 
 const createReconciler = (canvas, ctx) => {
-  const handlly = (hando, type, props) => {
-    return (event) => {
-      const rect = canvas.getBoundingClientRect();
-      const mouse = {
-        x: event.clientX - rect.left,
-        y: event.clientY - rect.top,
-      };
-
-      switch (type) {
-        case "arc":
-          const diffX = mouse.x - props.x;
-          const diffY = mouse.y - props.y;
-          const dist = Math.sqrt(diffX * diffX + diffY * diffY);
-
-          if (dist <= props.radius) hando(event);
-          break;
-        case "rect":
-          if (
-            mouse.x >= props.x &&
-            mouse.y >= props.y &&
-            mouse.x < props.x + props.width &&
-            mouse.y < props.y + props.height
-          ) {
-            hando(event);
-          }
-          break;
-        default:
-          return;
-      }
-    };
-  };
-
   const canvas2DConfigs = {
     now: Date.now,
     createInstance: (
@@ -218,17 +186,6 @@ const createReconciler = (canvas, ctx) => {
             return;
         }
 
-        // if (props.onClick || props.drag) {
-        //   element.event = new Event();
-        // }
-
-        // if (props.onClick) {
-        //   const coco = handlly(props.onClick, type, props);
-
-        //   canvas.addEventListener("click", coco, false);
-        //   element.coco = coco;
-        // }
-
         globalIndex = globalIndex + 1;
         element.zIndex = globalIndex;
 
@@ -239,11 +196,16 @@ const createReconciler = (canvas, ctx) => {
           props.onMouseMove ||
           props.onMouseOver ||
           props.onMouseUp ||
-          props.onMouseDown
+          props.onMouseDown ||
+          props.drag
         ) {
-          event = new Event();
+          event = new Event({
+            checkBoundries: element.checkBoundries.bind(element),
+          });
 
-          event.props = props;
+          // Important: we need a reference of elemenet inside the event.
+
+          event.update = element.setPos.bind(element);
           event.type = type;
           event.index = globalIndex;
 
@@ -255,6 +217,7 @@ const createReconciler = (canvas, ctx) => {
           props.onMouseMove && event.onMouseMove(props.onMouseMove);
           props.onMouseDown && event.onMouseDown(props.onMouseDown);
           props.onMouseOver && event.onMouseOver(props.onMouseOver);
+          props.drag && event.startDrag(canvas, ctx);
         }
 
         element.type = type;
@@ -451,11 +414,11 @@ const Art = {
       return mouse;
     }
 
-    function eventMiddleware(mouse, over = false) {
-      !over && eventQueue.forEach((event) => event.checkBoundries(mouse));
+    function eventMiddleware(mouse) {
+      eventQueue.forEach((event) => event.checkBoundries(mouse));
 
       const indexes = eventQueue
-        .filter(({ isIn }) => over || isIn)
+        .filter(({ isIn }) => isIn)
         .map(({ index }) => index);
 
       const events = eventQueue.filter(
@@ -480,6 +443,7 @@ const Art = {
       const mouse = getMouseCoords(e);
 
       eventQueue.forEach((event) => event.checkBoundries(mouse));
+
       const indexes = eventQueue
         .filter(({ isIn }) => isIn)
         .map(({ index }) => index);
@@ -497,7 +461,11 @@ const Art = {
         ({ index }) => index === Math.max(...indexes2)
       );
 
-      events.forEach((event) => event.mousemove && event.mousemove(mouse));
+      events.forEach((event) => {
+        event.mousemove && event.mousemove(mouse);
+        event.dragginghandlers && event.dragginghandlers.mousemove(mouse);
+      });
+
       events2.forEach(({ mouseover, isIn, isPreviousMouseIn }) => {
         isIn !== isPreviousMouseIn && mouseover && mouseover(mouse);
       });
@@ -507,7 +475,20 @@ const Art = {
       const mouse = getMouseCoords(e);
       const events = eventMiddleware(mouse);
 
-      events.forEach((event) => event.mousedown && event.mousedown(mouse));
+      events.forEach((event) => {
+        event.mousedown && event.mousedown(mouse);
+        event.dragginghandlers && event.dragginghandlers.mousedown(mouse);
+      });
+    });
+
+    canvas.addEventListener("mouseup", (e) => {
+      const mouse = getMouseCoords(e);
+      const events = eventMiddleware(mouse);
+
+      // dragging:
+      events.forEach((event) => {
+        event.dragginghandlers && event.dragginghandlers.mouseup(mouse);
+      });
     });
 
     renderLoop();

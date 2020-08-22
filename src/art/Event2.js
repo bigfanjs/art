@@ -100,8 +100,11 @@ export default class Event {
   onMouseMove(handler) {
     this.mousemove = handler;
   }
-  onMouseOver(handler) {
-    this.mouseover = handler;
+  onMouseIn(handler) {
+    this.mousein = handler;
+  }
+  onMouseOut(handler) {
+    this.mouseout = handler;
   }
   onMouseDown(handler) {
     this.mousedown = handler;

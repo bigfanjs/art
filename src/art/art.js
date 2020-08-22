@@ -194,7 +194,8 @@ const createReconciler = (canvas, ctx) => {
         if (
           props.onClick ||
           props.onMouseMove ||
-          props.onMouseOver ||
+          props.onMouseIn ||
+          props.onMouseOut ||
           props.onMouseUp ||
           props.onMouseDown ||
           props.drag
@@ -202,8 +203,6 @@ const createReconciler = (canvas, ctx) => {
           event = new Event({
             checkBoundries: element.checkBoundries.bind(element),
           });
-
-          // Important: we need a reference of elemenet inside the event.
 
           event.update = element.setPos.bind(element);
           event.type = type;
@@ -216,15 +215,14 @@ const createReconciler = (canvas, ctx) => {
           props.onClick && event.onClick(props.onClick);
           props.onMouseMove && event.onMouseMove(props.onMouseMove);
           props.onMouseDown && event.onMouseDown(props.onMouseDown);
-          props.onMouseOver && event.onMouseOver(props.onMouseOver);
+          props.onMouseIn && event.onMouseIn(props.onMouseIn);
+          props.onMouseOut && event.onMouseOut(props.onMouseOut);
           props.drag && event.startDrag(canvas, ctx);
         }
 
         element.type = type;
         element.update = props.update;
         element.transform = props.transform;
-
-        // if (props.drag) element.makeDrag(canvas, ctx);
 
         return element;
       }
@@ -268,8 +266,12 @@ const createReconciler = (canvas, ctx) => {
         payload = { ...payload, onMouseDown: newProps.onMouseDown };
       }
 
-      if (oldProps.onMouseOver !== newProps.onMouseOver) {
-        payload = { ...payload, onMouseOver: newProps.onMouseOver };
+      if (oldProps.onMouseIn !== newProps.onMouseIn) {
+        payload = { ...payload, onMouseIn: newProps.onMouseIn };
+      }
+
+      if (oldProps.onMouseOut !== newProps.onMouseOut) {
+        payload = { ...payload, onMouseOut: newProps.onMouseOut };
       }
 
       if (oldProps.text !== newProps.text) {
@@ -293,8 +295,10 @@ const createReconciler = (canvas, ctx) => {
         instance.event.onMouseMove(updatePayload.onMouseMove);
       if (updatePayload.onMouseDown)
         instance.event.onMouseDown(updatePayload.onMouseDown);
-      if (updatePayload.onMouseOver)
-        instance.event.onMouseOver(updatePayload.onMouseOver);
+      if (updatePayload.onMouseIn)
+        instance.event.onMouseIn(updatePayload.onMouseIn);
+      if (updatePayload.onMouseOut)
+        instance.event.onMouseOut(updatePayload.onMouseOut);
       if (updatePayload.text) instance.props.text = updatePayload.text;
     },
     getRootHostContext: () => {},
@@ -440,6 +444,9 @@ const Art = {
     );
 
     canvas.addEventListener("mousemove", (e) => {
+      // const mouse = getMouseCoords(e);
+      // const events = eventMiddleware(mouse);
+
       const mouse = getMouseCoords(e);
 
       eventQueue.forEach((event) => event.checkBoundries(mouse));
@@ -452,22 +459,27 @@ const Art = {
         ({ index }) => index === Math.max(...indexes)
       );
 
-      // over area:
+      // mouse out area:
       const indexes2 = eventQueue
-        .filter(({ isIn, isPreviousMouseIn }) => isIn || isPreviousMouseIn)
+        .filter(({ isPreviousMouseIn }) => isPreviousMouseIn)
         .map(({ index }) => index);
 
       const events2 = eventQueue.filter(
         ({ index }) => index === Math.max(...indexes2)
       );
+      //
 
       events.forEach((event) => {
         event.mousemove && event.mousemove(mouse);
         event.dragginghandlers && event.dragginghandlers.mousemove(mouse);
       });
 
-      events2.forEach(({ mouseover, isIn, isPreviousMouseIn }) => {
-        isIn !== isPreviousMouseIn && mouseover && mouseover(mouse);
+      events.forEach(({ mousein, isIn, isPreviousMouseIn }) => {
+        isIn !== isPreviousMouseIn && mousein && mousein(mouse);
+      });
+
+      events2.forEach(({ mouseout, isIn, isPreviousMouseIn }) => {
+        isIn !== isPreviousMouseIn && mouseout && mouseout(mouse);
       });
     });
 

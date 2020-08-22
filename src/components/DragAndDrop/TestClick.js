@@ -29,8 +29,9 @@ export default function DragAndDrop() {
         y={height / 2 - 50}
         radius={50}
         color={circlerColor}
-        onClick={handleCircleClick}
-        onMouseOver={handleCircleClick}
+        // onClick={handleCircleClick}
+        onMouseIn={handleCircleClick}
+        onMouseOut={handleCircleClick}
         drag
       />
       <rect
@@ -41,7 +42,8 @@ export default function DragAndDrop() {
         // color={`hsl(${cords.x * 360}, ${cords.y * 100}%, 60%)`}
         color={rectColor}
         // onClick={handleRectClick}
-        onMouseOver={handleRectClick}
+        onMouseIn={handleRectClick}
+        onMouseOut={handleRectClick}
         // onMouseMove={handleMouseMove}
         drag
       />

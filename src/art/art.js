@@ -444,30 +444,25 @@ const Art = {
     );
 
     canvas.addEventListener("mousemove", (e) => {
-      // const mouse = getMouseCoords(e);
-      // const events = eventMiddleware(mouse);
-
       const mouse = getMouseCoords(e);
 
-      eventQueue.forEach((event) => event.checkBoundries(mouse));
+      eventQueue.forEach((event) => {
+        event.checkBoundries(mouse);
+      });
 
       const indexes = eventQueue
         .filter(({ isIn }) => isIn)
         .map(({ index }) => index);
 
-      const events = eventQueue.filter(
-        ({ index }) => index === Math.max(...indexes)
-      );
+      eventQueue.forEach((eve) => {
+        if (eve.index === Math.max(...indexes)) eve.isIn = true;
+        else eve.isIn = false;
+      });
 
-      // mouse out area:
-      const indexes2 = eventQueue
-        .filter(({ isPreviousMouseIn }) => isPreviousMouseIn)
-        .map(({ index }) => index);
-
+      const events = eventQueue.filter(({ isIn }) => isIn);
       const events2 = eventQueue.filter(
-        ({ index }) => index === Math.max(...indexes2)
+        ({ isPreviousMouseIn }) => isPreviousMouseIn
       );
-      //
 
       events.forEach((event) => {
         event.mousemove && event.mousemove(mouse);

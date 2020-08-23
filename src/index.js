@@ -1,20 +1,21 @@
 import React from "react";
-// import ReactDOM from "react-dom";
-// import Art from "./canvas-renderer";
 import Art from "./art/art";
 import "./index.css";
-// import App from "./App";
-import SolarSystem from "./SolarSystem";
-// import App from "./DOMApp";
+// import SolarSystem from "./SolarSystem";
+// import SpiderWeb from "./components/SpiderWeb/Web";
+import DragAndDrop from "./components/DragAndDrop/TestClick";
 import * as serviceWorker from "./serviceWorker";
 
-// ReactDOM.render(
-//   <React.StrictMode>
-//     <App />
-//   </React.StrictMode>,
-//   document.getElementById("root")
+// spider web
+// Art.render(
+//   <SpiderWeb resolution={14} depth={6} />,
+//   document.getElementById("canvas")
 // );
 
-Art.render(<SolarSystem />, document.getElementById("canvas"));
+// solar system
+// Art.render(<SolarSystem />, document.getElementById("canvas"));
+
+// drag and drop
+Art.render(<DragAndDrop />, document.getElementById("canvas"));
 
 serviceWorker.unregister();

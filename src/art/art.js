@@ -1,16 +1,19 @@
-import ReactReconciler from "react-reconciler";
 import React, { createContext } from "react";
+import ReactReconciler from "react-reconciler";
 
 import Group from "./group";
 import Element from "./element";
+import Event from "./Event2";
+
+let globalIndex = 0;
 
 export const drawQueue = [];
 export const updateQueue = [];
-export const clickHandlerQueue = [];
+export const eventQueue = [];
 
 export const Context = createContext({});
 
-const createReconciler = (ctx) => {
+const createReconciler = (canvas, ctx) => {
   const canvas2DConfigs = {
     now: Date.now,
     createInstance: (
@@ -61,6 +64,12 @@ const createReconciler = (ctx) => {
                 enumerable: true,
                 writable: true,
               },
+              isPath: {
+                value: false,
+                configurable: true,
+                enumerable: true,
+                writable: true,
+              },
             });
             break;
           case "arc":
@@ -75,6 +84,12 @@ const createReconciler = (ctx) => {
                   color: props.color,
                   isCounterclockwise: props.isCounterclockwise,
                 },
+                configurable: true,
+                enumerable: true,
+                writable: true,
+              },
+              isPath: {
+                value: false,
                 configurable: true,
                 enumerable: true,
                 writable: true,
@@ -94,10 +109,115 @@ const createReconciler = (ctx) => {
                 enumerable: true,
                 writable: true,
               },
+              isPath: {
+                value: true,
+                configurable: true,
+                enumerable: true,
+                writable: true,
+              },
+            });
+            break;
+          case "line":
+            element = Object.create(Element, {
+              props: {
+                value: {
+                  x1: props.x1,
+                  y1: props.y1,
+                  x2: props.x2,
+                  y2: props.y2,
+                  color: props.color,
+                },
+                configurable: true,
+                enumerable: true,
+                writable: true,
+              },
+              isPath: {
+                value: true,
+                configurable: true,
+                enumerable: true,
+                writable: true,
+              },
+            });
+            // console.log({ update: props.update });
+            break;
+          case "polygon":
+            element = Object.create(Element, {
+              props: {
+                value: {
+                  points: props.points,
+                  color: props.color,
+                },
+                configurable: true,
+                enumerable: true,
+                writable: true,
+              },
+              isPath: {
+                value: true,
+                configurable: true,
+                enumerable: true,
+                writable: true,
+              },
+            });
+            break;
+          case "text":
+            element = Object.create(Element, {
+              props: {
+                value: {
+                  x: props.x,
+                  y: props.y,
+                  text: props.text,
+                  size: props.size,
+                  fontFamily: props.fontFamily,
+                  color: props.color,
+                },
+                configurable: true,
+                enumerable: true,
+                writable: true,
+              },
+              isPath: {
+                value: false,
+                configurable: true,
+                enumerable: true,
+                writable: true,
+              },
             });
             break;
           default:
             return;
+        }
+
+        globalIndex = globalIndex + 1;
+        element.zIndex = globalIndex;
+
+        let event = null;
+
+        if (
+          props.onClick ||
+          props.onMouseMove ||
+          props.onMouseIn ||
+          props.onMouseOut ||
+          props.onMouseUp ||
+          props.onMouseDown ||
+          props.drag
+        ) {
+          event = new Event({
+            checkBoundries: element.checkBoundries.bind(element),
+          });
+
+          event.update = element.setPos.bind(element);
+          event.type = type;
+          event.index = globalIndex;
+
+          element.event = event;
+        }
+
+        if (event) {
+          props.onClick && event.onClick(props.onClick);
+          props.onMouseMove && event.onMouseMove(props.onMouseMove);
+          props.onMouseDown && event.onMouseDown(props.onMouseDown);
+          props.onMouseIn && event.onMouseIn(props.onMouseIn);
+          props.onMouseOut && event.onMouseOut(props.onMouseOut);
+          props.drag && event.startDrag(canvas, ctx);
         }
 
         element.type = type;
@@ -112,13 +232,50 @@ const createReconciler = (ctx) => {
     appendInitialChild: (group, child) => group.add(child),
     createTextInstance: () => {},
     removeChildFromContainer: () => {},
+    removeChild: (parent, child) => {
+      if (child.coco && child.props.onClick) {
+        canvas.removeEventListener("click", child.coco, false);
+      }
+
+      parent.followers = parent.followers.filter(
+        (follower) => follower !== child
+      );
+
+      child.endDrag(canvas);
+    },
+    appendChild: (parent, child) => {
+      parent.followers = [...parent.followers, child];
+    },
     prepareUpdate: (instance, type, oldProps, newProps) => {
       let payload;
 
-      if (oldProps.x !== newProps.x) payload = { x: newProps.x };
+      if (oldProps.x !== newProps.x) payload = { ...payload, x: newProps.x };
 
-      if (oldProps.color !== newProps.color) {
-        payload = { color: newProps.color };
+      if (oldProps.color !== newProps.color)
+        payload = { ...payload, color: newProps.color };
+
+      if (oldProps.onClick !== newProps.onClick) {
+        payload = { ...payload, onClick: newProps.onClick };
+      }
+
+      if (oldProps.onMouseMove !== newProps.onMouseMove) {
+        payload = { ...payload, onMouseMove: newProps.onMouseMove };
+      }
+
+      if (oldProps.onMouseDown !== newProps.onMouseDown) {
+        payload = { ...payload, onMouseDown: newProps.onMouseDown };
+      }
+
+      if (oldProps.onMouseIn !== newProps.onMouseIn) {
+        payload = { ...payload, onMouseIn: newProps.onMouseIn };
+      }
+
+      if (oldProps.onMouseOut !== newProps.onMouseOut) {
+        payload = { ...payload, onMouseOut: newProps.onMouseOut };
+      }
+
+      if (oldProps.text !== newProps.text) {
+        payload = { ...payload, text: newProps.text };
       }
 
       return payload;
@@ -131,12 +288,18 @@ const createReconciler = (ctx) => {
       newProps,
       finishWork
     ) => {
-      if (updatePayload.x) {
-        instance.setPos(updatePayload.x, 0);
-      }
-      if (updatePayload.color) {
-        instance.props.color = updatePayload.color;
-      }
+      if (updatePayload.x) instance.setPos(updatePayload.x, 0);
+      if (updatePayload.color) instance.props.color = updatePayload.color;
+      if (updatePayload.onClick) instance.event.onClick(updatePayload.onClick);
+      if (updatePayload.onMouseMove)
+        instance.event.onMouseMove(updatePayload.onMouseMove);
+      if (updatePayload.onMouseDown)
+        instance.event.onMouseDown(updatePayload.onMouseDown);
+      if (updatePayload.onMouseIn)
+        instance.event.onMouseIn(updatePayload.onMouseIn);
+      if (updatePayload.onMouseOut)
+        instance.event.onMouseOut(updatePayload.onMouseOut);
+      if (updatePayload.text) instance.props.text = updatePayload.text;
     },
     getRootHostContext: () => {},
     resetAfterCommit: () => {},
@@ -155,11 +318,11 @@ const createReconciler = (ctx) => {
 const Art = {
   render: (element, canvas) => {
     const ctx = canvas.getContext("2d");
-    const reconciler = createReconciler(ctx);
+    const reconciler = createReconciler(canvas, ctx);
     const container = reconciler.createContainer(canvas, false, false);
     const Provider = React.createElement(
       Context.Provider,
-      { value: { width: canvas.width, height: canvas.height, ctx } },
+      { value: { canvas, width: canvas.width, height: canvas.height, ctx } },
       element
     );
 
@@ -248,11 +411,94 @@ const Art = {
       window.requestAnimationFrame(renderLoop);
     }
 
-    renderLoop();
+    function getMouseCoords(e) {
+      const rect = canvas.getBoundingClientRect();
+      const mouse = { x: e.clientX - rect.left, y: e.clientY - rect.top };
 
-    canvas.addEventListener("click", () => {
-      clickHandlerQueue.forEach((handler) => handler());
+      return mouse;
+    }
+
+    function eventMiddleware(mouse) {
+      eventQueue.forEach((event) => event.checkBoundries(mouse));
+
+      const indexes = eventQueue
+        .filter(({ isIn }) => isIn)
+        .map(({ index }) => index);
+
+      const events = eventQueue.filter(
+        ({ index }) => index === Math.max(...indexes)
+      );
+
+      return events;
+    }
+
+    canvas.addEventListener(
+      "click",
+      (e) => {
+        const mouse = getMouseCoords(e);
+        const events = eventMiddleware(mouse);
+
+        events.forEach((event) => event.click && event.click());
+      },
+      false
+    );
+
+    canvas.addEventListener("mousemove", (e) => {
+      const mouse = getMouseCoords(e);
+
+      eventQueue.forEach((event) => {
+        event.checkBoundries(mouse);
+      });
+
+      const indexes = eventQueue
+        .filter(({ isIn }) => isIn)
+        .map(({ index }) => index);
+
+      eventQueue.forEach((eve) => {
+        if (eve.index === Math.max(...indexes)) eve.isIn = true;
+        else eve.isIn = false;
+      });
+
+      const events = eventQueue.filter(({ isIn }) => isIn);
+      const events2 = eventQueue.filter(
+        ({ isPreviousMouseIn }) => isPreviousMouseIn
+      );
+
+      events.forEach((event) => {
+        event.mousemove && event.mousemove(mouse);
+        event.dragginghandlers && event.dragginghandlers.mousemove(mouse);
+      });
+
+      events.forEach(({ mousein, isIn, isPreviousMouseIn }) => {
+        isIn !== isPreviousMouseIn && mousein && mousein(mouse);
+      });
+
+      events2.forEach(({ mouseout, isIn, isPreviousMouseIn }) => {
+        isIn !== isPreviousMouseIn && mouseout && mouseout(mouse);
+      });
     });
+
+    canvas.addEventListener("mousedown", (e) => {
+      const mouse = getMouseCoords(e);
+      const events = eventMiddleware(mouse);
+
+      events.forEach((event) => {
+        event.mousedown && event.mousedown(mouse);
+        event.dragginghandlers && event.dragginghandlers.mousedown(mouse);
+      });
+    });
+
+    canvas.addEventListener("mouseup", (e) => {
+      const mouse = getMouseCoords(e);
+      const events = eventMiddleware(mouse);
+
+      // dragging:
+      events.forEach((event) => {
+        event.dragginghandlers && event.dragginghandlers.mouseup(mouse);
+      });
+    });
+
+    renderLoop();
   },
 };
 

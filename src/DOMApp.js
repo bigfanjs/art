@@ -17,9 +17,11 @@ function App() {
 
   console.log({ props });
 
-  return (
-    <animated.div style={props} id="x" className="dd" onClick={handleClick} />
-  );
+  // return (
+  //   <animated.div style={props} id="x" className="dd" onClick={handleClick} />
+  // );
+
+  return <div>{Array.from(Array(10)).map((_, i) => i && <div />)}</div>;
 }
 
 export default App;

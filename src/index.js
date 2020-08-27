@@ -2,7 +2,7 @@ import React from "react";
 import Art from "./art/art";
 import "./index.css";
 // import SolarSystem from "./SolarSystem";
-// import SpiderWeb from "./components/SpiderWeb/Web";
+// import SpiderWeb from "./components/SpiderWeb/web";
 import DragAndDrop from "./components/DragAndDrop/TestClick";
 import * as serviceWorker from "./serviceWorker";
 

@@ -65,7 +65,7 @@ const createReconciler = (canvas, ctx) => {
                 writable: true,
               },
               isPath: {
-                value: false,
+                value: true,
                 configurable: true,
                 enumerable: true,
                 writable: true,
@@ -89,7 +89,7 @@ const createReconciler = (canvas, ctx) => {
                 writable: true,
               },
               isPath: {
-                value: false,
+                value: true,
                 configurable: true,
                 enumerable: true,
                 writable: true,
@@ -138,7 +138,6 @@ const createReconciler = (canvas, ctx) => {
                 writable: true,
               },
             });
-            // console.log({ update: props.update });
             break;
           case "polygon":
             element = Object.create(Element, {
@@ -146,6 +145,7 @@ const createReconciler = (canvas, ctx) => {
                 value: {
                   points: props.points,
                   color: props.color,
+                  stroke: props.stroke,
                 },
                 configurable: true,
                 enumerable: true,
@@ -169,6 +169,7 @@ const createReconciler = (canvas, ctx) => {
                   size: props.size,
                   fontFamily: props.fontFamily,
                   color: props.color,
+                  baseLine: props.baseLine || "alphabetic",
                 },
                 configurable: true,
                 enumerable: true,
@@ -181,6 +182,52 @@ const createReconciler = (canvas, ctx) => {
                 writable: true,
               },
             });
+            break;
+          case "img":
+            const image = new Image();
+
+            image.src = props.src;
+
+            element = Object.create(Element, {
+              props: {
+                value: {
+                  src: props.src,
+                  x: props.x,
+                  y: props.y,
+                  width: props.width,
+                  height: props.height,
+                  dx: props.dx,
+                  dy: props.dy,
+                  dw: props.dw,
+                  dh: props.dh,
+                },
+                configurable: true,
+                enumerable: true,
+                writable: true,
+              },
+              isPath: {
+                value: false,
+                configurable: true,
+                enumerable: true,
+                writable: true,
+              },
+              image: {
+                value: image,
+                configurable: true,
+                enumerable: true,
+                writable: true,
+              },
+              isLoaded: {
+                value: false,
+                configurable: true,
+                enumerable: true,
+                writable: true,
+              },
+            });
+
+            image.onload = function () {
+              element.isLoaded = true;
+            };
             break;
           default:
             return;
@@ -419,7 +466,7 @@ const Art = {
     }
 
     function eventMiddleware(mouse) {
-      eventQueue.forEach((event) => event.checkBoundries(mouse));
+      eventQueue.forEach((event) => event.checkBoundries(mouse, ctx));
 
       const indexes = eventQueue
         .filter(({ isIn }) => isIn)
@@ -432,23 +479,17 @@ const Art = {
       return events;
     }
 
-    canvas.addEventListener(
-      "click",
-      (e) => {
-        const mouse = getMouseCoords(e);
-        const events = eventMiddleware(mouse);
+    canvas.addEventListener("click", (e) => {
+      const mouse = getMouseCoords(e);
+      const events = eventMiddleware(mouse);
 
-        events.forEach((event) => event.click && event.click());
-      },
-      false
-    );
+      events.forEach((event) => event.click && event.click());
+    });
 
     canvas.addEventListener("mousemove", (e) => {
       const mouse = getMouseCoords(e);
 
-      eventQueue.forEach((event) => {
-        event.checkBoundries(mouse);
-      });
+      eventQueue.forEach((event) => event.checkBoundries(mouse, ctx));
 
       const indexes = eventQueue
         .filter(({ isIn }) => isIn)

@@ -251,9 +251,11 @@ const createReconciler = (canvas, ctx) => {
             checkBoundries: element.checkBoundries.bind(element),
           });
 
+          // TODO: I don't like this, do something better please:
           event.update = element.setPos.bind(element);
           event.type = type;
           event.index = globalIndex;
+          event.element = element;
 
           element.event = event;
         }
@@ -441,6 +443,8 @@ const Art = {
             });
           }
 
+          elem.order();
+
           // draw elements
           elem.followers.forEach((child) => {
             draw(elem.attach(child));
@@ -458,6 +462,8 @@ const Art = {
       window.requestAnimationFrame(renderLoop);
     }
 
+    // EVENT SYSTEM: (the ugliest code I've ever wrote)
+    // TODO: re-design the event system.
     function getMouseCoords(e) {
       const rect = canvas.getBoundingClientRect();
       const mouse = { x: e.clientX - rect.left, y: e.clientY - rect.top };
@@ -465,8 +471,10 @@ const Art = {
       return mouse;
     }
 
-    function eventMiddleware(mouse) {
-      eventQueue.forEach((event) => event.checkBoundries(mouse, ctx));
+    function eventMiddleware(mouse, name) {
+      eventQueue.forEach(
+        (event) => name && event[name] && event.checkBoundries(mouse, ctx)
+      );
 
       const indexes = eventQueue
         .filter(({ isIn }) => isIn)
@@ -481,7 +489,7 @@ const Art = {
 
     canvas.addEventListener("click", (e) => {
       const mouse = getMouseCoords(e);
-      const events = eventMiddleware(mouse);
+      const events = eventMiddleware(mouse, "click");
 
       events.forEach((event) => event.click && event.click());
     });
@@ -496,6 +504,8 @@ const Art = {
         .map(({ index }) => index);
 
       eventQueue.forEach((eve) => {
+        if (eve.draggable) return;
+
         if (eve.index === Math.max(...indexes)) eve.isIn = true;
         else eve.isIn = false;
       });
@@ -521,19 +531,38 @@ const Art = {
 
     canvas.addEventListener("mousedown", (e) => {
       const mouse = getMouseCoords(e);
-      const events = eventMiddleware(mouse);
+      const events = eventMiddleware(mouse, "mousedown");
 
       events.forEach((event) => {
         event.mousedown && event.mousedown(mouse);
         event.dragginghandlers && event.dragginghandlers.mousedown(mouse);
       });
+
+      const inIndexes = eventQueue
+        .filter(({ isIn }) => isIn)
+        .map(({ index }) => index);
+      const allIndexes = eventQueue.map(({ index }) => index);
+      const inBigget = Math.max(...inIndexes);
+      const allBigget = Math.max(...allIndexes);
+
+      eventQueue.forEach((eve) => {
+        // change indexes:
+
+        if (eve.index === inBigget && eve.index < allBigget) {
+          eve.element.zIndex = allBigget;
+          eve.index = allBigget;
+        } else if (eve.index > inBigget) {
+          eve.element.zIndex = eve.element.zIndex - 1;
+          eve.index = eve.index - 1;
+        }
+      });
     });
 
     canvas.addEventListener("mouseup", (e) => {
       const mouse = getMouseCoords(e);
-      const events = eventMiddleware(mouse);
+      const events = eventMiddleware(mouse, "mouseup");
 
-      // dragging:
+      //dragging:
       events.forEach((event) => {
         event.dragginghandlers && event.dragginghandlers.mouseup(mouse);
       });

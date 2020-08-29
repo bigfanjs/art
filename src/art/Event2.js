@@ -25,6 +25,7 @@ export default class Event {
       };
     }
   }
+
   startDrag() {
     const mousedown = (mouse) => {
       this.draggable = true;

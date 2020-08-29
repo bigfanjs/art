@@ -18,7 +18,6 @@ const Group = {
     this.y = this.y + group.y;
   },
   add: function add(child) {
-    // console.log("time");
     this.followers.push(child);
   },
   attach: function (child) {
@@ -44,6 +43,11 @@ const Group = {
     ctx.moveTo(this.x, this.y);
     ctx.lineTo(this.x, this.y + this.hint);
     ctx.stroke();
+  },
+  order: function () {
+    this.followers.sort(function (a, b) {
+      return a.zIndex - b.zIndex;
+    });
   },
 };
 

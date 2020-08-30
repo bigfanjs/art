@@ -93,21 +93,21 @@ const Element = {
   },
   setPos: function setPos(x, y) {
     if (this.type === "polygon") {
-      const array = this.props.points.split(" ").map((point) => {
-        const [xx, yy] = point.split(",");
+      this.props.points =
+        this.props.points &&
+        this.props.points
+          .split(" ")
+          .map((point) => {
+            const [xx, yy] = point.split(",");
 
-        return { x: parseFloat(xx) + x, y: parseFloat(yy) + y };
-      });
-
-      this.props.points = array.reduce((sum, { x, y }) => {
-        return `${sum} ${x},${y}`;
-      }, "");
+            return { x: parseFloat(xx) + x, y: parseFloat(yy) + y };
+          })
+          .reduce((sum, { x, y }) => `${sum} ${x},${y}`, "")
+          .trim();
     } else {
       this.props.x = this.props.x + x;
       this.props.y = this.props.y + y;
     }
-
-    // console.log({ newPoints: this.props.points });
 
     return this;
   },

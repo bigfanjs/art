@@ -12,10 +12,11 @@ export default class Event {
   dragginghandlers = null;
   draggable = false;
 
-  constructor({ checkBoundries, name }) {
+  constructor({ checkBoundries, name, absolute = false }) {
     eventQueue.push(this);
 
     this.eventName = name;
+    this.absolute = absolute;
 
     if (checkBoundries) {
       this.checkBoundries = (point, ctx) => {

@@ -344,14 +344,19 @@ const createReconciler = (canvas, ctx) => {
       const event = instance.event;
 
       if (updatePayload.onClick) event.schedule("click", updatePayload.onClick);
+
       if (updatePayload.onMouseMove)
         event.schedule("mousemove", updatePayload.onMouseMove);
+
       if (updatePayload.onMouseDown)
         event.schedule("mousedown", updatePayload.onMouseDown);
+
       if (updatePayload.onMouseIn)
         event.schedule("mousein", updatePayload.onMouseIn);
+
       if (updatePayload.onMouseOut)
         event.schedule("mouseout", updatePayload.onMouseOut);
+
       if (updatePayload.text) instance.props.text = updatePayload.text;
     },
     getRootHostContext: () => {},
@@ -506,7 +511,10 @@ const Art = {
       const mouse = getMouseCoords(e);
 
       eventQueue.forEach(
-        (event) => event.checkBoundries && event.checkBoundries(mouse, ctx)
+        ({ mousemove, checkBoundries, absolute }) => {
+          if (checkBoundries) checkBoundries(mouse, ctx);
+          else if (absolute && mousemove) mousemove(mouse) 
+        }
       );
 
       const indexes = eventQueue
@@ -521,19 +529,19 @@ const Art = {
       });
 
       const events = eventQueue.filter(({ isIn }) => isIn);
-      const events2 = eventQueue.filter(
-        ({ isPreviousMouseIn }) => isPreviousMouseIn
-      );
+      const events2 = eventQueue.filter(({ isPreviousMouseIn }) => isPreviousMouseIn);
 
       events.forEach((event) => {
         event.mousemove && event.mousemove(mouse);
         event.dragginghandlers && event.dragginghandlers.mousemove(mouse);
       });
 
+      // mouse in event
       events.forEach(({ mousein, isIn, isPreviousMouseIn }) => {
         isIn !== isPreviousMouseIn && mousein && mousein(mouse);
       });
 
+      // mouse out event:
       events2.forEach(({ mouseout, isIn, isPreviousMouseIn }) => {
         isIn !== isPreviousMouseIn && mouseout && mouseout(mouse);
       });
@@ -558,12 +566,14 @@ const Art = {
       eventQueue.forEach((eve) => {
         // change indexes:
 
-        if (!eve.draggable) return;
+        //What is this even for?
+        // if (!eve.draggable) return;
 
         if (eve.index === inBigget && eve.index < allBigget) {
           eve.element.zIndex = allBigget;
           eve.index = allBigget;
         } else if (eve.index > inBigget) {
+          // this condition might be a bug
           eve.element.zIndex = eve.element.zIndex - 1;
           eve.index = eve.index - 1;
         }

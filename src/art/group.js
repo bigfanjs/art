@@ -45,9 +45,11 @@ const Group = {
     ctx.stroke();
   },
   order: function () {
-    this.followers.sort(function (a, b) {
-      return a.zIndex - b.zIndex;
-    });
+    // console.log(this.followers);
+
+    this.followers
+      .sort((a, b) => a.zIndex - b.zIndex)
+      .sort((a, b) => a.event.selected - b.event.selected);
   },
 };
 

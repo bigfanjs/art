@@ -5,7 +5,7 @@ import Event from "./Event-mixed";
 export default function useEvent(name) {
   const ref = useRef();
 
-  if (ref.current === undefined) ref.current = new Event({name, absolute: true});
+  if (ref.current === undefined) ref.current = new Event({absolute: true});
   const eventHandler = (mouse) => ref.current.props = mouse;
 
   useEffect(() => {

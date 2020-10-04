@@ -11,11 +11,11 @@ export default class Event {
   isPreviousMouseIn = false;
   dragginghandlers = null;
   draggable = false;
+  selected = false
 
-  constructor({ checkBoundries, name, absolute = false }) {
+  constructor({ checkBoundries, absolute = false }) {
     eventQueue.push(this);
 
-    this.eventName = name;
     this.absolute = absolute;
 
     if (checkBoundries) {

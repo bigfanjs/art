@@ -37,7 +37,8 @@ export default function DragAndDrop() {
         // onClick={handleCircleClick}
         onMouseIn={handleCircleClick}
         onMouseOut={handleCircleClick}
-        drag
+        select={true}
+        // drag
       />
       <rect
         x={width / 2 - 50}
@@ -49,26 +50,28 @@ export default function DragAndDrop() {
         // onClick={handleRectClick}
         onMouseIn={handleRectClick}
         onMouseOut={handleRectClick}
+        select={true}
         // onMouseMove={handleMouseMove}
-        drag
+        // drag
       />
       <hexagon
-        x={width / 2 - 50}
+        x={width / 2.2 - 50}
         y={height / 2 - 50}
         color={hexColor}
         radius={50}
         onMouseIn={handleHexClick}
         onMouseOut={handleHexClick}
-        drag
+        select={true}
+        // drag
       />
-      <text
+      {/* <text
         x={20}
         y={50}
         text="BEAST ADEL"
         size={40}
         color="green"
         baseLine="middle"
-        drag
+        // drag
       />
       <text
         x={300}
@@ -77,17 +80,17 @@ export default function DragAndDrop() {
         size={20}
         color="gray"
         baseLine="middle"
-        drag
+        // drag
       />
-      <polygon points="20,50 100,100 20,100 20,50" color="yellow" stroke drag />
+      <polygon points="20,50 100,100 20,100 20,50" color="yellow" stroke />
       <img
         src="https://drscdn.500px.org/photo/78655895/m%3D900/ff907b64c70732ae8a730f04ba157655"
         x={550}
         y={100}
         width={300}
         height={200}
-        drag
-      />
+        // drag
+      /> */}
     </group>
   );
 }

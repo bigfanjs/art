@@ -559,23 +559,14 @@ const Art = {
       const inIndexes = eventQueue
         .filter(({ isIn }) => isIn)
         .map(({ index }) => index);
-      const allIndexes = eventQueue.map(({ index }) => index);
+
       const inBigget = Math.max(...inIndexes);
-      const allBigget = Math.max(...allIndexes);
 
       eventQueue.forEach((eve) => {
-        // change indexes:
-
-        //What is this even for?
-        // if (!eve.draggable) return;
-
-        if (eve.index === inBigget && eve.index < allBigget) {
-          eve.element.zIndex = allBigget;
-          eve.index = allBigget;
-        } else if (eve.index > inBigget) {
-          // this condition might be a bug
-          eve.element.zIndex = eve.element.zIndex - 1;
-          eve.index = eve.index - 1;
+        if (eve.index === inBigget && !eve.selected) {
+          eve.selected = true;
+        } else if (eve.selected && eve.index !== inBigget) {
+          eve.selected = false;
         }
       });
     });

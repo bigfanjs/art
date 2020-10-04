@@ -19,6 +19,8 @@ export default function useCreateSpiderWeb({ depth, resolution, event }) {
         // pin points
         const pin = j >= depth ? { pinx: x, piny: y } : {};
 
+        // console.log(event.props);
+
         // create a new instance
         const anime = controls.create({ x, y, px: x, py: y, ...pin }, event);
         const attached = controls.attached;

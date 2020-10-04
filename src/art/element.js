@@ -89,6 +89,14 @@ const Element = {
       this.isLoaded
     );
 
+    if (this.event.selected) {
+      ctx.beginPath();
+      ctx.strokeStyle = "red";
+      ctx.moveTo(this.props.x, this.props.y);
+      ctx.lineTo(this.props.x + 100, this.props.y);
+      ctx.stroke();
+    }
+
     if (shouldrestore) ctx.restore();
   },
   setPos: function setPos(x, y) {

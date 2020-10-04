@@ -19,7 +19,11 @@
     "eject": "react-scripts eject"
   },
   "eslintConfig": {
-    "extends": "react-app"
+    "extends": "react-app",
+    "rules": {
+      "additional-rule": "warn",
+      "jsx-a11y/alt-text": 0
+    }
   },
   "browserslist": {
     "production": [

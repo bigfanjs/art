@@ -3,7 +3,7 @@ import ReactReconciler from "react-reconciler";
 
 import Group from "./group";
 import Element from "./element";
-import Event from "./Event2";
+import Event from "./Event-mixed";
 
 let globalIndex = 0;
 
@@ -255,17 +255,17 @@ const createReconciler = (canvas, ctx) => {
           event.update = element.setPos.bind(element);
           event.type = type;
           event.index = globalIndex;
-          event.element = element;
+          event.element = element; // circular dependency 🤮🤮🤮🤮🤮🤮🤮🤮
 
           element.event = event;
         }
 
         if (event) {
-          props.onClick && event.onClick(props.onClick);
-          props.onMouseMove && event.onMouseMove(props.onMouseMove);
-          props.onMouseDown && event.onMouseDown(props.onMouseDown);
-          props.onMouseIn && event.onMouseIn(props.onMouseIn);
-          props.onMouseOut && event.onMouseOut(props.onMouseOut);
+          props.onClick && event.schedule("click", props.onClick);
+          props.onMouseMove && event.schedule("mousemove", props.onMouseMove);
+          props.onMouseDown && event.schedule("mousedown", props.onMouseDown);
+          props.onMouseIn && event.schedule("mousein", props.onMouseIn);
+          props.onMouseOut && event.schedule("mouseout", props.onMouseOut);
           props.drag && event.startDrag(canvas, ctx);
         }
 
@@ -339,15 +339,24 @@ const createReconciler = (canvas, ctx) => {
     ) => {
       if (updatePayload.x) instance.setPos(updatePayload.x, 0);
       if (updatePayload.color) instance.props.color = updatePayload.color;
-      if (updatePayload.onClick) instance.event.onClick(updatePayload.onClick);
+
+      // events:
+      const event = instance.event;
+
+      if (updatePayload.onClick) event.schedule("click", updatePayload.onClick);
+
       if (updatePayload.onMouseMove)
-        instance.event.onMouseMove(updatePayload.onMouseMove);
+        event.schedule("mousemove", updatePayload.onMouseMove);
+
       if (updatePayload.onMouseDown)
-        instance.event.onMouseDown(updatePayload.onMouseDown);
+        event.schedule("mousedown", updatePayload.onMouseDown);
+
       if (updatePayload.onMouseIn)
-        instance.event.onMouseIn(updatePayload.onMouseIn);
+        event.schedule("mousein", updatePayload.onMouseIn);
+
       if (updatePayload.onMouseOut)
-        instance.event.onMouseOut(updatePayload.onMouseOut);
+        event.schedule("mouseout", updatePayload.onMouseOut);
+
       if (updatePayload.text) instance.props.text = updatePayload.text;
     },
     getRootHostContext: () => {},
@@ -473,7 +482,11 @@ const Art = {
 
     function eventMiddleware(mouse, name) {
       eventQueue.forEach(
-        (event) => name && event[name] && event.checkBoundries(mouse, ctx)
+        (event) =>
+          name &&
+          event[name] &&
+          event.checkBoundries &&
+          event.checkBoundries(mouse, ctx)
       );
 
       const indexes = eventQueue
@@ -497,7 +510,12 @@ const Art = {
     canvas.addEventListener("mousemove", (e) => {
       const mouse = getMouseCoords(e);
 
-      eventQueue.forEach((event) => event.checkBoundries(mouse, ctx));
+      eventQueue.forEach(
+        ({ mousemove, checkBoundries, absolute }) => {
+          if (checkBoundries) checkBoundries(mouse, ctx);
+          else if (absolute && mousemove) mousemove(mouse) 
+        }
+      );
 
       const indexes = eventQueue
         .filter(({ isIn }) => isIn)
@@ -511,19 +529,19 @@ const Art = {
       });
 
       const events = eventQueue.filter(({ isIn }) => isIn);
-      const events2 = eventQueue.filter(
-        ({ isPreviousMouseIn }) => isPreviousMouseIn
-      );
+      const events2 = eventQueue.filter(({ isPreviousMouseIn }) => isPreviousMouseIn);
 
       events.forEach((event) => {
         event.mousemove && event.mousemove(mouse);
         event.dragginghandlers && event.dragginghandlers.mousemove(mouse);
       });
 
+      // mouse in event
       events.forEach(({ mousein, isIn, isPreviousMouseIn }) => {
         isIn !== isPreviousMouseIn && mousein && mousein(mouse);
       });
 
+      // mouse out event:
       events2.forEach(({ mouseout, isIn, isPreviousMouseIn }) => {
         isIn !== isPreviousMouseIn && mouseout && mouseout(mouse);
       });
@@ -541,19 +559,14 @@ const Art = {
       const inIndexes = eventQueue
         .filter(({ isIn }) => isIn)
         .map(({ index }) => index);
-      const allIndexes = eventQueue.map(({ index }) => index);
+
       const inBigget = Math.max(...inIndexes);
-      const allBigget = Math.max(...allIndexes);
 
       eventQueue.forEach((eve) => {
-        // change indexes:
-
-        if (eve.index === inBigget && eve.index < allBigget) {
-          eve.element.zIndex = allBigget;
-          eve.index = allBigget;
-        } else if (eve.index > inBigget) {
-          eve.element.zIndex = eve.element.zIndex - 1;
-          eve.index = eve.index - 1;
+        if (eve.index === inBigget && !eve.selected) {
+          eve.selected = true;
+        } else if (eve.selected && eve.index !== inBigget) {
+          eve.selected = false;
         }
       });
     });

@@ -45,8 +45,6 @@ const Group = {
     ctx.stroke();
   },
   order: function () {
-    // console.log(this.followers);
-
     this.followers
       .sort((a, b) => a.zIndex - b.zIndex)
       .sort((a, b) => a.event.selected - b.event.selected);

@@ -1,11 +1,18 @@
+import { polygonGetBounds } from "math2d/esm/polygonFunctions/polygonGetBounds";
+
 const primitives = {
-  rect: (ctx, { x, y, width, height, color }) => {
+  rect: (ctx, { x, y, width, height, color }, highlight) => {
     const path = new Path2D();
 
     ctx.beginPath();
     ctx.fillStyle = color;
     path.rect(x, y, width, height);
     ctx.fill(path);
+
+    if (highlight) {
+      ctx.strokeStyle = "#7a0";
+      ctx.strokeRect(x, y, width, height);
+    }
 
     return path;
   },
@@ -30,7 +37,7 @@ const primitives = {
 
     return path;
   },
-  polygon: (ctx, { points, color, stroke }) => {
+  polygon: (ctx, { points, color, stroke }, highlight) => {
     const path = new Path2D();
     const array = points.split(" ").map((point) => {
       const [x, y] = point.split(",");
@@ -47,6 +54,16 @@ const primitives = {
     ctx[stroke ? "strokeStyle" : "fillStyle"] = color;
     stroke ? ctx.stroke(path) : ctx.fill(path);
     path.closePath();
+
+    if (highlight) {
+      const array = points.split(",").join(" ").split(" ");
+
+      const result = polygonGetBounds(array);
+      const { minX, minY, maxX, maxY } = result;
+
+      ctx.strokeStyle = "#7a0";
+      ctx.strokeRect(minX, minY, maxX - minX, maxY - minY);
+    }
 
     return path;
   },
@@ -68,22 +85,38 @@ const primitives = {
 
     return dimensions;
   },
-  hexagon: (ctx, { x, y, radius, color }) => {
+  hexagon: (ctx, { x, y, radius, color }, highlight) => {
     const path = new Path2D();
+    const points = [];
 
     ctx.beginPath();
-    path.moveTo(x + radius * Math.cos(0), y + radius * Math.sin(0));
+
+    const startPoint = [x + radius * Math.cos(0), y + radius * Math.sin(0)];
+
+    path.moveTo(...startPoint);
+    points.push(...startPoint);
 
     for (let side = 0; side < 7; side++) {
-      path.lineTo(
+      const point = [
         x + radius * Math.cos((side * 2 * Math.PI) / 6),
-        y + radius * Math.sin((side * 2 * Math.PI) / 6)
-      );
+        y + radius * Math.sin((side * 2 * Math.PI) / 6),
+      ];
+
+      path.lineTo(...point);
+      points.push(...point);
     }
 
     ctx.fillStyle = color;
     ctx.fill(path);
     path.closePath();
+
+    if (highlight) {
+      const result = polygonGetBounds(points);
+      const { minX, minY, maxX, maxY } = result;
+
+      ctx.strokeStyle = "#7a0";
+      ctx.strokeRect(minX, minY, maxX - minX, maxY - minY);
+    }
 
     return path;
   },
@@ -101,6 +134,7 @@ const primitives = {
   img: (
     ctx,
     { x, y, width, height, dx, dy, dw, dh },
+    highlight,
     image,
     isLoaded = false
   ) => {

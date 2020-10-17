@@ -81,9 +81,9 @@ export default function DragAndDrop() {
         color="gray"
         baseLine="middle"
         // drag
-      />
-      <polygon points="20,50 100,100 20,100 20,50" color="yellow" stroke />
-      <img
+      /> */}
+      <polygon points="20,50 100,100 20,100 20,50" color="yellow" select={true} stroke />
+      {/* <img
         src="https://drscdn.500px.org/photo/78655895/m%3D900/ff907b64c70732ae8a730f04ba157655"
         x={550}
         y={100}

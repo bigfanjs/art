@@ -245,7 +245,8 @@ const createReconciler = (canvas, ctx) => {
           props.onMouseOut ||
           props.onMouseUp ||
           props.onMouseDown ||
-          props.drag
+          props.drag ||
+          props.select
         ) {
           event = new Event({
             checkBoundries: element.checkBoundries.bind(element),

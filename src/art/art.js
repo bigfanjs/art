@@ -546,6 +546,17 @@ const Art = {
       events2.forEach(({ mouseout, isIn, isPreviousMouseIn }) => {
         isIn !== isPreviousMouseIn && mouseout && mouseout(mouse);
       });
+
+      // scaling:
+      // eventQueue.forEach((eve) => {
+      //   if (eve.selected) {
+      //     eve.anchors.forEach((anchor) => {
+      //       const isIn = checkBoundries(mouse, anchor);
+
+      //       if (isIn) eve.scalingHandlers.mousemove(mouse);
+      //     })
+      //   }
+      // });
     });
 
     canvas.addEventListener("mousedown", (e) => {
@@ -587,3 +598,11 @@ const Art = {
 };
 
 export default Art;
+
+
+/*
+
+If I am only inside one of the selected element's anchors, then based on the
+selected anchor's position update the element scale transformation.
+
+*/

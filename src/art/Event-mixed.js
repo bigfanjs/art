@@ -49,7 +49,36 @@ export default class Event {
     this.dragginghandlers = { mousedown, mousemove, mouseup };
   }
 
+  // TODO: end drag
   endDrag() {}
+
+
+
+  // this starts as soon as we enable select mode for an element.
+  dragAnchor(anchor, element) {
+    const mousedown = (mouse) => {
+      this.scalable = true;
+      this.mouse = mouse;
+    };
+    const mouseup = () => (this.scalable = false);
+    const mousemove = (mouse) => {
+      if (this.scalable) {
+        const diffx = mouse.x - this.mouse.x;
+        const diffy = mouse.y - this.mouse.y;
+
+        // not working of course:
+        const scaleX = (anchor.x - diffx) / anchor.x + element.width - diffx;
+        const scaleY = (anchor.y - diffy) / anchor.y + element.height - diffy;
+
+        this.mouse = mouse;
+
+        this.updateScale(scaleX, scaleY);
+      }
+    };
+
+    // these handlers start as soon as we click on of the anchors.
+    this.scalingHandlers = { mousedown, mousemove, mouseup };
+  }
 
   schedule(eventName, handler) {
     this[eventName] = handler;

@@ -1,5 +1,11 @@
 import { polygonGetBounds } from "math2d/esm/polygonFunctions/polygonGetBounds";
 
+const anchorWidth = 8;
+const anchorHeight = 8;
+
+const halfWidth = anchorWidth / 2;
+const halfHeight = anchorHeight / 2; 
+
 const primitives = {
   rect: (ctx, { x, y, width, height, color }, highlight) => {
     const path = new Path2D();
@@ -12,6 +18,19 @@ const primitives = {
     if (highlight) {
       ctx.strokeStyle = "#7a0";
       ctx.strokeRect(x, y, width, height);
+
+      ctx.fillStyle = "#7a0";
+      Array.from(Array(4)).forEach((_, i) => {
+        const anchorX = i % 2 ? x : x + width;
+        const anchorY = Math.floor(i / 2) ? y : y + height;
+
+        ctx.fillRect(
+          anchorX - halfWidth,
+          anchorY - halfHeight,
+          anchorWidth,
+          anchorHeight
+        );
+      });
     }
 
     return path;
@@ -26,7 +45,8 @@ const primitives = {
       end = Math.PI * 2,
       isCounterclockwise = false,
       color,
-    }
+    },
+    highlight
   ) => {
     const path = new Path2D();
 
@@ -34,6 +54,24 @@ const primitives = {
     ctx.fillStyle = color;
     path.arc(x, y, radius, start, end, isCounterclockwise);
     ctx.fill(path);
+
+    if (highlight) {
+      ctx.strokeStyle = "#7a0";
+      ctx.strokeRect(x - radius, y - radius, radius * 2, radius * 2);
+
+      ctx.fillStyle = "#7a0";
+      Array.from(Array(4)).forEach((_, i) => {
+        const anchorX = i % 2 ? x - radius : x + radius;
+        const anchorY = Math.floor(i / 2) ? y - radius : y + radius;
+
+        ctx.fillRect(
+          anchorX - halfWidth,
+          anchorY - halfHeight,
+          anchorWidth,
+          anchorHeight
+        );
+      });
+    }
 
     return path;
   },
@@ -63,6 +101,19 @@ const primitives = {
 
       ctx.strokeStyle = "#7a0";
       ctx.strokeRect(minX, minY, maxX - minX, maxY - minY);
+
+      ctx.fillStyle = "#7a0";
+      Array.from(Array(4)).forEach((_, i) => {
+        const x = i % 2 ? minX : maxX
+        const y = Math.floor(i / 2) ? minY : maxY
+
+        ctx.fillRect(
+          x - halfWidth,
+          y - halfHeight,
+          anchorWidth,
+          anchorHeight
+        );
+      })
     }
 
     return path;
@@ -116,6 +167,14 @@ const primitives = {
 
       ctx.strokeStyle = "#7a0";
       ctx.strokeRect(minX, minY, maxX - minX, maxY - minY);
+
+      ctx.fillStyle = "#7a0";
+      Array.from(Array(4)).forEach((_, i) => {
+        const x = i % 2 ? minX : maxX;
+        const y = Math.floor(i / 2) ? minY : maxY;
+
+        ctx.fillRect(x - halfWidth, y - halfHeight, anchorWidth, anchorHeight);
+      });
     }
 
     return path;

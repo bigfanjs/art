@@ -14,6 +14,7 @@ const Element = {
   isPath: false,
   eventHandlers: [],
   zIndex: 1,
+  anchors: [],
   draw: function (ctx) {
     const primitive = primitives[this.type];
     const offsets = this.update && this.update.offsets;
@@ -25,37 +26,36 @@ const Element = {
       ctx.save();
       shouldrestore = true;
 
-      const { x, y, ...transform } = this.transform || {};
-      const transforms = {
-        ...(x && y && !offsets ? { translate: { x, y } } : {}),
-        ...transform,
-      };
-
       let arr =
         this.update && this.update.props ? Object.keys(this.update.props) : [];
 
+      const transformation = this.transform || {}
+
       // check if a transformation exists on update but not on transform, and then add it.
       for (let i = 0; i < arr.length; i++) {
-        const transos = Object.keys(transforms);
+        const transos = Object.keys(transformation);
         const reso = transos.find((trans) => trans === arr[i]);
 
-        if (!reso) transforms[arr[i]] = this.update.props[arr[i]];
+        if (!reso) transformation[arr[i]] = this.update.props[arr[i]];
       }
+
+      const { x, y, scale, scaleX, scaleY, ...transform } = transformation;
+      const transforms = {
+        ...(x && y && !offsets ? { translate: { x, y } } : {}),
+        ...(scale || scaleX || scaleY
+          ? { scale: { x: scaleX || scale || 1, y: scaleY || scale || 1 } }
+          : {}),
+        ...transform,
+      };
 
       Object.keys(transforms).forEach((key) => {
         const value = transforms[key];
 
         if (ctx[key]) {
           if (key === "scale") {
-            let scale = 0;
-
-            if (this.update && this.update.props) {
-              this.update.props.scale && (scale = this.update.props.scale);
-            }
-
-            ctx.scale(value, value + scale);
+            ctx.scale(value.x, value.y);
           }
-          if (key === "translate") {
+          else if (key === "translate") {
             let x = 0;
             let y = 0;
 
@@ -78,8 +78,14 @@ const Element = {
       });
     }
 
+    // danger area -start
+
+    mouseTransforms.
+
+    // danger area -end
+
     // draw
-    this.path = primitive(
+    const { path, anchors, bounding } = primitive(
       ctx,
       {
         ...this.props,
@@ -89,6 +95,10 @@ const Element = {
       this.image,
       this.isLoaded
     );
+
+    this.path = path
+    this.anchors = anchors;
+    this.bounding = bounding;
 
     if (shouldrestore) ctx.restore();
   },
@@ -111,6 +121,9 @@ const Element = {
     }
 
     return this;
+  },
+  updateScale: function (update) {
+    this.mouseTransforms = update
   },
   checkBoundries: function checkBoundries(point, ctx) {
     let isMouseIn = false;
@@ -147,6 +160,13 @@ const Element = {
 
     return isMouseIn;
   },
+  isInsideOneOfTheAnchors: function (point, ctx) {
+    return this.anchors.find((anchor) => {
+      const isIn = isPointInPath(anchor, point, ctx);
+
+      return isIn;
+    });
+  }
 };
 
 export default Element;

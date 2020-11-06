@@ -62,6 +62,7 @@ export default function DragAndDrop() {
         onMouseIn={handleHexClick}
         onMouseOut={handleHexClick}
         select={true}
+        // transform={{ scaleX: 2 }}
         // drag
       />
       {/* <text

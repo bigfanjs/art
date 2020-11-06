@@ -1,40 +1,13 @@
-import { polygonGetBounds } from "math2d/esm/polygonFunctions/polygonGetBounds";
-
-const anchorWidth = 8;
-const anchorHeight = 8;
-
-const halfWidth = anchorWidth / 2;
-const halfHeight = anchorHeight / 2; 
-
 const primitives = {
-  rect: (ctx, { x, y, width, height, color }, highlight) => {
+  rect: (ctx, { x, y, width, height, color }) => {
     const path = new Path2D();
-    const anchors = []
 
     ctx.beginPath();
     ctx.fillStyle = color;
     path.rect(x, y, width, height);
     ctx.fill(path);
 
-    if (highlight) {
-      ctx.strokeStyle = "#7a0";
-      ctx.strokeRect(x, y, width, height);
-
-      ctx.fillStyle = "#7a0";
-      Array.from(Array(4)).forEach((_, i) => {
-        const anchorX = i % 2 ? x : x + width;
-        const anchorY = Math.floor(i / 2) ? y : y + height;
-
-        ctx.fillRect(
-          anchorX - halfWidth,
-          anchorY - halfHeight,
-          anchorWidth,
-          anchorHeight
-        );
-      });
-    }
-
-    return { path, anchors };
+    return {path}
   },
   arc: (
     ctx,
@@ -46,45 +19,24 @@ const primitives = {
       end = Math.PI * 2,
       isCounterclockwise = false,
       color,
-    },
-    highlight
+    }
   ) => {
     const path = new Path2D();
-    const anchors = [];
 
     ctx.beginPath();
     ctx.fillStyle = color;
     path.arc(x, y, radius, start, end, isCounterclockwise);
     ctx.fill(path);
 
-    if (highlight) {
-      ctx.strokeStyle = "#7a0";
-      ctx.strokeRect(x - radius, y - radius, radius * 2, radius * 2);
-
-      ctx.fillStyle = "#7a0";
-      Array.from(Array(4)).forEach((_, i) => {
-        const anchorX = i % 2 ? x - radius : x + radius;
-        const anchorY = Math.floor(i / 2) ? y - radius : y + radius;
-
-        ctx.fillRect(
-          anchorX - halfWidth,
-          anchorY - halfHeight,
-          anchorWidth,
-          anchorHeight
-        );
-      });
-    }
-
-    return { path, anchors };
+    return {path};
   },
-  polygon: (ctx, { points, color, stroke }, highlight) => {
+  polygon: (ctx, { points, color, stroke }) => {
     const path = new Path2D();
     const array = points.split(" ").map((point) => {
       const [x, y] = point.split(",");
 
       return { x, y };
     });
-    const anchors = [];
 
     ctx.beginPath();
     path.moveTo(array[0].x, array[0].y);
@@ -96,37 +48,13 @@ const primitives = {
     stroke ? ctx.stroke(path) : ctx.fill(path);
     path.closePath();
 
-    if (highlight) {
-      const array = points.split(",").join(" ").split(" ");
-
-      const result = polygonGetBounds(array);
-      const { minX, minY, maxX, maxY } = result;
-
-      ctx.strokeStyle = "#7a0";
-      ctx.strokeRect(minX, minY, maxX - minX, maxY - minY);
-
-      ctx.fillStyle = "#7a0";
-      Array.from(Array(4)).forEach((_, i) => {
-        const x = i % 2 ? minX : maxX
-        const y = Math.floor(i / 2) ? minY : maxY
-
-        ctx.fillRect(
-          x - halfWidth,
-          y - halfHeight,
-          anchorWidth,
-          anchorHeight
-        );
-      })
-    }
-
-    return { path, anchors };
+    return {path}
   },
   text: (
     ctx,
     { x, y, text, size, fontFamily = "verdana", baseLine, color }
   ) => {
     const dimensions = {};
-    const anchors = [];
 
     ctx.beginPath();
     ctx.font = `${size}px ${fontFamily}`;
@@ -140,11 +68,9 @@ const primitives = {
 
     return dimensions;
   },
-  hexagon: (ctx, { x, y, radius, color }, highlight) => {
+  hexagon: (ctx, { x, y, radius, color }) => {
     const path = new Path2D();
     const points = [];
-    const anchors = []
-    let bounding
 
     ctx.beginPath();
 
@@ -167,33 +93,7 @@ const primitives = {
     ctx.fill(path);
     path.closePath();
 
-    if (highlight) {
-      const result = polygonGetBounds(points);
-      const { minX, minY, maxX, maxY } = result;
-
-      bounding = result;
-
-      ctx.strokeStyle = "#7a0";
-      ctx.strokeRect(minX, minY, maxX - minX, maxY - minY);
-      ctx.closePath()
-
-      ctx.fillStyle = "#7a0";
-      Array.from(Array(4)).forEach((_, i) => {
-        const anchor = new Path2D();
-        const x = i % 2 ? minX : maxX;
-        const y = Math.floor(i / 2) ? minY : maxY;
-
-        ctx.beginPath();
-        ctx.fillStyle = "#7a0";
-        anchor.rect(x - halfWidth, y - halfHeight, anchorWidth, anchorHeight);
-        ctx.fill(anchor);
-        ctx.closePath()
-
-        anchors.push(anchor);
-      });
-    }
-
-    return { path, anchors, bounding };
+    return { path, points }
   },
   line: (ctx, { x1, y1, x2, y2, color }) => {
     const path = new Path2D();
@@ -204,12 +104,11 @@ const primitives = {
     path.lineTo(x2, y2);
     ctx.stroke(path);
 
-    return path;
+    return {path};
   },
   img: (
     ctx,
     { x, y, width, height, dx, dy, dw, dh },
-    highlight,
     image,
     isLoaded = false
   ) => {

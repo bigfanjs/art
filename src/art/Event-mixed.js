@@ -13,7 +13,13 @@ export default class Event {
   draggable = false;
   selected = false;
 
-  constructor({ checkBoundries, isInsideOneOfTheAnchors, absolute = false }) {
+  constructor({
+    checkBoundries,
+    isInsideOneOfTheAnchors,
+    absolute = false,
+    initialTransform,
+    element
+  }) {
     eventQueue.push(this);
 
     this.absolute = absolute;
@@ -31,12 +37,21 @@ export default class Event {
 
     if (isInsideOneOfTheAnchors) {
       this.isInsideOneOfTheAnchors = (point, ctx) => {
-        if (this.scalable) return this.anchor
+        if (this.scalable) return this.anchor;
 
         this.anchor = isInsideOneOfTheAnchors(point, ctx);
 
         return this.anchor;
       };
+    }
+
+    if (initialTransform) {
+      const { x, y } = initialTransform;
+
+      this.props.x = x;
+      this.props.y = y;
+
+      element.updateScale(this);
     }
   }
 
@@ -70,7 +85,7 @@ export default class Event {
       this.mouse = mouse;
     };
 
-    const mouseup = () => this.scalable = false
+    const mouseup = () => (this.scalable = false);
 
     const mousemove = (mouse) => {
       if (this.scalable) {
@@ -85,10 +100,17 @@ export default class Event {
         const scaleY =
           (bounding.minY + bounding.maxY - mouse.y) / (bounding.minY - mouse.y);
 
-        console.log({ scaleX, scaleY });
-
         this.mouse = mouse;
-        this.props = { scaleX: 1, scaleY: 1, x: 10, y: 10, rotate: 0.43 };
+        this.props = {
+          scaleX: 2,
+          scaleY: 1,
+          x: element.props.x,
+          y: element.props.y,
+          rotate: 0,
+        };
+        // this.props = { scaleX: 1.8, scaleY: 1, x: 0, y: 0 };
+
+        console.log({ x: bounding.minX, y: bounding.minY });
 
         this.updateScale(this);
       }

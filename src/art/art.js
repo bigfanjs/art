@@ -253,6 +253,8 @@ const createReconciler = (canvas, ctx) => {
             isInsideOneOfTheAnchors: element.isInsideOneOfTheAnchors.bind(
               element
             ),
+            initialTransform: props.select ? { x: element.props.x, y: element.props.y } : null,
+            element
           });
 
           // TODO: I don't like this, do something better please:
@@ -272,7 +274,10 @@ const createReconciler = (canvas, ctx) => {
           props.onMouseIn && event.schedule("mousein", props.onMouseIn);
           props.onMouseOut && event.schedule("mouseout", props.onMouseOut);
           props.drag && event.startDrag(canvas, ctx);
-          props.select && event.startDraggingAnchors(element)
+          if (props.select) {
+            event.startDraggingAnchors(element);
+            element.clearOffset()
+          }
         }
 
         element.type = type;

@@ -1,13 +1,13 @@
 const primitives = {
-  rect: (ctx, { x, y, width, height, color }) => {
+  rect: (ctx, { x, y, width, height, color }, { hover = false }) => {
     const path = new Path2D();
 
     ctx.beginPath();
     ctx.fillStyle = color;
     path.rect(x, y, width, height);
-    ctx.fill(path);
+    if (!hover) ctx.fill(path);
 
-    return {path}
+    return { path };
   },
   arc: (
     ctx,
@@ -19,18 +19,19 @@ const primitives = {
       end = Math.PI * 2,
       isCounterclockwise = false,
       color,
-    }
+    },
+    { hover = false }
   ) => {
     const path = new Path2D();
 
     ctx.beginPath();
     ctx.fillStyle = color;
     path.arc(x, y, radius, start, end, isCounterclockwise);
-    ctx.fill(path);
+    if (!hover) ctx.fill(path);
 
-    return {path};
+    return { path };
   },
-  polygon: (ctx, { points, color, stroke }) => {
+  polygon: (ctx, { points, color, stroke }, { hover = false }) => {
     const path = new Path2D();
     const array = points.split(" ").map((point) => {
       const [x, y] = point.split(",");
@@ -45,14 +46,17 @@ const primitives = {
       .forEach(({ x, y }) => path.lineTo(x, y));
 
     ctx[stroke ? "strokeStyle" : "fillStyle"] = color;
-    stroke ? ctx.stroke(path) : ctx.fill(path);
+    if (!hover) {
+      stroke ? ctx.stroke(path) : ctx.fill(path);
+    }
     path.closePath();
 
-    return {path}
+    return { path };
   },
   text: (
     ctx,
-    { x, y, text, size, fontFamily = "verdana", baseLine, color }
+    { x, y, text, size, fontFamily = "verdana", baseLine, color },
+    { hover = false }
   ) => {
     const dimensions = {};
 
@@ -64,11 +68,11 @@ const primitives = {
     dimensions.height = size;
 
     ctx.fillStyle = color;
-    ctx.fillText(text, x, y);
+    if (!hover) ctx.fillText(text, x, y);
 
     return dimensions;
   },
-  hexagon: (ctx, { x, y, radius, color }) => {
+  hexagon: (ctx, { x, y, radius, color }, { hover = false }) => {
     const path = new Path2D();
     const points = [];
 
@@ -90,10 +94,11 @@ const primitives = {
     }
 
     ctx.fillStyle = color;
-    ctx.fill(path);
+
+    if (!hover) ctx.fill(path);
     path.closePath();
 
-    return { path, points }
+    return { path, points };
   },
   line: (ctx, { x1, y1, x2, y2, color }) => {
     const path = new Path2D();
@@ -104,13 +109,12 @@ const primitives = {
     path.lineTo(x2, y2);
     ctx.stroke(path);
 
-    return {path};
+    return { path };
   },
   img: (
     ctx,
     { x, y, width, height, dx, dy, dw, dh },
-    image,
-    isLoaded = false
+    { image, isLoaded = false }
   ) => {
     if (isLoaded) {
       if (

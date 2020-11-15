@@ -95,22 +95,21 @@ export default class Event {
         // const diffy = mouse.y - this.mouse.y;
 
         // not working of course:
-        const scaleX =
-          (bounding.minX + bounding.maxX - mouse.x) / (bounding.minX - mouse.x);
-        const scaleY =
-          (bounding.minY + bounding.maxY - mouse.y) / (bounding.minY - mouse.y);
+        // const scaleX = (mouse.x + bounding.maxX) / (mouse.x + bounding.minX);
+        // const scaleY = (mouse.y + bounding.maxY) / (mouse.y + bounding.minY);
+
+
+        const scaleX = (bounding.maxX - mouse.x) / (bounding.minX - mouse.x);
+        const scaleY = (bounding.maxY - mouse.x) / (bounding.minY - mouse.y);
 
         this.mouse = mouse;
         this.props = {
-          scaleX: 2,
-          scaleY: 1,
-          x: element.props.x,
-          y: element.props.y,
+          scaleX,
+          scaleY,
+          x: this.props.x,
+          y: this.props.y,
           rotate: 0,
         };
-        // this.props = { scaleX: 1.8, scaleY: 1, x: 0, y: 0 };
-
-        console.log({ x: bounding.minX, y: bounding.minY });
 
         this.updateScale(this);
       }

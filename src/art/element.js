@@ -140,11 +140,25 @@ const Element = {
         ...this.props,
         ...(this.update && offsets ? this.update.props : {}),
       },
-      this.image,
-      this.isLoaded
+      { image: this.image, isLoaded: this.isLoaded }
     );
-
+    
     this.path = path;
+    this.hover = path;
+
+    if (this.mouseTransforms) {
+      const { path: hover } = primitive(
+        ctx,
+        {
+          ...this.props,
+          ...(this.update && offsets ? this.update.props : {}),
+          ...this.mouseTransforms.props,
+        },
+        { image: this.image, isLoaded: this.isLoaded, hover: true }
+      );
+
+      this.hover = hover;
+    }
 
     if (shouldrestore2) ctx.restore();
     if (shouldrestore) ctx.restore();
@@ -158,11 +172,17 @@ const Element = {
     }
 
     if (this.event.selected) {
-      const { anchors, bounding } = bound(ctx, {
+      const { bounding } = bound(ctx, {
         ...this.props,
         points,
         transforms: this.mouseTransforms,
       });
+
+      const { anchors } = bound(ctx, {
+        ...this.props,
+        points,
+        transforms: this.mouseTransforms,
+      }, { hover: true });
 
       this.anchors = anchors;
       this.bounding = bounding;
@@ -198,7 +218,7 @@ const Element = {
 
     // TODO: need major code cleaning or even moving this section away from this method
     if (this.isPath) {
-      isMouseIn = isPointInPath(this.path, point, ctx);
+      isMouseIn = isPointInPath(this.hover, point, ctx);
     } else {
       const baseLine = baseLines.find((bl) => bl === this.props.baseLine);
       const centerBL = this.props.baseLine === "middle";

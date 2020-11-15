@@ -9,7 +9,7 @@ export default function DragAndDrop() {
   const { width, height } = useArt();
 
   const handleCircleClick = () => {
-    setCirclerColor(circlerColor === "yellow" ? "pink" : "yellow");
+    setCirclerColor(circlerColor === "yellow" ? "grey" : "yellow");
   };
 
   const handleRectClick = () => {

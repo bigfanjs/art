@@ -18,7 +18,7 @@ export default class Event {
     isInsideOneOfTheAnchors,
     absolute = false,
     initialTransform,
-    element
+    element,
   }) {
     eventQueue.push(this);
 
@@ -83,24 +83,33 @@ export default class Event {
     const mousedown = (mouse) => {
       this.scalable = true;
       this.mouse = mouse;
+
+      this.bound = {
+        x: element.bounding.minX + this.props.x,
+        y: element.bounding.minY + this.props.y,
+        width:
+          Math.abs(element.bounding.maxX) + Math.abs(element.bounding.minX),
+        height:
+          Math.abs(element.bounding.maxY) + Math.abs(element.bounding.minY),
+      };
     };
 
-    const mouseup = () => (this.scalable = false);
+    const mouseup = () => {
+      this.scalable = false;
+    };
 
-    const mousemove = (mouse) => {
+    const mousemove = (mouse, anchor) => {
+      // console.log({ anchor });
+
       if (this.scalable) {
-        const bounding = element.bounding;
+        const width = anchor % 2 ? this.bound.width : 0;
+        const height = Math.floor(anchor / 3) ? 0 : this.bound.height;
 
-        // const diffx = mouse.x - this.mouse.x;
-        // const diffy = mouse.y - this.mouse.y;
+        const diffX = mouse.x - (this.bound.x - width);
+        const diffY = mouse.y - (this.bound.y - height);
 
-        // not working of course:
-        // const scaleX = (mouse.x + bounding.maxX) / (mouse.x + bounding.minX);
-        // const scaleY = (mouse.y + bounding.maxY) / (mouse.y + bounding.minY);
-
-
-        const scaleX = (bounding.maxX - mouse.x) / (bounding.minX - mouse.x);
-        const scaleY = (bounding.maxY - mouse.x) / (bounding.minY - mouse.y);
+        const scaleX = 1 - diffX / this.bound.width;
+        const scaleY = 1 - diffY / this.bound.height;
 
         this.mouse = mouse;
         this.props = {

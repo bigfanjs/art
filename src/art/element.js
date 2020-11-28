@@ -113,7 +113,7 @@ const Element = {
               this.update.props.y && (y = this.update.props.y);
             }
 
-            ctx.translate(value.x + x, value.y + y);
+            ctx.translate(value.x, value.y);
           } else if (key === "scale") {
             ctx.scale(value.x, value.y);
           } else {
@@ -142,7 +142,7 @@ const Element = {
       },
       { image: this.image, isLoaded: this.isLoaded }
     );
-    
+
     this.path = path;
     this.hover = path;
 
@@ -165,7 +165,9 @@ const Element = {
 
     // translate the bounds
     if (this.mouseTransforms) {
-      const {x, y} = this.mouseTransforms.props
+      const { x, y } = this.mouseTransforms.props;
+
+      // console.log({ x, y });
 
       ctx.save();
       if (x && y) ctx.translate(x, y);
@@ -178,11 +180,15 @@ const Element = {
         transforms: this.mouseTransforms,
       });
 
-      const { anchors } = bound(ctx, {
-        ...this.props,
-        points,
-        transforms: this.mouseTransforms,
-      }, { hover: true });
+      const { anchors } = bound(
+        ctx,
+        {
+          ...this.props,
+          points,
+          transforms: this.mouseTransforms,
+        },
+        { hover: true }
+      );
 
       this.anchors = anchors;
       this.bounding = bounding;
@@ -249,17 +255,21 @@ const Element = {
     return isMouseIn;
   },
   isInsideOneOfTheAnchors: function (point, ctx) {
-    return this.anchors.find((anchor) => {
+    const selectedAnchor = this.anchors.find((anchor) => {
       const isIn = isPointInPath(anchor, point, ctx);
 
       return isIn;
     });
+
+    const index = this.anchors.findIndex((anchor) => anchor === selectedAnchor);
+
+    return index < 0 ? false : index + 1;
   },
   clearOffset: function () {
-    const { x, y } = this.props
+    const { x, y } = this.props;
 
     if (x > 0 || y > 0) this.setPos(-this.props.x, -this.props.y);
-  }
+  },
 };
 
 export default Element;

@@ -5,28 +5,32 @@ const anchorWidth = 8;
 const anchorHeight = 8;
 
 const halfWidth = anchorWidth / 2;
-const halfHeight = anchorHeight / 2; 
+const halfHeight = anchorHeight / 2;
 
-const matrices = {
-  scaleX: (scaler) => ({ a: scaler, b: 0, c: 0, d: 1, e: 1, f: 1 }),
-  scaleY: (scaler) => ({ a: scaler, b: 0, c: 0, d: 1, e: 1, f: 1 }),
-};
+// const matrices = {
+//   scaleX: (scaler) => ({ a: scaler, b: 0, c: 0, d: 1, e: 1, f: 1 }),
+//   scaleY: (scaler) => ({ a: scaler, b: 0, c: 0, d: 1, e: 1, f: 1 }),
+// };
 
-function boundingBoxForHexagon(ctx, { points, transforms }, { hover = false } = {}) {
+function boundingBoxForHexagon(
+  ctx,
+  { points, transforms },
+  { hover = false } = {}
+) {
   const anchors = [];
   let bounding;
 
   let transformedPoints = points;
 
-  if (hover) {
-    const { x, y } = transforms.props;
+  // if (hover) {
+  //   const { x, y } = transforms.props;
 
-    transformedPoints = points && points
-      .map((point, idx) => {
-        return idx % 2 ? point + y : point + x;
-      })
-  }
-
+  //   transformedPoints =
+  //     points &&
+  //     points.map((point, idx) => {
+  //       return idx % 2 ? point + y : point + x;
+  //     });
+  // }
 
   const result = polygonGetBounds(transformedPoints);
   // const { minX, minY, maxX, maxY } = result;
@@ -35,13 +39,15 @@ function boundingBoxForHexagon(ctx, { points, transforms }, { hover = false } = 
 
   // if (scaleX) matrix = matrices["scaleX"](scaleX);
 
+  const { x, y, scaleX = 1, scaleY = 1 } = transforms.props ?? {};
+
   bounding = boxTransformBy(result, {
-    a: 1,
+    a: scaleX, // scaleX
     b: 0,
     c: 0,
-    d: 1,
-    e: 1,
-    f: 1,
+    d: scaleY, // scaleY
+    e: hover ? x : 0, // translateX
+    f: hover ? y : 0, // translateY
   });
 
   const { minX, minY, maxX, maxY } = bounding;
@@ -68,6 +74,7 @@ function boundingBoxForHexagon(ctx, { points, transforms }, { hover = false } = 
     anchors.push(anchor);
   });
 
+  // what we return here is only for the mouse
   return { anchors, bounding };
 }
 
@@ -130,6 +137,6 @@ const boundingBoxes = {
   arc: boundingForArc,
   polygon: boundingForpolygon,
   hexagon: boundingBoxForHexagon,
-}
+};
 
-export default boundingBoxes
+export default boundingBoxes;

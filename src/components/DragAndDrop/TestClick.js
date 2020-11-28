@@ -30,8 +30,8 @@ export default function DragAndDrop() {
   return (
     <group>
       <arc
-        x={width / 2 - 50}
-        y={height / 2 - 50}
+        x={200}
+        y={height / 2}
         radius={50}
         color={circlerColor}
         // onClick={handleCircleClick}
@@ -41,8 +41,8 @@ export default function DragAndDrop() {
         // drag
       />
       <rect
-        x={width / 2 - 50}
-        y={height / 2 - 50}
+        x={width / 2}
+        y={height / 2}
         width={100}
         height={100}
         // color={`hsl(${cords.x * 360}, ${cords.y * 100}%, 60%)`}
@@ -83,7 +83,12 @@ export default function DragAndDrop() {
         baseLine="middle"
         // drag
       /> */}
-      <polygon points="20,50 100,100 20,100 20,50" color="yellow" select={true} stroke />
+      <polygon
+        points="20,50 100,100 20,100 20,50"
+        color="yellow"
+        select={true}
+        stroke
+      />
       {/* <img
         src="https://drscdn.500px.org/photo/78655895/m%3D900/ff907b64c70732ae8a730f04ba157655"
         x={550}

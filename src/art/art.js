@@ -253,13 +253,15 @@ const createReconciler = (canvas, ctx) => {
             isInsideOneOfTheAnchors: element.isInsideOneOfTheAnchors.bind(
               element
             ),
-            initialTransform: props.select ? { x: element.props.x, y: element.props.y } : null,
-            element
+            initialTransform: props.select
+              ? { x: element.props.x, y: element.props.y }
+              : null,
+            element,
           });
 
           // TODO: I don't like this, do something better please:
           event.update = element.setPos.bind(element);
-          event.updateScale = element.updateScale.bind(element)
+          event.updateScale = element.updateScale.bind(element);
           event.type = type;
           event.index = globalIndex;
           event.element = element; // circular dependency 🤮🤮🤮🤮🤮🤮🤮🤮
@@ -276,7 +278,7 @@ const createReconciler = (canvas, ctx) => {
           props.drag && event.startDrag(canvas, ctx);
           if (props.select) {
             event.startDraggingAnchors(element);
-            element.clearOffset()
+            element.clearOffset();
           }
         }
 
@@ -521,12 +523,10 @@ const Art = {
     canvas.addEventListener("mousemove", (e) => {
       const mouse = getMouseCoords(e);
 
-      eventQueue.forEach(
-        ({ mousemove, checkBoundries, absolute }) => {
-          if (checkBoundries) checkBoundries(mouse, ctx);
-          else if (absolute && mousemove) mousemove(mouse) 
-        }
-      );
+      eventQueue.forEach(({ mousemove, checkBoundries, absolute }) => {
+        if (checkBoundries) checkBoundries(mouse, ctx);
+        else if (absolute && mousemove) mousemove(mouse);
+      });
 
       const indexes = eventQueue
         .filter(({ isIn }) => isIn)
@@ -540,7 +540,9 @@ const Art = {
       });
 
       const events = eventQueue.filter(({ isIn }) => isIn);
-      const events2 = eventQueue.filter(({ isPreviousMouseIn }) => isPreviousMouseIn);
+      const events2 = eventQueue.filter(
+        ({ isPreviousMouseIn }) => isPreviousMouseIn
+      );
 
       events.forEach((event) => {
         event.mousemove && event.mousemove(mouse);
@@ -611,7 +613,7 @@ const Art = {
       eventQueue.forEach((eve) => {
         const anchor = eve.isInsideOneOfTheAnchors(mouse, ctx);
 
-        if (eve.selected && anchor) eve.scalingHandlers.mouseup(mouse)
+        if (eve.selected && anchor) eve.scalingHandlers.mouseup(mouse);
       });
     });
 
@@ -620,7 +622,6 @@ const Art = {
 };
 
 export default Art;
-
 
 /*
 

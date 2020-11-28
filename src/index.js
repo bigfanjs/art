@@ -1,5 +1,6 @@
 import React from "react";
 import Art from "./art/art";
+
 import "./index.css";
 
 // import SolarSystem from "./SolarSystem";

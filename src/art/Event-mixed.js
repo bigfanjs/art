@@ -12,6 +12,8 @@ export default class Event {
   dragginghandlers = null;
   draggable = false;
   selected = false;
+  initialScaleX = 0;
+  initialScaleY = 0;
 
   constructor({
     checkBoundries,
@@ -96,20 +98,25 @@ export default class Event {
 
     const mouseup = () => {
       this.scalable = false;
+
+      this.initialScaleX = this.props.scaleX;
+      this.initialScaleY = this.props.scaleY;
     };
 
     const mousemove = (mouse, anchor) => {
-      // console.log({ anchor });
-
       if (this.scalable) {
         const width = anchor % 2 ? this.bound.width : 0;
         const height = Math.floor(anchor / 3) ? 0 : this.bound.height;
 
-        const diffX = mouse.x - (this.bound.x - width);
-        const diffY = mouse.y - (this.bound.y - height);
+        const diffX = mouse.x - (this.bound.x + width);
+        const diffY = mouse.y - (this.bound.y + height);
 
-        const scaleX = 1 - diffX / this.bound.width;
-        const scaleY = 1 - diffY / this.bound.height;
+        const scaleX =
+          (this.initialScaleX || 1) -
+          (anchor % 2 ? diffX * -1 : diffX) / this.bound.width;
+        const scaleY =
+          (this.initialScaleY || 1) -
+          (Math.floor(anchor / 3) ? diffY : diffY * -1) / this.bound.height;
 
         this.mouse = mouse;
         this.props = {

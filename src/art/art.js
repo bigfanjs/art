@@ -596,7 +596,7 @@ const Art = {
           eve.selected = false;
         }
 
-        if (anchor) eve.scalingHandlers.mousedown(mouse);
+        if (anchor) eve.scalingHandlers.mousedown(mouse, anchor);
       });
     });
 

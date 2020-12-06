@@ -12,8 +12,9 @@ export default class Event {
   dragginghandlers = null;
   draggable = false;
   selected = false;
-  initialScaleX = 0;
-  initialScaleY = 0;
+  initialScaleX = 1;
+  initialScaleY = 1;
+  anchorTransition = { x: 0, y: 0 };
 
   constructor({
     checkBoundries,
@@ -82,7 +83,7 @@ export default class Event {
 
   // this starts as soon as we enable select mode for an element.
   startDraggingAnchors(element) {
-    const mousedown = (mouse) => {
+    const mousedown = (mouse, anchor) => {
       this.scalable = true;
       this.mouse = mouse;
 
@@ -94,6 +95,23 @@ export default class Event {
         height:
           Math.abs(element.bounding.maxY) + Math.abs(element.bounding.minY),
       };
+
+      const halfWidth = this.bound.width / 2;
+      const halfHeight = this.bound.height / 2;
+
+      // console.log({ halfWidth, halfHeight });
+
+      this.anchorTransition = {
+        x: anchor % 2 ? -halfWidth : halfWidth,
+        y: Math.floor(anchor / 3) ? halfHeight : -halfHeight,
+      };
+
+      this.anchorTransitionPos = {
+        x: anchor % 2 ? halfWidth : -halfWidth,
+        y: Math.floor(anchor / 3) ? -halfHeight : halfHeight,
+      };
+
+      // this.update(diffx, diffy);
     };
 
     const mouseup = () => {
@@ -112,10 +130,10 @@ export default class Event {
         const diffY = mouse.y - (this.bound.y + height);
 
         const scaleX =
-          (this.initialScaleX || 1) -
+          this.initialScaleX -
           (anchor % 2 ? diffX * -1 : diffX) / this.bound.width;
         const scaleY =
-          (this.initialScaleY || 1) -
+          this.initialScaleY -
           (Math.floor(anchor / 3) ? diffY : diffY * -1) / this.bound.height;
 
         this.mouse = mouse;

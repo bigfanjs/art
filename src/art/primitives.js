@@ -1,3 +1,5 @@
+import { polygonTransformBy } from "math2d/esm/polygonFunctions/polygonTransformBy";
+
 const primitives = {
   rect: (ctx, { x, y, width, height, color }, { hover = false }) => {
     const path = new Path2D();
@@ -39,7 +41,6 @@ const primitives = {
       return { x, y };
     });
 
-    ctx.beginPath();
     path.moveTo(array[0].x, array[0].y);
     array
       .filter((_, idx) => idx !== 0)
@@ -72,8 +73,12 @@ const primitives = {
 
     return dimensions;
   },
-  hexagon: (ctx, { x, y, radius, color }, { hover = false }) => {
-    const path = new Path2D();
+  hexagon: function hexagon(
+    ctx,
+    { x, y, radius, color },
+    { hover = false, transforms }
+  ) {
+    let path = new Path2D();
     const points = [];
 
     ctx.beginPath();
@@ -93,9 +98,42 @@ const primitives = {
       points.push(...point);
     }
 
-    ctx.fillStyle = color;
+    if (hover) {
+      const { x, y, scaleX = 1, scaleY = 1 } = transforms ?? {};
 
-    if (!hover) ctx.fill(path);
+      const result = polygonTransformBy(points, {
+        a: scaleX, // scaleX
+        b: 0,
+        c: 0,
+        d: scaleY, // scaleY
+        e: hover ? x : 0, // translateX
+        f: hover ? y : 0, // translateY
+      });
+
+      const hoverpath = new Path2D();
+      const array = result.reduce((sum, item, idx) => {
+        const i = Math.floor(idx / 2);
+
+        sum[i] = [...(sum[i] || []), item];
+
+        return sum;
+      }, []);
+
+      hoverpath.moveTo(array[0][0], array[0][1]);
+      array
+        .filter((_, idx) => idx !== 0)
+        .forEach(([x, y]) => hoverpath.lineTo(x, y));
+
+      hoverpath.closePath();
+
+      path = hoverpath;
+    }
+
+    if (!hover) {
+      ctx.fillStyle = color;
+      ctx.fill(path);
+    }
+
     path.closePath();
 
     return { path, points };

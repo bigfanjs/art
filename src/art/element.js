@@ -90,6 +90,7 @@ const Element = {
       shouldrestore2 = true;
 
       const transformation = this.mouseTransforms.props || {};
+      const anchorTransition = this.mouseTransforms.anchorTransition || {};
 
       const { x, y, scale, scaleX, scaleY, ...transform } = transformation;
       const transforms = {
@@ -105,15 +106,16 @@ const Element = {
 
         if (ctx[key]) {
           if (key === "translate") {
-            let x = 0;
-            let y = 0;
+            let x = anchorTransition.x || 0;
+            let y = anchorTransition.y || 0;
 
+            // this is not needed:
             if (this.update && this.update.props) {
               this.update.props.x && (x = this.update.props.x);
               this.update.props.y && (y = this.update.props.y);
             }
 
-            ctx.translate(value.x, value.y);
+            ctx.translate(value.x + x, value.y + y);
           } else if (key === "scale") {
             ctx.scale(value.x, value.y);
           } else {
@@ -133,12 +135,15 @@ const Element = {
 
     // console.log({ mouseTransforms: this.mouseTransforms});
 
+    //this.mouseTransforms.anchorTransition
+
     // draw
     const { path, points } = primitive(
       ctx,
       {
         ...this.props,
         ...(this.update && offsets ? this.update.props : {}),
+        ...(this?.mouseTransforms?.anchorTransitionPos ?? {}), // apply the opposite anchor transition
       },
       { image: this.image, isLoaded: this.isLoaded }
     );
@@ -146,15 +151,31 @@ const Element = {
     this.path = path;
     this.hover = path;
 
+    // draw hover
     if (this.mouseTransforms) {
+      const { x, y } = this.mouseTransforms.props;
+      const anchorTransition = this?.mouseTransforms?.anchorTransition ?? {
+        x: 0,
+        y: 0,
+      };
+      const translate = {
+        x: x + anchorTransition.x,
+        y: y + anchorTransition.y,
+      };
+
       const { path: hover } = primitive(
         ctx,
         {
           ...this.props,
           ...(this.update && offsets ? this.update.props : {}),
-          ...this.mouseTransforms.props,
+          ...(this?.mouseTransforms?.anchorTransitionPos ?? {}),
         },
-        { image: this.image, isLoaded: this.isLoaded, hover: true }
+        {
+          image: this.image,
+          isLoaded: this.isLoaded,
+          hover: true,
+          transforms: { ...this.mouseTransforms.props, ...translate },
+        }
       );
 
       this.hover = hover;
@@ -166,18 +187,32 @@ const Element = {
     // translate the bounds
     if (this.mouseTransforms) {
       const { x, y } = this.mouseTransforms.props;
-
-      // console.log({ x, y });
+      const anchorTransition = this.mouseTransforms?.anchorTransition || {
+        x: 0,
+        y: 0,
+      };
 
       ctx.save();
-      if (x && y) ctx.translate(x, y);
+      if (x && y) ctx.translate(x + anchorTransition.x, y + anchorTransition.y);
     }
 
     if (this.event.selected) {
+      const { x, y } = this.mouseTransforms.props;
+      const anchorTransition = this.mouseTransforms?.anchorTransition || {
+        x: 0,
+        y: 0,
+      };
+      const translate = {
+        x: x + anchorTransition.x,
+        y: y + anchorTransition.y,
+      };
+
       const { bounding } = bound(ctx, {
         ...this.props,
         points,
-        transforms: this.mouseTransforms,
+        transforms: {
+          props: { ...this.mouseTransforms.props },
+        },
       });
 
       const { anchors } = bound(
@@ -185,7 +220,9 @@ const Element = {
         {
           ...this.props,
           points,
-          transforms: this.mouseTransforms,
+          transforms: {
+            props: { ...this.mouseTransforms.props, ...translate },
+          },
         },
         { hover: true }
       );

@@ -30,6 +30,7 @@ const primitives = {
     ctx.fillStyle = color;
     path.arc(x, y, radius, start, end, isCounterclockwise);
     if (!hover) ctx.fill(path);
+    path.closePath();
 
     return { path };
   },
@@ -75,7 +76,7 @@ const primitives = {
   },
   hexagon: function hexagon(
     ctx,
-    { x, y, radius, color },
+    { x, y, radius, color, stroke },
     { hover = false, transforms }
   ) {
     let path = new Path2D();
@@ -130,8 +131,8 @@ const primitives = {
     }
 
     if (!hover) {
-      ctx.fillStyle = color;
-      ctx.fill(path);
+      ctx[stroke ? "strokeStyle" : "fillStyle"] = color;
+      stroke ? ctx.stroke(path) : ctx.fill(path);
     }
 
     path.closePath();

@@ -110,10 +110,10 @@ const Element = {
             let y = anchorTransition.y || 0;
 
             // this is not needed:
-            if (this.update && this.update.props) {
-              this.update.props.x && (x = this.update.props.x);
-              this.update.props.y && (y = this.update.props.y);
-            }
+            // if (this.update && this.update.props) {
+            //   this.update.props.x && (x = this.update.props.x);
+            //   this.update.props.y && (y = this.update.props.y);
+            // }
 
             ctx.translate(value.x + x, value.y + y);
           } else if (key === "scale") {
@@ -158,6 +158,7 @@ const Element = {
         x: 0,
         y: 0,
       };
+
       const translate = {
         x: x + anchorTransition.x,
         y: y + anchorTransition.y,
@@ -232,6 +233,24 @@ const Element = {
     }
 
     if (this.mouseTransforms) ctx.restore();
+
+    ctx.beginPath();
+    const pp2 = new Path2D();
+
+    // console.log({ mouseTransforms: this.mouseTransforms });
+
+    pp2.arc(
+      this.mouseTransforms?.props?.x || 10,
+      this.mouseTransforms?.props?.y || 10,
+      5,
+      0,
+      Math.PI * 2,
+      false
+    );
+
+    ctx.fillStyle = "pink";
+    ctx.fill(pp2);
+    pp2.closePath();
   },
   setPos: function setPos(x, y) {
     if (this.type === "polygon") {

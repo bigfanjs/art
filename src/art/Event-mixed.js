@@ -1,7 +1,9 @@
 import { eventQueue } from "./art";
 
+let count = 0;
+
 export default class Event {
-  props = { x: 0, y: 0 };
+  props = { x: 0, y: 0, scaleX: 1, scaleY: 1 };
   click = null;
   mousemove = null;
   mousedown = null;
@@ -99,18 +101,23 @@ export default class Event {
       const halfWidth = this.bound.width / 2;
       const halfHeight = this.bound.height / 2;
 
-      // console.log({ halfWidth, halfHeight });
+      // TODO: save initial bounds
 
+      // if (count === 0) {
       this.anchorTransition = {
         x: anchor % 2 ? -halfWidth : halfWidth,
         y: Math.floor(anchor / 3) ? halfHeight : -halfHeight,
       };
+      // }
 
-      this.anchorTransitionPos = {
-        x: anchor % 2 ? halfWidth : -halfWidth,
-        y: Math.floor(anchor / 3) ? -halfHeight : halfHeight,
-      };
+      if (count === 0) {
+        this.anchorTransitionPos = {
+          x: anchor % 2 ? halfWidth : -halfWidth,
+          y: Math.floor(anchor / 3) ? -halfHeight : halfHeight,
+        };
+      }
 
+      console.log(this.bound, this.anchorTransition);
       // this.update(diffx, diffy);
     };
 
@@ -119,6 +126,31 @@ export default class Event {
 
       this.initialScaleX = this.props.scaleX;
       this.initialScaleY = this.props.scaleY;
+
+      // this.props.x =
+      //   this.props.x -
+      //   this.anchorTransitionPos.x +
+      //   this.anchorTransitionPos.x * this.props.scaleX;
+
+      this.props.x =
+        this.props.x + this.anchorTransitionPos.x * this.props.scaleX;
+
+      // subtracting the this.anchorTransitionPos.y is probably problematic
+      // this.props.y =
+      //   this.props.y -
+      //   this.anchorTransitionPos.y +
+      //   this.anchorTransitionPos.y * this.props.scaleY;
+
+      this.props.y =
+        this.props.y + this.anchorTransitionPos.y * this.props.scaleY;
+
+      this.anchorTransitionPos.x = 0;
+      this.anchorTransitionPos.y = 0;
+
+      // this.anchorTransition.x = 0;
+      // this.anchorTransition.y = 0;
+
+      this.updateScale(this);
     };
 
     const mousemove = (mouse, anchor) => {

@@ -29,7 +29,7 @@ export default function DragAndDrop() {
 
   return (
     <group>
-      <arc
+      {/* <arc
         x={200}
         y={height / 2}
         radius={50}
@@ -39,7 +39,7 @@ export default function DragAndDrop() {
         onMouseOut={handleCircleClick}
         select={true}
         // drag
-      />
+      /> */}
       <rect
         x={width / 2}
         y={height / 2}
@@ -57,12 +57,34 @@ export default function DragAndDrop() {
       <hexagon
         x={width / 2.2 - 50}
         y={height / 2 - 50}
-        color={hexColor}
+        color="pink"
+        radius={50}
+        onMouseIn={handleHexClick}
+        onMouseOut={handleHexClick}
+        select={false}
+        stroke={true}
+      />
+      <hexagon
+        x={width / 2.2 - 50}
+        y={height / 2 - 50}
+        color="rgba(255, 255, 255, 0.5)"
         radius={50}
         onMouseIn={handleHexClick}
         onMouseOut={handleHexClick}
         select={true}
         // transform={{ scaleX: 2 }}
+        // drag
+      />
+
+      <arc
+        x={width / 2.2 - 50}
+        y={height / 2 - 50}
+        radius={5}
+        color={circlerColor}
+        // onClick={handleCircleClick}
+        onMouseIn={handleCircleClick}
+        onMouseOut={handleCircleClick}
+        select={true}
         // drag
       />
       {/* <text

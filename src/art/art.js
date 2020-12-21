@@ -104,6 +104,7 @@ const createReconciler = (canvas, ctx) => {
                   y: props.y,
                   radius: props.radius,
                   color: props.color,
+                  stroke: props.stroke,
                 },
                 configurable: true,
                 enumerable: true,

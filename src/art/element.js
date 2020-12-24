@@ -230,14 +230,14 @@ const Element = {
 
       this.anchors = anchors;
       this.bounding = bounding;
+
+      if (!this.initialBounding) this.initialBounding = bounding;
     }
 
     if (this.mouseTransforms) ctx.restore();
 
     ctx.beginPath();
     const pp2 = new Path2D();
-
-    // console.log({ mouseTransforms: this.mouseTransforms });
 
     pp2.arc(
       this.mouseTransforms?.props?.x || 10,

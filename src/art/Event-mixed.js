@@ -98,27 +98,34 @@ export default class Event {
           Math.abs(element.bounding.maxY) + Math.abs(element.bounding.minY),
       };
 
+      this.initialBounds = {
+        x: element.initialBounding.minX + this.props.x,
+        y: element.initialBounding.minY + this.props.y,
+        width:
+          Math.abs(element.initialBounding.maxX) +
+          Math.abs(element.initialBounding.minX),
+        height:
+          Math.abs(element.initialBounding.maxY) +
+          Math.abs(element.initialBounding.minY),
+      };
+
       const halfWidth = this.bound.width / 2;
       const halfHeight = this.bound.height / 2;
 
-      // TODO: save initial bounds
+      const initialHalfWidth = this.initialBounds.width / 2;
+      const initialHalfHeight = this.initialBounds.height / 2;
 
-      // if (count === 0) {
       this.anchorTransition = {
         x: anchor % 2 ? -halfWidth : halfWidth,
         y: Math.floor(anchor / 3) ? halfHeight : -halfHeight,
       };
-      // }
 
-      if (count === 0) {
-        this.anchorTransitionPos = {
-          x: anchor % 2 ? halfWidth : -halfWidth,
-          y: Math.floor(anchor / 3) ? -halfHeight : halfHeight,
-        };
-      }
+      this.anchorTransitionPos = {
+        x: anchor % 2 ? initialHalfWidth : -initialHalfWidth,
+        y: Math.floor(anchor / 3) ? -initialHalfHeight : initialHalfHeight,
+      };
 
-      console.log(this.bound, this.anchorTransition);
-      // this.update(diffx, diffy);
+      count = count + 1;
     };
 
     const mouseup = () => {
@@ -127,28 +134,21 @@ export default class Event {
       this.initialScaleX = this.props.scaleX;
       this.initialScaleY = this.props.scaleY;
 
-      // this.props.x =
-      //   this.props.x -
-      //   this.anchorTransitionPos.x +
-      //   this.anchorTransitionPos.x * this.props.scaleX;
-
       this.props.x =
-        this.props.x + this.anchorTransitionPos.x * this.props.scaleX;
-
-      // subtracting the this.anchorTransitionPos.y is probably problematic
-      // this.props.y =
-      //   this.props.y -
-      //   this.anchorTransitionPos.y +
-      //   this.anchorTransitionPos.y * this.props.scaleY;
+        this.props.x +
+        this.anchorTransition.x +
+        this.anchorTransitionPos.x * this.props.scaleX;
 
       this.props.y =
-        this.props.y + this.anchorTransitionPos.y * this.props.scaleY;
+        this.props.y +
+        this.anchorTransition.y +
+        this.anchorTransitionPos.y * this.props.scaleY;
 
       this.anchorTransitionPos.x = 0;
       this.anchorTransitionPos.y = 0;
 
-      // this.anchorTransition.x = 0;
-      // this.anchorTransition.y = 0;
+      this.anchorTransition.x = 0;
+      this.anchorTransition.y = 0;
 
       this.updateScale(this);
     };
@@ -163,10 +163,11 @@ export default class Event {
 
         const scaleX =
           this.initialScaleX -
-          (anchor % 2 ? diffX * -1 : diffX) / this.bound.width;
+          (anchor % 2 ? diffX * -1 : diffX) / this.initialBounds.width;
         const scaleY =
           this.initialScaleY -
-          (Math.floor(anchor / 3) ? diffY : diffY * -1) / this.bound.height;
+          (Math.floor(anchor / 3) ? diffY : diffY * -1) /
+            this.initialBounds.height;
 
         this.mouse = mouse;
         this.props = {

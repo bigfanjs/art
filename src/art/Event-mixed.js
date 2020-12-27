@@ -14,8 +14,8 @@ export default class Event {
   dragginghandlers = null;
   draggable = false;
   selected = false;
-  initialScaleX = 1;
-  initialScaleY = 1;
+  previousScaleX = 1;
+  previousScaleY = 1;
   anchorTransition = { x: 0, y: 0 };
 
   constructor({
@@ -99,14 +99,8 @@ export default class Event {
       };
 
       this.initialBounds = {
-        x: element.initialBounding.minX + this.props.x,
-        y: element.initialBounding.minY + this.props.y,
-        width:
-          Math.abs(element.initialBounding.maxX) +
-          Math.abs(element.initialBounding.minX),
-        height:
-          Math.abs(element.initialBounding.maxY) +
-          Math.abs(element.initialBounding.minY),
+        width: this.bound.width / this.previousScaleX,
+        height: this.bound.height / this.previousScaleY,
       };
 
       const halfWidth = this.bound.width / 2;
@@ -131,8 +125,8 @@ export default class Event {
     const mouseup = () => {
       this.scalable = false;
 
-      this.initialScaleX = this.props.scaleX;
-      this.initialScaleY = this.props.scaleY;
+      this.previousScaleX = this.props.scaleX;
+      this.previousScaleY = this.props.scaleY;
 
       this.props.x =
         this.props.x +
@@ -162,10 +156,10 @@ export default class Event {
         const diffY = mouse.y - (this.bound.y + height);
 
         const scaleX =
-          this.initialScaleX -
+          this.previousScaleX -
           (anchor % 2 ? diffX * -1 : diffX) / this.initialBounds.width;
         const scaleY =
-          this.initialScaleY -
+          this.previousScaleY -
           (Math.floor(anchor / 3) ? diffY : diffY * -1) /
             this.initialBounds.height;
 

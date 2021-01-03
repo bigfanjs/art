@@ -22,22 +22,9 @@ function boundingBoxForHexagon(
 
   let transformedPoints = points;
 
-  // if (hover) {
-  //   const { x, y } = transforms.props;
-
-  //   transformedPoints =
-  //     points &&
-  //     points.map((point, idx) => {
-  //       return idx % 2 ? point + y : point + x;
-  //     });
-  // }
+  console.log(transformedPoints);
 
   const result = polygonGetBounds(transformedPoints);
-  // const { minX, minY, maxX, maxY } = result;
-
-  // let matrix;
-
-  // if (scaleX) matrix = matrices["scaleX"](scaleX);
 
   const { x, y, scaleX = 1, scaleY = 1 } = transforms.props ?? {};
 
@@ -78,22 +65,58 @@ function boundingBoxForHexagon(
   return { anchors, bounding };
 }
 
-function boundingForpolygon(ctx, { points }, { hover = false }) {
-  const array = points.split(",").join(" ").split(" ");
+function boundingForpolygon(
+  ctx,
+  { points, transforms },
+  { hover = false } = {}
+) {
+  const anchors = [];
+  let bounding;
 
-  const result = polygonGetBounds(array);
-  const { minX, minY, maxX, maxY } = result;
+  let transformedPoints = points
+    .replace(/,/gi, " ")
+    .split(" ")
+    .map((p) => parseFloat(p));
 
-  ctx.strokeStyle = "#7a0";
-  ctx.strokeRect(minX, minY, maxX - minX, maxY - minY);
+  const result = polygonGetBounds(transformedPoints);
+
+  const { x, y, scaleX = 1, scaleY = 1 } = transforms.props ?? {};
+
+  bounding = boxTransformBy(result, {
+    a: scaleX, // scaleX
+    b: 0,
+    c: 0,
+    d: scaleY, // scaleY
+    e: hover ? x : 0, // translateX
+    f: hover ? y : 0, // translateY
+  });
+
+  const { minX, minY, maxX, maxY } = bounding;
+
+  if (!hover) {
+    ctx.strokeStyle = "#7a0";
+    ctx.strokeRect(minX, minY, maxX - minX, maxY - minY);
+    ctx.closePath();
+  }
+
   ctx.fillStyle = "#7a0";
 
   Array.from(Array(4)).forEach((_, i) => {
+    const anchor = new Path2D();
     const x = i % 2 ? minX : maxX;
     const y = Math.floor(i / 2) ? minY : maxY;
 
-    ctx.fillRect(x - halfWidth, y - halfHeight, anchorWidth, anchorHeight);
+    ctx.beginPath();
+    ctx.fillStyle = "#7a0";
+    anchor.rect(x - halfWidth, y - halfHeight, anchorWidth, anchorHeight);
+    if (!hover) ctx.fill(anchor);
+    ctx.closePath();
+
+    anchors.push(anchor);
   });
+
+  // what we return here is only for the mouse
+  return { anchors, bounding };
 }
 
 function boundingForArc(ctx, { x, y, radius }, { hover = false }) {

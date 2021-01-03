@@ -3,8 +3,10 @@ import useArt from "../../art/useArt";
 
 export default function DragAndDrop() {
   const [circlerColor, setCirclerColor] = useState("yellow");
-  const [rectColor, setRectColor] = useState("red");
+  const [rectColor, setRectColor] = useState("#ff6347");
   const [hexColor, setHexColor] = useState("blue");
+  const [polyColor, setPolyColor] = useState("yellow");
+
   // const [cords, setCords] = useState({ x: 0, y: 0 });
   const { width, height } = useArt();
 
@@ -13,11 +15,15 @@ export default function DragAndDrop() {
   };
 
   const handleRectClick = () => {
-    setRectColor(rectColor === "red" ? "green" : "red");
+    setRectColor(rectColor === "#ff6347" ? "#98FB98" : "#ff6347");
   };
 
   const handleHexClick = () => {
     setHexColor(hexColor === "blue" ? "gold" : "blue");
+  };
+
+  const handlePolClick = () => {
+    setPolyColor(polyColor === "yellow" ? "red" : "yellow");
   };
 
   // const handleMouseMove = (mouse) => {
@@ -40,7 +46,7 @@ export default function DragAndDrop() {
         select={true}
         // drag
       /> */}
-      <rect
+      {/* <rect
         x={width / 2}
         y={height / 2}
         width={100}
@@ -53,40 +59,18 @@ export default function DragAndDrop() {
         select={true}
         // onMouseMove={handleMouseMove}
         // drag
-      />
-      <hexagon
+      /> */}
+      {/* <hexagon
         x={width / 2.2 - 50}
         y={height / 2 - 50}
-        color="pink"
-        radius={50}
-        onMouseIn={handleHexClick}
-        onMouseOut={handleHexClick}
-        select={false}
-        stroke={true}
-      />
-      <hexagon
-        x={width / 2.2 - 50}
-        y={height / 2 - 50}
-        color="rgba(255, 255, 255, 0.5)"
+        color={hexColor}
         radius={50}
         onMouseIn={handleHexClick}
         onMouseOut={handleHexClick}
         select={true}
         // transform={{ scaleX: 2 }}
         // drag
-      />
-
-      <arc
-        x={width / 2.2 - 50}
-        y={height / 2 - 50}
-        radius={5}
-        color={circlerColor}
-        // onClick={handleCircleClick}
-        onMouseIn={handleCircleClick}
-        onMouseOut={handleCircleClick}
-        select={true}
-        // drag
-      />
+      /> */}
       {/* <text
         x={20}
         y={50}
@@ -106,10 +90,12 @@ export default function DragAndDrop() {
         // drag
       /> */}
       <polygon
-        points="20,50 100,100 20,100 20,50"
-        color="yellow"
+        points="420,250 500,300 420,300"
+        color={polyColor}
+        onMouseIn={handlePolClick}
+        onMouseOut={handlePolClick}
         select={true}
-        stroke
+        // stroke
       />
       {/* <img
         src="https://drscdn.500px.org/photo/78655895/m%3D900/ff907b64c70732ae8a730f04ba157655"

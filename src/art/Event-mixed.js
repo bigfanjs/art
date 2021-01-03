@@ -1,7 +1,5 @@
 import { eventQueue } from "./art";
 
-let count = 0;
-
 export default class Event {
   props = { x: 0, y: 0, scaleX: 1, scaleY: 1 };
   click = null;
@@ -22,7 +20,7 @@ export default class Event {
     checkBoundries,
     isInsideOneOfTheAnchors,
     absolute = false,
-    initialTransform,
+    selected,
     element,
   }) {
     eventQueue.push(this);
@@ -50,11 +48,10 @@ export default class Event {
       };
     }
 
-    if (initialTransform) {
-      const { x, y } = initialTransform;
-
-      this.props.x = x;
-      this.props.y = y;
+    if (selected) {
+      // TODO support polygons:
+      this.props.x = element.props.x;
+      this.props.y = element.props.y;
 
       element.updateScale(this);
     }
@@ -114,12 +111,41 @@ export default class Event {
         y: Math.floor(anchor / 3) ? halfHeight : -halfHeight,
       };
 
-      this.anchorTransitionPos = {
-        x: anchor % 2 ? initialHalfWidth : -initialHalfWidth,
-        y: Math.floor(anchor / 3) ? -initialHalfHeight : initialHalfHeight,
-      };
+      if (element.type === "polygon") {
+        const newPoints =
+          element.props.points &&
+          element.props.points
+            .split(" ")
+            .map((point) => {
+              const [xx, yy] = point.split(",");
 
-      count = count + 1;
+              return {
+                x:
+                  parseFloat(xx) +
+                  (anchor % 2 ? initialHalfWidth : -initialHalfWidth),
+                y:
+                  parseFloat(yy) +
+                  (Math.floor(anchor / 3)
+                    ? -initialHalfHeight
+                    : initialHalfHeight),
+              };
+            })
+            .reduce((sum, { x, y }) => `${sum} ${x},${y}`, "")
+            .trim();
+
+        console.log({ newPoints });
+
+        this.anchorTransitionPos = {
+          points: newPoints,
+          x: anchor % 2 ? initialHalfWidth : -initialHalfWidth,
+          y: Math.floor(anchor / 3) ? -initialHalfHeight : initialHalfHeight,
+        };
+      } else {
+        this.anchorTransitionPos = {
+          x: anchor % 2 ? initialHalfWidth : -initialHalfWidth,
+          y: Math.floor(anchor / 3) ? -initialHalfHeight : initialHalfHeight,
+        };
+      }
     };
 
     const mouseup = () => {
@@ -138,8 +164,26 @@ export default class Event {
         this.anchorTransition.y +
         this.anchorTransitionPos.y * this.props.scaleY;
 
-      this.anchorTransitionPos.x = 0;
-      this.anchorTransitionPos.y = 0;
+      if (element.type === "polygon") {
+        const newPoints =
+          element.props.points &&
+          element.props.points
+            .split(" ")
+            .map((point) => {
+              const [xx, yy] = point.split(",");
+
+              return { x: parseFloat(xx), y: parseFloat(yy) };
+            })
+            .reduce((sum, { x, y }) => `${sum} ${x},${y}`, "")
+            .trim();
+
+        this.anchorTransitionPos.points = newPoints;
+        this.anchorTransitionPos.x = 0;
+        this.anchorTransitionPos.y = 0;
+      } else {
+        this.anchorTransitionPos.x = 0;
+        this.anchorTransitionPos.y = 0;
+      }
 
       this.anchorTransition.x = 0;
       this.anchorTransition.y = 0;
@@ -158,6 +202,7 @@ export default class Event {
         const scaleX =
           this.previousScaleX -
           (anchor % 2 ? diffX * -1 : diffX) / this.initialBounds.width;
+
         const scaleY =
           this.previousScaleY -
           (Math.floor(anchor / 3) ? diffY : diffY * -1) /
@@ -167,8 +212,8 @@ export default class Event {
         this.props = {
           scaleX,
           scaleY,
-          x: this.props.x,
-          y: this.props.y,
+          x: this.props.x || this.bound.x + this.bound.width / 2,
+          y: this.props.y || this.bound.y + this.bound.height / 2,
           rotate: 0,
         };
 

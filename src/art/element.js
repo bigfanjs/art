@@ -1,6 +1,10 @@
+import { polylineGetVertex } from "math2d/esm/polylineFunctions/polylineGetVertex";
+import { polygonGetBounds } from "math2d/esm/polygonFunctions/polygonGetBounds";
+
 import primitives from "./primitives";
 import boundingBoxes from "./boundingBox";
 import { isPointInPath, isPointInRect } from "./isPointInside";
+import getPolygonCentroid from "./getCenteroid";
 
 const baseLines = ["alphabetic", "ideographic", "bottom"];
 
@@ -137,6 +141,8 @@ const Element = {
 
     //this.mouseTransforms.anchorTransition
 
+    // console.log(this.mouseTransforms.props);
+
     // draw
     const { path, points } = primitive(
       ctx,
@@ -151,6 +157,8 @@ const Element = {
     this.path = path;
     this.hover = path;
 
+    // console.log(this.mouseTransforms);
+
     // draw hover
     if (this.mouseTransforms) {
       const { x, y } = this.mouseTransforms.props;
@@ -163,6 +171,9 @@ const Element = {
         x: x + anchorTransition.x,
         y: y + anchorTransition.y,
       };
+
+      // console.log({ x, anchorTransition });
+      // if (points) console.log(this.mouseTransforms);
 
       const { path: hover } = primitive(
         ctx,
@@ -228,29 +239,24 @@ const Element = {
         { hover: true }
       );
 
+      // console.log(points, bounding, this.mouseTransforms.props);
+
       this.anchors = anchors;
       this.bounding = bounding;
-
-      if (!this.initialBounding) this.initialBounding = bounding;
     }
 
     if (this.mouseTransforms) ctx.restore();
 
-    ctx.beginPath();
-    const pp2 = new Path2D();
+    const ppp = new Path2D();
 
-    pp2.arc(
-      this.mouseTransforms?.props?.x || 10,
-      this.mouseTransforms?.props?.y || 10,
-      5,
-      0,
-      Math.PI * 2,
-      false
-    );
-
-    ctx.fillStyle = "pink";
-    ctx.fill(pp2);
-    pp2.closePath();
+    if (this.mouseTransforms) {
+      const props = this.mouseTransforms.props;
+      ctx.beginPath();
+      ctx.fillStyle = "pink";
+      ppp.arc(props.x, props.y, 5, Math.PI * 2, 0, false);
+      ctx.fill(ppp);
+      ppp.closePath();
+    }
   },
   setPos: function setPos(x, y) {
     if (this.type === "polygon") {
@@ -324,7 +330,21 @@ const Element = {
   clearOffset: function () {
     const { x, y } = this.props;
 
-    if (x > 0 || y > 0) this.setPos(-this.props.x, -this.props.y);
+    if (x > 0 && y > 0) this.setPos(-x, -y);
+  },
+  setOffsets: function () {
+    const points = this.props.points
+      .replace(/,/gi, " ")
+      .split(" ")
+      .map((p) => parseFloat(p));
+
+    const { minX, minY, maxX, maxY } = polygonGetBounds(points);
+
+    const width = maxX - minX;
+    const height = maxY - minY;
+
+    this.props.x = minX + width / 2;
+    this.props.y = minY + height / 2;
   },
 };
 

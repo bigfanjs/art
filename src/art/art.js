@@ -237,7 +237,13 @@ const createReconciler = (canvas, ctx) => {
         globalIndex = globalIndex + 1;
         element.zIndex = globalIndex;
 
+        element.type = type;
+        element.update = props.update;
+        element.transform = props.transform;
+
         let event = null;
+
+        if (type === "polygon") element.setOffsets();
 
         if (
           props.onClick ||
@@ -254,9 +260,7 @@ const createReconciler = (canvas, ctx) => {
             isInsideOneOfTheAnchors: element.isInsideOneOfTheAnchors.bind(
               element
             ),
-            initialTransform: props.select
-              ? { x: element.props.x, y: element.props.y }
-              : null,
+            selected: props.select,
             element,
           });
 
@@ -276,16 +280,14 @@ const createReconciler = (canvas, ctx) => {
           props.onMouseDown && event.schedule("mousedown", props.onMouseDown);
           props.onMouseIn && event.schedule("mousein", props.onMouseIn);
           props.onMouseOut && event.schedule("mouseout", props.onMouseOut);
+
           props.drag && event.startDrag(canvas, ctx);
+
           if (props.select) {
             event.startDraggingAnchors(element);
-            element.clearOffset();
+            element.clearOffset(type);
           }
         }
-
-        element.type = type;
-        element.update = props.update;
-        element.transform = props.transform;
 
         return element;
       }

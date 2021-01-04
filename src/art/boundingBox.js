@@ -22,8 +22,6 @@ function boundingBoxForHexagon(
 
   let transformedPoints = points;
 
-  console.log(transformedPoints);
-
   const result = polygonGetBounds(transformedPoints);
 
   const { x, y, scaleX = 1, scaleY = 1 } = transforms.props ?? {};
@@ -137,22 +135,60 @@ function boundingForArc(ctx, { x, y, radius }, { hover = false }) {
   });
 }
 
-function boundingForRect(ctx, { x, y, width, height }, { hover = false }) {
-  ctx.strokeStyle = "#7a0";
-  ctx.strokeRect(x, y, width, height);
+function boundingForRect(
+  ctx,
+  { x, y, width, height, transforms },
+  { hover = false } = {}
+) {
+  const anchors = [];
+  let bounding;
 
-  ctx.fillStyle = "#7a0";
+  const transformsProps = transforms.props ?? {};
+
+  bounding = boxTransformBy(
+    {
+      minX: x - width / 2,
+      minY: y - height / 2,
+      maxX: x - width / 2 + width,
+      maxY: y - height / 2 + height,
+    },
+    {
+      a: transformsProps.scaleX, // scaleX
+      b: 0,
+      c: 0,
+      d: transformsProps.scaleY, // scaleY
+      e: hover ? transformsProps.x : 0, // translateX
+      f: hover ? transformsProps.y : 0, // translateY
+    }
+  );
+
+  const { minX, minY, maxX, maxY } = bounding;
+
+  const boundWidth = maxX - minX;
+  const boundHeight = maxY - minY;
+
+  if (!hover) {
+    ctx.strokeStyle = "#7a0";
+    ctx.strokeRect(minX, minY, boundWidth, boundHeight);
+  }
+
   Array.from(Array(4)).forEach((_, i) => {
-    const anchorX = i % 2 ? x : x + width;
-    const anchorY = Math.floor(i / 2) ? y : y + height;
+    const anchor = new Path2D();
+    const x = i % 2 ? minX : maxX;
+    const y = Math.floor(i / 2) ? minY : maxY;
 
-    ctx.fillRect(
-      anchorX - halfWidth,
-      anchorY - halfHeight,
-      anchorWidth,
-      anchorHeight
-    );
+    ctx.beginPath();
+    ctx.fillStyle = "#7a0";
+
+    anchor.rect(x - halfWidth, y - halfHeight, anchorWidth, anchorHeight);
+
+    if (!hover) ctx.fill(anchor);
+    ctx.closePath();
+
+    anchors.push(anchor);
   });
+
+  return { anchors, bounding };
 }
 
 const boundingBoxes = {

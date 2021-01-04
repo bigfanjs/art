@@ -31,13 +31,16 @@ const primitives = {
         }
       );
 
-      // console.log({ minX: result.minX, maxX: result.maxX, x, width });
-
       const hoverpath = new Path2D();
 
       ctx.beginPath();
 
-      hoverpath.rect(result.minX, result.minY, 100, 100);
+      hoverpath.rect(
+        result.minX,
+        result.minY,
+        result.maxX - result.minX,
+        result.maxY - result.minY
+      );
 
       path = hoverpath;
     }
@@ -125,13 +128,13 @@ const primitives = {
         .forEach(({ x, y }) => polygon.lineTo(x, y));
 
       path = polygon;
+      polygon.closePath();
     }
 
     if (!hover) {
       ctx[stroke ? "strokeStyle" : "fillStyle"] = color;
       stroke ? ctx.stroke(path) : ctx.fill(path);
     }
-    path.closePath();
 
     return { path, points };
   },

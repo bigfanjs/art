@@ -133,8 +133,6 @@ export default class Event {
             .reduce((sum, { x, y }) => `${sum} ${x},${y}`, "")
             .trim();
 
-        console.log({ newPoints });
-
         this.anchorTransitionPos = {
           points: newPoints,
           x: anchor % 2 ? initialHalfWidth : -initialHalfWidth,

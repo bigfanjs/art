@@ -221,6 +221,7 @@ const Element = {
 
       const { bounding } = bound(ctx, {
         ...this.props,
+        ...(this?.mouseTransforms?.anchorTransitionPos ?? {}), // apply the opposite anchor transition
         points,
         transforms: {
           props: { ...this.mouseTransforms.props },

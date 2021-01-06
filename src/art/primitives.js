@@ -62,13 +62,48 @@ const primitives = {
       isCounterclockwise = false,
       color,
     },
-    { hover = false }
+    { hover = false, transforms = {} }
   ) => {
-    const path = new Path2D();
+    let path = new Path2D();
 
     ctx.beginPath();
     ctx.fillStyle = color;
     path.arc(x, y, radius, start, end, isCounterclockwise);
+
+    if (hover) {
+      const result = boxTransformBy(
+        {
+          minX: x,
+          minY: y,
+          maxX: x + radius * 2,
+          maxY: y + radius * 2,
+        },
+        {
+          a: transforms.scaleX, // scaleX
+          b: 0,
+          c: 0,
+          d: transforms.scaleY, // scaleY
+          e: transforms.x, // translateX
+          f: transforms.y, // translateY
+        }
+      );
+
+      const hoverpath = new Path2D();
+
+      ctx.beginPath();
+
+      hoverpath.arc(
+        result.minX,
+        result.minY,
+        (result.maxX - result.minX) / 2,
+        start,
+        end,
+        isCounterclockwise
+      );
+
+      path = hoverpath;
+    }
+
     if (!hover) ctx.fill(path);
     path.closePath();
 

@@ -1,10 +1,8 @@
-import { polylineGetVertex } from "math2d/esm/polylineFunctions/polylineGetVertex";
 import { polygonGetBounds } from "math2d/esm/polygonFunctions/polygonGetBounds";
 
 import primitives from "./primitives";
 import boundingBoxes from "./boundingBox";
 import { isPointInPath, isPointInRect } from "./isPointInside";
-import getPolygonCentroid from "./getCenteroid";
 
 const baseLines = ["alphabetic", "ideographic", "bottom"];
 
@@ -247,17 +245,6 @@ const Element = {
     }
 
     if (this.mouseTransforms) ctx.restore();
-
-    const ppp = new Path2D();
-
-    if (this.mouseTransforms) {
-      const props = this.mouseTransforms.props;
-      ctx.beginPath();
-      ctx.fillStyle = "pink";
-      ppp.arc(props.x, props.y, 5, Math.PI * 2, 0, false);
-      ctx.fill(ppp);
-      ppp.closePath();
-    }
   },
   setPos: function setPos(x, y) {
     if (this.type === "polygon") {

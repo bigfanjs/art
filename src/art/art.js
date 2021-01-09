@@ -7,6 +7,8 @@ import Event from "./Event-mixed";
 
 let globalIndex = 0;
 
+const DPI = window.devicePixelRatio;
+
 export const drawQueue = [];
 export const updateQueue = [];
 export const eventQueue = [];
@@ -389,9 +391,22 @@ const createReconciler = (canvas, ctx) => {
   return ReactReconciler(canvas2DConfigs);
 };
 
+function setupCanvas(canvas) {
+  const rect = canvas.getBoundingClientRect();
+
+  canvas.width = rect.width * DPI;
+  canvas.height = rect.height * DPI;
+
+  const ctx = canvas.getContext("2d");
+
+  // ctx.scale(DPI, DPI);
+
+  return ctx;
+}
+
 const Art = {
   render: (element, canvas) => {
-    const ctx = canvas.getContext("2d");
+    const ctx = setupCanvas(canvas);
     const reconciler = createReconciler(canvas, ctx);
     const container = reconciler.createContainer(canvas, false, false);
     const Provider = React.createElement(
@@ -491,7 +506,10 @@ const Art = {
     // TODO: re-design the event system.
     function getMouseCoords(e) {
       const rect = canvas.getBoundingClientRect();
-      const mouse = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+      const mouse = {
+        x: (e.clientX - rect.left) * DPI,
+        y: (e.clientY - rect.top) * DPI,
+      };
 
       return mouse;
     }
@@ -547,6 +565,7 @@ const Art = {
         ({ isPreviousMouseIn }) => isPreviousMouseIn
       );
 
+      // dragging
       events.forEach((event) => {
         event.mousemove && event.mousemove(mouse);
         event.dragginghandlers && event.dragginghandlers.mousemove(mouse);

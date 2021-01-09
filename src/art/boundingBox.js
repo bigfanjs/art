@@ -1,8 +1,8 @@
 import { polygonGetBounds } from "math2d/esm/polygonFunctions/polygonGetBounds";
 import { boxTransformBy } from "math2d/esm/boxFunctions/boxTransformBy";
 
-const anchorWidth = 8;
-const anchorHeight = 8;
+const anchorWidth = 16;
+const anchorHeight = 16;
 
 const halfWidth = anchorWidth / 2;
 const halfHeight = anchorHeight / 2;

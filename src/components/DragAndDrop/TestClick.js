@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import useArt from "../../art/useArt";
 
 export default function DragAndDrop() {
-  const [circlerColor, setCirclerColor] = useState("yellow");
+  const [circlerColor, setCirclerColor] = useState("grey");
   const [rectColor, setRectColor] = useState("#ff6347");
   const [hexColor, setHexColor] = useState("blue");
   const [polyColor, setPolyColor] = useState("yellow");
@@ -11,7 +11,7 @@ export default function DragAndDrop() {
   const { width, height } = useArt();
 
   const handleCircleClick = () => {
-    setCirclerColor(circlerColor === "yellow" ? "grey" : "yellow");
+    setCirclerColor(circlerColor === "grey" ? "yellow" : "grey");
   };
 
   const handleRectClick = () => {
@@ -50,8 +50,8 @@ export default function DragAndDrop() {
       {/* <rect
         x={width / 2}
         y={height / 2}
-        width={100}
-        height={100}
+        width={300}
+        height={300}
         // color={`hsl(${cords.x * 360}, ${cords.y * 100}%, 60%)`}
         color={rectColor}
         // onClick={handleRectClick}

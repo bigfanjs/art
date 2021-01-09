@@ -7,11 +7,7 @@ const primitives = {
     { x, y, width, height, color },
     { hover = false, transforms = {} }
   ) => {
-    let path = new Path2D();
-
-    ctx.beginPath();
-    ctx.fillStyle = color;
-    path.rect(x - width / 2, y - height / 2, width, height);
+    let path;
 
     if (hover) {
       const result = boxTransformBy(
@@ -43,9 +39,18 @@ const primitives = {
       );
 
       path = hoverpath;
-    }
+    } else {
+      let rectPath = new Path2D();
 
-    if (!hover) ctx.fill(path);
+      // console.log({ x: x - width / 2, y: y - height / 2, width, height });
+
+      ctx.beginPath();
+      ctx.fillStyle = color;
+      rectPath.rect(x - width / 2, y - height / 2, width, height);
+      ctx.fill(rectPath);
+
+      path = rectPath;
+    }
 
     path.closePath();
 
@@ -64,19 +69,15 @@ const primitives = {
     },
     { hover = false, transforms = {} }
   ) => {
-    let path = new Path2D();
-
-    ctx.beginPath();
-    ctx.fillStyle = color;
-    path.arc(x, y, radius, start, end, isCounterclockwise);
+    let path;
 
     if (hover) {
       const result = boxTransformBy(
         {
-          minX: x,
-          minY: y,
-          maxX: x + radius * 2,
-          maxY: y + radius * 2,
+          minX: x - radius,
+          minY: y - radius,
+          maxX: x + radius,
+          maxY: y + radius,
         },
         {
           a: transforms.scaleX, // scaleX
@@ -92,19 +93,32 @@ const primitives = {
 
       ctx.beginPath();
 
-      hoverpath.arc(
-        result.minX,
-        result.minY,
-        (result.maxX - result.minX) / 2,
+      const radiusX = (result.maxX - result.minX) / 2;
+      const radiusY = (result.maxY - result.minY) / 2;
+
+      hoverpath.ellipse(
+        result.minX + radiusX,
+        result.minY + radiusY,
+        radiusX,
+        radiusY,
+        0,
         start,
-        end,
-        isCounterclockwise
+        end
       );
 
       path = hoverpath;
+    } else {
+      const arcPath = new Path2D();
+
+      ctx.beginPath();
+      ctx.fillStyle = color;
+      arcPath.ellipse(x, y, radius, radius, 0, start, end);
+      // arcPath.arc(x, y, radius, start, end, isCounterclockwise);
+      ctx.fill(arcPath);
+
+      path = arcPath;
     }
 
-    if (!hover) ctx.fill(path);
     path.closePath();
 
     return { path };

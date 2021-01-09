@@ -97,9 +97,13 @@ const Element = {
       const { x, y, scale, scaleX, scaleY, ...transform } = transformation;
       const transforms = {
         ...(x && y && !offsets ? { translate: { x, y } } : {}),
-        ...(scale || scaleX || scaleY
-          ? { scale: { x: scaleX || scale || 1, y: scaleY || scale || 1 } }
+
+        ...(typeof scaleX === "number" && typeof scaleY === "number"
+          ? { scale: { x: scaleX, y: scaleY } }
+          : typeof scale === "number"
+          ? { x: scale, y: scale }
           : {}),
+
         ...transform,
       };
 
@@ -119,6 +123,7 @@ const Element = {
 
             ctx.translate(value.x + x, value.y + y);
           } else if (key === "scale") {
+            // console.log(value);
             ctx.scale(value.x, value.y);
           } else {
             let val = 0;

@@ -170,7 +170,7 @@ const createReconciler = (canvas, ctx) => {
                   y: props.y,
                   text: props.text,
                   size: props.size,
-                  fontFamily: props.fontFamily,
+                  fontFamily: props.fontFamily || "Helvetica",
                   color: props.color,
                   baseLine: props.baseLine || "alphabetic",
                 },

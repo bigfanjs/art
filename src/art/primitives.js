@@ -189,22 +189,58 @@ const primitives = {
   },
   text: (
     ctx,
-    { x, y, text, size, fontFamily = "verdana", baseLine, color },
-    { hover = false }
+    { x, y, text, size, fontFamily, baseLine, color },
+    { hover = false, transforms }
   ) => {
-    const dimensions = {};
+    let path;
 
-    ctx.beginPath();
     ctx.font = `${size}px ${fontFamily}`;
     ctx.textBaseline = baseLine;
 
-    dimensions.width = ctx.measureText(text).width;
-    dimensions.height = size;
+    const textMetrics = ctx.measureText(text);
+    const width = textMetrics.width;
+    const actualHeight =
+      textMetrics.actualBoundingBoxAscent +
+      textMetrics.actualBoundingBoxDescent;
+    const height = actualHeight;
 
-    ctx.fillStyle = color;
-    if (!hover) ctx.fillText(text, x, y);
+    if (hover) {
+      const result = boxTransformBy(
+        {
+          minX: x - width / 2,
+          minY: y - height / 2,
+          maxX: x - width / 2 + width,
+          maxY: y - height / 2 + height,
+        },
+        {
+          a: transforms.scaleX, // scaleX
+          b: 0,
+          c: 0,
+          d: transforms.scaleY, // scaleY
+          e: transforms.x, // translateX
+          f: transforms.y, // translateY
+        }
+      );
 
-    return dimensions;
+      const hoverpath = new Path2D();
+      hoverpath.rect(
+        result.minX,
+        result.minY,
+        result.maxX - result.minX,
+        result.maxY - result.minY
+      );
+
+      path = hoverpath;
+    } else {
+      ctx.beginPath();
+      ctx.font = `${size}px ${fontFamily}`;
+      ctx.textBaseline = baseLine;
+
+      ctx.fillStyle = color;
+      ctx.fillText(text, x - width / 2, y);
+    }
+
+    return { path };
   },
   hexagon: function hexagon(
     ctx,

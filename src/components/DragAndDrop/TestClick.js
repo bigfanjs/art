@@ -35,7 +35,7 @@ export default function DragAndDrop() {
 
   return (
     <group>
-      <arc
+      {/* <arc
         x={200}
         y={height / 2}
         radius={50}
@@ -45,7 +45,7 @@ export default function DragAndDrop() {
         onMouseOut={handleCircleClick}
         select={true}
         // drag
-      />
+      /> */}
 
       {/* <rect
         x={width / 2}
@@ -72,16 +72,17 @@ export default function DragAndDrop() {
         // transform={{ scaleX: 2 }}
         // drag
       /> */}
-      {/* <text
-        x={20}
-        y={50}
+      <text
+        x={width / 5}
+        y={height / 5}
         text="BEAST ADEL"
         size={40}
         color="green"
         baseLine="middle"
+        select
         // drag
       />
-      <text
+      {/* <text
         x={300}
         y={50}
         text="Who am I?"

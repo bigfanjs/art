@@ -223,11 +223,83 @@ function boundingForRect(
   return { anchors, bounding };
 }
 
+function boundingForText(
+  ctx,
+  { x, y, text, size, baseLine, fontFamily, transforms },
+  { hover = false } = {}
+) {
+  const anchors = [];
+  // const baseLinesTypes = ["alphabetic", "ideographic", "bottom"];
+  // const baseLineType = baseLinesTypes.find((bl) => bl === baseLine);
+  // const isCenterBaseLine = baseLine === "middle";
+  // const height = size;
+
+  ctx.textBaseline = baseLine;
+  ctx.font = `${size}px ${fontFamily}`;
+
+  const textMetrics = ctx.measureText(text);
+  const width = textMetrics.width;
+  // const Y = y - (baseLineType ? height : isCenterBaseLine ? height / 2 : 0);
+
+  let bounding;
+  const actualHeight =
+    textMetrics.actualBoundingBoxAscent + textMetrics.actualBoundingBoxDescent;
+  const height = actualHeight;
+
+  const transformsProps = transforms.props ?? {};
+
+  bounding = boxTransformBy(
+    {
+      minX: x - width / 2,
+      minY: y - height / 2,
+      maxX: x + width / 2,
+      maxY: y + height / 2,
+    },
+    {
+      a: transformsProps.scaleX, // scaleX
+      b: 0,
+      c: 0,
+      d: transformsProps.scaleY, // scaleY
+      e: hover ? transformsProps.x : 0, // translateX
+      f: hover ? transformsProps.y : 0, // translateY
+    }
+  );
+
+  const { minX, minY, maxX, maxY } = bounding;
+
+  const boundWidth = maxX - minX;
+  const boundHeight = maxY - minY;
+
+  if (!hover) {
+    ctx.strokeStyle = "#7a0";
+    ctx.strokeRect(minX, minY, boundWidth, boundHeight);
+  }
+
+  Array.from(Array(4)).forEach((_, i) => {
+    const anchor = new Path2D();
+    const x = i % 2 ? minX : maxX;
+    const y = Math.floor(i / 2) ? minY : maxY;
+
+    ctx.beginPath();
+    ctx.fillStyle = "#7a0";
+
+    anchor.rect(x - halfWidth, y - halfHeight, anchorWidth, anchorHeight);
+
+    if (!hover) ctx.fill(anchor);
+    ctx.closePath();
+
+    anchors.push(anchor);
+  });
+
+  return { anchors, bounding };
+}
+
 const boundingBoxes = {
   rect: boundingForRect,
   arc: boundingForArc,
   polygon: boundingForpolygon,
   hexagon: boundingBoxForHexagon,
+  text: boundingForText,
 };
 
 export default boundingBoxes;

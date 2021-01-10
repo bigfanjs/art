@@ -4,8 +4,6 @@ import primitives from "./primitives";
 import boundingBoxes from "./boundingBox";
 import { isPointInPath, isPointInRect } from "./isPointInside";
 
-const baseLines = ["alphabetic", "ideographic", "bottom"];
-
 const Element = {
   props: null,
   type: null,
@@ -211,7 +209,7 @@ const Element = {
       if (x && y) ctx.translate(x + anchorTransition.x, y + anchorTransition.y);
     }
 
-    if (this.event.selected) {
+    if (this.event?.selected) {
       const { x, y } = this.mouseTransforms.props;
       const anchorTransition = this.mouseTransforms?.anchorTransition || {
         x: 0,
@@ -281,20 +279,10 @@ const Element = {
     if (this.isPath) {
       isMouseIn = isPointInPath(this.hover, point, ctx);
     } else {
-      const baseLine = baseLines.find((bl) => bl === this.props.baseLine);
-      const centerBL = this.props.baseLine === "middle";
-
       let rect;
 
       if (this.type === "text") {
-        rect = {
-          x: this.props.x,
-          y:
-            this.props.y -
-            (baseLine ? this.path.height : centerBL ? this.path.height / 2 : 0),
-          width: this.path.width,
-          height: this.path.height,
-        };
+        isMouseIn = isPointInPath(this.hover, point, ctx);
       } else {
         rect = {
           x: this.props.x,
@@ -302,9 +290,9 @@ const Element = {
           width: this.props.width,
           height: this.props.height,
         };
-      }
 
-      isMouseIn = isPointInRect(rect, point);
+        isMouseIn = isPointInRect(rect, point);
+      }
     }
 
     return isMouseIn;

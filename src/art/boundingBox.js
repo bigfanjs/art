@@ -234,64 +234,26 @@ function boundingForText(
   ctx.textAlign = textAlign;
   ctx.font = `${size}px ${fontFamily}`;
 
-  const baseLinesTypes = ["top", "hanging", "bottom", "ideographic", "middle"];
-  const textAlignTypes = ["start", "end", "left", "center", "right"];
-
   const textMetrics = ctx.measureText(text);
-  const baseLineType = baseLinesTypes.find((bl) => bl === baseLine) || "top";
-  const textAlignType = textAlignTypes.find((bl) => bl === textAlign) || "left";
 
   let bounding;
-  let offsetX;
-  let offsetY;
 
   const transformsProps = transforms.props ?? {};
 
-  const descent = y + textMetrics.actualBoundingBoxDescent;
-  const ascent = y - textMetrics.actualBoundingBoxAscent;
-  const left = x + textMetrics.actualBoundingBoxLeft;
-  const right = x - textMetrics.actualBoundingBoxRight;
+  const Descent = textMetrics.actualBoundingBoxDescent;
+  const Ascent = textMetrics.actualBoundingBoxAscent;
+  const TextHalfHeight = (Descent + Ascent) / 2;
 
-  // vertical aligntment
-  switch (baseLineType) {
-    case "middle":
-      offsetY = 0;
-      break;
-    case "hanging":
-    case "top":
-      offsetY = (descent - ascent) / 2;
-      break;
-    case "bottom":
-    case "ideographic":
-      offsetY = -((descent - ascent) / 2);
-      break;
-    default:
-      break;
-  }
-
-  // horizontal aligntment
-  switch (textAlignType) {
-    case "center":
-      offsetX = 0;
-      break;
-    case "left" || "start":
-      offsetX = (left - right) / 2;
-      break;
-    case "right" || "end":
-      offsetX = -((left - right) / 2);
-      break;
-    default:
-      break;
-  }
-
-  const diffY = textMetrics.actualBoundingBoxAscent - (descent - ascent) / 2;
+  const Left = textMetrics.actualBoundingBoxLeft;
+  const Right = textMetrics.actualBoundingBoxRight;
+  const TextHalfWidth = (Right + Left) / 2;
 
   bounding = boxTransformBy(
     {
-      minX: x - textMetrics.actualBoundingBoxLeft - offsetX,
-      minY: y - textMetrics.actualBoundingBoxAscent - offsetY + diffY, // here
-      maxX: x + textMetrics.actualBoundingBoxRight - offsetX,
-      maxY: y + textMetrics.actualBoundingBoxDescent - offsetY + diffY, // here
+      minY: y - TextHalfHeight,
+      maxY: y + Descent + Ascent - TextHalfHeight,
+      minX: x - TextHalfWidth,
+      maxX: x + Right + Left - TextHalfWidth,
     },
     {
       a: transformsProps.scaleX, // scaleX
@@ -307,8 +269,6 @@ function boundingForText(
 
   const boundWidth = maxX - minX;
   const boundHeight = maxY - minY;
-
-  // console.log({ boundHeight });
 
   if (!hover) {
     ctx.strokeStyle = "#7a0";

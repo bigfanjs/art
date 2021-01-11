@@ -73,10 +73,10 @@ export default function DragAndDrop() {
         // drag
       /> */}
       <text
-        x={width / 5}
-        y={height / 5}
-        text="BEAST ADEL"
-        size={120}
+        x={width / 2}
+        y={height / 2}
+        text="@bigfan/art"
+        size={80}
         color="orange"
         select
         // drag

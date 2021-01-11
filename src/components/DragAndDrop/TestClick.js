@@ -76,9 +76,8 @@ export default function DragAndDrop() {
         x={width / 5}
         y={height / 5}
         text="BEAST ADEL"
-        size={40}
-        color="green"
-        baseLine="middle"
+        size={120}
+        color="orange"
         select
         // drag
       />

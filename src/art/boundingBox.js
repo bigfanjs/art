@@ -225,35 +225,73 @@ function boundingForRect(
 
 function boundingForText(
   ctx,
-  { x, y, text, size, baseLine, fontFamily, transforms },
+  { x, y, text, size, baseLine, textAlign, fontFamily, transforms },
   { hover = false } = {}
 ) {
   const anchors = [];
-  // const baseLinesTypes = ["alphabetic", "ideographic", "bottom"];
-  // const baseLineType = baseLinesTypes.find((bl) => bl === baseLine);
-  // const isCenterBaseLine = baseLine === "middle";
-  // const height = size;
 
   ctx.textBaseline = baseLine;
+  ctx.textAlign = textAlign;
   ctx.font = `${size}px ${fontFamily}`;
 
+  const baseLinesTypes = ["top", "hanging", "bottom", "ideographic", "middle"];
+  const textAlignTypes = ["start", "end", "left", "center", "right"];
+
   const textMetrics = ctx.measureText(text);
-  const width = textMetrics.width;
-  // const Y = y - (baseLineType ? height : isCenterBaseLine ? height / 2 : 0);
+  const baseLineType = baseLinesTypes.find((bl) => bl === baseLine) || "top";
+  const textAlignType = textAlignTypes.find((bl) => bl === textAlign) || "left";
 
   let bounding;
-  const actualHeight =
-    textMetrics.actualBoundingBoxAscent + textMetrics.actualBoundingBoxDescent;
-  const height = actualHeight;
+  let offsetX;
+  let offsetY;
 
   const transformsProps = transforms.props ?? {};
 
+  const descent = y + textMetrics.actualBoundingBoxDescent;
+  const ascent = y - textMetrics.actualBoundingBoxAscent;
+  const left = x + textMetrics.actualBoundingBoxLeft;
+  const right = x - textMetrics.actualBoundingBoxRight;
+
+  // vertical aligntment
+  switch (baseLineType) {
+    case "middle":
+      offsetY = 0;
+      break;
+    case "hanging":
+    case "top":
+      offsetY = (descent - ascent) / 2;
+      break;
+    case "bottom":
+    case "ideographic":
+      offsetY = -((descent - ascent) / 2);
+      break;
+    default:
+      break;
+  }
+
+  // horizontal aligntment
+  switch (textAlignType) {
+    case "center":
+      offsetX = 0;
+      break;
+    case "left" || "start":
+      offsetX = (left - right) / 2;
+      break;
+    case "right" || "end":
+      offsetX = -((left - right) / 2);
+      break;
+    default:
+      break;
+  }
+
+  const diffY = textMetrics.actualBoundingBoxAscent - (descent - ascent) / 2;
+
   bounding = boxTransformBy(
     {
-      minX: x - width / 2,
-      minY: y - height / 2,
-      maxX: x + width / 2,
-      maxY: y + height / 2,
+      minX: x - textMetrics.actualBoundingBoxLeft - offsetX,
+      minY: y - textMetrics.actualBoundingBoxAscent - offsetY + diffY, // here
+      maxX: x + textMetrics.actualBoundingBoxRight - offsetX,
+      maxY: y + textMetrics.actualBoundingBoxDescent - offsetY + diffY, // here
     },
     {
       a: transformsProps.scaleX, // scaleX
@@ -269,6 +307,8 @@ function boundingForText(
 
   const boundWidth = maxX - minX;
   const boundHeight = maxY - minY;
+
+  // console.log({ boundHeight });
 
   if (!hover) {
     ctx.strokeStyle = "#7a0";

@@ -241,13 +241,28 @@ const Element = {
         { hover: true }
       );
 
-      // console.log(points, bounding, this.mouseTransforms.props);
-
       this.anchors = anchors;
       this.bounding = bounding;
     }
 
     if (this.mouseTransforms) ctx.restore();
+
+    const ppp = new Path2D();
+
+    ctx.beginPath();
+    ctx.fillStyle = "#ffff";
+    ppp.ellipse(
+      this.mouseTransforms.props.x,
+      this.mouseTransforms.props.y,
+      5,
+      5,
+      0,
+      0,
+      Math.PI * 2
+    );
+    ctx.fill(ppp);
+
+    // console.log(this.mouseTransforms.props.y);
   },
   setPos: function setPos(x, y) {
     if (this.type === "polygon") {

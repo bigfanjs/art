@@ -113,7 +113,6 @@ const primitives = {
       ctx.beginPath();
       ctx.fillStyle = color;
       arcPath.ellipse(x, y, radius, radius, 0, start, end);
-      // arcPath.arc(x, y, radius, start, end, isCounterclockwise);
       ctx.fill(arcPath);
 
       path = arcPath;
@@ -189,28 +188,82 @@ const primitives = {
   },
   text: (
     ctx,
-    { x, y, text, size, fontFamily, baseLine, color },
+    { x, y, text, size, fontFamily, baseLine, textAlign, color },
     { hover = false, transforms }
   ) => {
     let path;
 
-    ctx.font = `${size}px ${fontFamily}`;
+    // console.log({ y });
+
     ctx.textBaseline = baseLine;
+    ctx.textAlign = textAlign;
+    ctx.font = `${size}px ${fontFamily}`;
+
+    const baseLinesTypes = [
+      "top",
+      "hanging",
+      "bottom",
+      "ideographic",
+      "middle",
+    ];
+    const textAlignTypes = ["start", "end", "left", "center", "right"];
 
     const textMetrics = ctx.measureText(text);
-    const width = textMetrics.width;
-    const actualHeight =
-      textMetrics.actualBoundingBoxAscent +
-      textMetrics.actualBoundingBoxDescent;
-    const height = actualHeight;
+    const baseLineType = baseLinesTypes.find((bl) => bl === baseLine) || "top";
+    const textAlignType =
+      textAlignTypes.find((ta) => ta === textAlign) || "left";
+
+    let offsetX;
+    let offsetY;
+
+    const descent = y + textMetrics.actualBoundingBoxDescent; // maxy
+    const ascent = y - textMetrics.actualBoundingBoxAscent; // miny
+    const left = x + textMetrics.actualBoundingBoxLeft;
+    const right = x - textMetrics.actualBoundingBoxRight;
+
+    // const diffY = descent - (descent - ascent) / 2;
+
+    // vertical aligntment
+    switch (baseLineType) {
+      case "middle":
+        offsetY = 0;
+        break;
+      case "hanging":
+      case "top":
+        offsetY = (descent - ascent) / 2;
+        break;
+      case "bottom":
+      case "ideographic":
+        offsetY = -((descent - ascent) / 2);
+        break;
+      default:
+        break;
+    }
+
+    // horizontal aligntment
+    switch (textAlignType) {
+      case "center":
+        offsetX = 0;
+        break;
+      case "left" || "start":
+        offsetX = (left - right) / 2;
+        break;
+      case "right" || "end":
+        offsetX = -((left - right) / 2);
+        break;
+      default:
+        break;
+    }
+
+    const diffY = textMetrics.actualBoundingBoxAscent - (descent - ascent) / 2;
 
     if (hover) {
       const result = boxTransformBy(
         {
-          minX: x - width / 2,
-          minY: y - height / 2,
-          maxX: x - width / 2 + width,
-          maxY: y - height / 2 + height,
+          minX: x - textMetrics.actualBoundingBoxLeft - offsetX,
+          minY: y - textMetrics.actualBoundingBoxAscent - offsetY, // here
+          maxX: x + textMetrics.actualBoundingBoxRight - offsetX,
+          maxY: y + textMetrics.actualBoundingBoxDescent - offsetY, // here
         },
         {
           a: transforms.scaleX, // scaleX
@@ -233,11 +286,10 @@ const primitives = {
       path = hoverpath;
     } else {
       ctx.beginPath();
-      ctx.font = `${size}px ${fontFamily}`;
-      ctx.textBaseline = baseLine;
-
       ctx.fillStyle = color;
-      ctx.fillText(text, x - width / 2, y);
+      ctx.fillText(text, x - offsetX, y + diffY);
+
+      // ctx.fillText(text, x - width / 2, y - height);
     }
 
     return { path };

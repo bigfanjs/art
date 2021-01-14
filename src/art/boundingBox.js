@@ -294,12 +294,110 @@ function boundingForText(
   return { anchors, bounding };
 }
 
+function boundingForImage(
+  ctx,
+  { image, x, y, width, height, transforms },
+  { hover = false } = {}
+) {
+  const anchors = [];
+  let bounding;
+
+  const transformsProps = transforms.props ?? {};
+
+  const rectWidth = width || image.width;
+  const rectHeight = height || image.height;
+
+  bounding = boxTransformBy(
+    {
+      minX: x - rectWidth / 2,
+      minY: y - rectHeight / 2,
+      maxX: x - rectWidth / 2 + rectWidth,
+      maxY: y - rectHeight / 2 + rectHeight,
+    },
+    {
+      a: transformsProps.scaleX, // scaleX
+      b: 0,
+      c: 0,
+      d: transformsProps.scaleY, // scaleY
+      e: hover ? transformsProps.x : 0, // translateX
+      f: hover ? transformsProps.y : 0, // translateY
+    }
+  );
+
+  const { minX, minY, maxX, maxY } = bounding;
+
+  const boundWidth = maxX - minX;
+  const boundHeight = maxY - minY;
+
+  if (!hover) {
+    ctx.strokeStyle = "#7a0";
+    ctx.strokeRect(minX, minY, boundWidth, boundHeight);
+  }
+
+  Array.from(Array(4)).forEach((_, i) => {
+    const anchor = new Path2D();
+    const x = i % 2 ? minX : maxX;
+    const y = Math.floor(i / 2) ? minY : maxY;
+
+    ctx.beginPath();
+    ctx.fillStyle = "#7a0";
+
+    anchor.rect(x - halfWidth, y - halfHeight, anchorWidth, anchorHeight);
+
+    if (!hover) ctx.fill(anchor);
+    ctx.closePath();
+
+    anchors.push(anchor);
+  });
+
+  return { anchors, bounding };
+}
+
+function boundlingForLine(
+  ctx,
+  { x1, y1, x2, y2, transforms },
+  { hover = false } = {}
+) {
+  const anchors = [];
+  let bounding;
+
+  const { minX, minY, maxX, maxY } = bounding;
+
+  const boundWidth = maxX - minX;
+  const boundHeight = maxY - minY;
+
+  if (!hover) {
+    ctx.strokeStyle = "#7a0";
+    ctx.strokeRect(minX, minY, boundWidth, boundHeight);
+  }
+
+  Array.from(Array(4)).forEach((_, i) => {
+    const anchor = new Path2D();
+    const x = i % 2 ? minX : maxX;
+    const y = Math.floor(i / 2) ? minY : maxY;
+
+    ctx.beginPath();
+    ctx.fillStyle = "#7a0";
+
+    anchor.rect(x - halfWidth, y - halfHeight, anchorWidth, anchorHeight);
+
+    if (!hover) ctx.fill(anchor);
+    ctx.closePath();
+
+    anchors.push(anchor);
+  });
+
+  return { anchors, bounding };
+}
+
 const boundingBoxes = {
   rect: boundingForRect,
   arc: boundingForArc,
   polygon: boundingForpolygon,
   hexagon: boundingBoxForHexagon,
   text: boundingForText,
+  img: boundingForImage,
+  // line: boundlingForLine,
 };
 
 export default boundingBoxes;

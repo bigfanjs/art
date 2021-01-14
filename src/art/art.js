@@ -200,10 +200,10 @@ const createReconciler = (canvas, ctx) => {
                   y: props.y,
                   width: props.width,
                   height: props.height,
-                  dx: props.dx,
-                  dy: props.dy,
-                  dw: props.dw,
-                  dh: props.dh,
+                  sx: props.sx,
+                  sy: props.sy,
+                  sw: props.sw,
+                  sh: props.sh,
                 },
                 configurable: true,
                 enumerable: true,
@@ -272,8 +272,9 @@ const createReconciler = (canvas, ctx) => {
           event.updateScale = element.updateScale.bind(element);
           event.type = type;
           event.index = globalIndex;
-          event.element = element; // circular dependency 🤮🤮🤮🤮🤮🤮🤮🤮
 
+          // circular dependency 🤮🤮🤮🤮🤮🤮🤮🤮
+          event.element = element;
           element.event = event;
         }
 
@@ -554,10 +555,19 @@ const Art = {
         .filter(({ isIn }) => isIn)
         .map(({ index }) => index);
 
-      eventQueue.forEach((eve) => {
-        if (eve.draggable) return;
+      const isNotInsideOtherElementsAnchors =
+        eventQueue.filter(
+          (eve) => eve.selected && eve.isInsideOneOfTheAnchors(mouse, ctx)
+        )?.length > 0;
 
-        if (eve.index === Math.max(...indexes)) eve.isIn = true;
+      eventQueue.forEach((eve) => {
+        if (eve.draggable || eve.selectable) return;
+
+        if (
+          eve.index === Math.max(...indexes) &&
+          !isNotInsideOtherElementsAnchors
+        )
+          eve.isIn = true;
         else eve.isIn = false;
       });
 
@@ -605,13 +615,28 @@ const Art = {
         .filter(({ isIn }) => isIn)
         .map(({ index }) => index);
 
+      // const selectedElement = eventQueue.find((eve) => eve.selected);
+      const isNotInsideOtherElementsAnchors =
+        eventQueue.filter(
+          (eve) => eve.selected && eve.isInsideOneOfTheAnchors(mouse, ctx)
+        )?.length > 0;
+
       const inBigget = Math.max(...inIndexes);
+      // const highest = Math.max(...inIndexes);
 
       eventQueue.forEach((eve) => {
         const anchor = eve.isInsideOneOfTheAnchors(mouse, ctx);
 
+        // after the mouse down event:
+        // "if the mouse cursor is inside the highest element" AND "the highest element is not selected already"
+        // OR "the element is already selected" AND "mouse is inside one of the anchors".
+
+        // if (selectedElement || (highest && !eve.selected))
+
         if (
-          (eve.index === inBigget && !eve.selected) ||
+          (eve.index === inBigget &&
+            !eve.selected &&
+            !isNotInsideOtherElementsAnchors) ||
           (eve.selected && anchor)
         ) {
           eve.selected = true;

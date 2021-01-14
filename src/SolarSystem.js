@@ -21,16 +21,16 @@ export default function SolarSystem() {
       hint={0}
       update={controls}
     >
-      <hexagon x={0} y={0} color="gold" radius={50} update={controls} />
+      <hexagon x={0} y={0} color="gold" radius={150} update={controls} />
       <group
         x={0}
         y={0}
-        transform={{ x: 150, y: 0 }}
+        transform={{ x: 350, y: 0 }}
         update={controls}
         hint={0}
       >
-        <hexagon x={0} y={0} color="skyblue" radius={15} />
-        <hexagon x={30} y={0} color="darkgray" radius={8} update={controls} />
+        <hexagon x={0} y={0} color="skyblue" radius={40} />
+        <hexagon x={70} y={0} color="darkgray" radius={15} update={controls} />
       </group>
     </group>
   );

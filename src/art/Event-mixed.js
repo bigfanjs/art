@@ -64,13 +64,20 @@ export default class Event {
     };
     const mouseup = () => (this.draggable = false);
     const mousemove = (mouse) => {
-      if (this.draggable) {
+      if (this.draggable && !this.scalable) {
         const diffx = mouse.x - this.mouse.x;
         const diffy = mouse.y - this.mouse.y;
 
         this.mouse = mouse;
 
-        this.update(diffx, diffy);
+        this.props = {
+          x: this.props.x + diffx,
+          y: this.props.y + diffy,
+          scaleX: this.props.scaleX,
+          scaleY: this.props.scaleY,
+        };
+
+        this.updateScale(this);
       }
     };
 
@@ -222,6 +229,9 @@ export default class Event {
     // these handlers start as soon as we click on of the anchors.
     this.scalingHandlers = { mousedown, mousemove, mouseup };
   }
+
+  // TODO: clean up scaling:
+  endDraggingAnchors() {}
 
   schedule(eventName, handler) {
     this[eventName] = handler;

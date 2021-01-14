@@ -199,31 +199,7 @@ const primitives = {
     ctx.textAlign = textAlign;
     ctx.font = `${size}px ${fontFamily}`;
 
-    const textAlignTypes = ["start", "end", "left", "center", "right"];
-
     const textMetrics = ctx.measureText(text);
-    const textAlignType =
-      textAlignTypes.find((ta) => ta === textAlign) || "left";
-
-    let offsetX;
-
-    const left = x + textMetrics.actualBoundingBoxLeft;
-    const right = x - textMetrics.actualBoundingBoxRight;
-
-    // horizontal aligntment
-    switch (textAlignType) {
-      case "center":
-        offsetX = 0;
-        break;
-      case "left" || "start":
-        offsetX = (left - right) / 2;
-        break;
-      case "right" || "end":
-        offsetX = -((left - right) / 2);
-        break;
-      default:
-        break;
-    }
 
     const Descent = textMetrics.actualBoundingBoxDescent;
     const Ascent = textMetrics.actualBoundingBoxAscent;
@@ -237,8 +213,6 @@ const primitives = {
         {
           minY: y - TextHalfHeight,
           maxY: y + Descent + Ascent - TextHalfHeight,
-          // minX: x - textMetrics.actualBoundingBoxLeft - offsetX,
-          // maxX: x + textMetrics.actualBoundingBoxRight - offsetX,
           minX: x - TextHalfWidth,
           maxX: x + Right + Left - TextHalfWidth,
         },
@@ -348,31 +322,85 @@ const primitives = {
   },
   img: (
     ctx,
-    { x, y, width, height, dx, dy, dw, dh },
-    { image, isLoaded = false }
+    { x, y, width, height, sx, sy, sw, sh },
+    { image, isLoaded = false, hover = false, transforms }
   ) => {
+    let path;
+
+    if (hover) {
+      const rectWidth = width || image.width;
+      const rectHeight = height || image.height;
+
+      const result = boxTransformBy(
+        {
+          minX: x - rectWidth / 2,
+          minY: y - rectHeight / 2,
+          maxX: x - rectWidth / 2 + rectWidth,
+          maxY: y - rectHeight / 2 + rectHeight,
+        },
+        {
+          a: transforms.scaleX, // scaleX
+          b: 0,
+          c: 0,
+          d: transforms.scaleY, // scaleY
+          e: transforms.x, // translateX
+          f: transforms.y, // translateY
+        }
+      );
+
+      const hoverpath = new Path2D();
+
+      ctx.beginPath();
+
+      hoverpath.rect(
+        result.minX,
+        result.minY,
+        result.maxX - result.minX,
+        result.maxY - result.minY
+      );
+
+      path = hoverpath;
+      return { path };
+    }
+
     if (isLoaded) {
+      // console.log({ x, y, width, height, sx, sy, sh, sw });
+
       if (
         typeof x === "number" &&
         typeof y === "number" &&
         typeof width === "number" &&
         typeof height === "number" &&
-        typeof dx === "number" &&
-        typeof dy === "number" &&
-        typeof dw === "number" &&
-        typeof dh === "number"
+        typeof sx === "number" &&
+        typeof sy === "number" &&
+        typeof sw === "number" &&
+        typeof sh === "number"
       ) {
-        ctx.drawImage(image, x, y, width, height, dx, dy, dw, dh);
+        // console.log("ww");
+        ctx.drawImage(
+          image,
+          sx,
+          sy,
+          sw,
+          sh,
+          x - width / 2,
+          y - height / 2,
+          width,
+          height
+        );
       } else if (
         typeof x === "number" &&
         typeof y === "number" &&
         typeof width === "number" &&
         typeof height === "number"
       )
-        ctx.drawImage(image, x, y, width, height);
-      else if (typeof x === "number" && typeof y === "number")
-        ctx.drawImage(image, x, y);
+        ctx.drawImage(image, x - width / 2, y - height / 2, width, height);
+      else if (typeof x === "number" && typeof y === "number") {
+        ctx.drawImage(image, x - image.width / 2, y - image.height / 2);
+      }
     }
+
+    return { path };
   },
 };
 

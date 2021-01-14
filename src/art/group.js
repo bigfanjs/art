@@ -47,7 +47,7 @@ const Group = {
   order: function () {
     this.followers
       .sort((a, b) => a.zIndex - b.zIndex)
-      .sort((a, b) => a.event.selected - b.event.selected);
+      .sort((a, b) => a.event?.selected - b.event?.selected);
   },
 };
 

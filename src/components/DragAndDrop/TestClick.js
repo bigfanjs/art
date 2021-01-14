@@ -35,7 +35,7 @@ export default function DragAndDrop() {
 
   return (
     <group>
-      {/* <arc
+      <arc
         x={200}
         y={height / 2}
         radius={50}
@@ -44,10 +44,10 @@ export default function DragAndDrop() {
         onMouseIn={handleCircleClick}
         onMouseOut={handleCircleClick}
         select={true}
-        // drag
-      /> */}
+        drag
+      />
 
-      {/* <rect
+      <rect
         x={width / 2}
         y={height / 2}
         width={300}
@@ -59,8 +59,8 @@ export default function DragAndDrop() {
         onMouseOut={handleRectClick}
         select={true}
         // onMouseMove={handleMouseMove}
-        // drag
-      /> */}
+        drag
+      />
       {/* <hexagon
         x={width / 2.2 - 50}
         y={height / 2 - 50}
@@ -70,17 +70,17 @@ export default function DragAndDrop() {
         onMouseOut={handleHexClick}
         select={true}
         // transform={{ scaleX: 2 }}
-        // drag
+        drag
       /> */}
-      <text
+      {/* <text
         x={width / 2}
         y={height / 2}
         text="@bigfan/art"
         size={80}
         color="orange"
         select
-        // drag
-      />
+        drag
+      /> */}
       {/* <text
         x={300}
         y={50}
@@ -97,13 +97,30 @@ export default function DragAndDrop() {
         onMouseOut={handlePolClick}
         select={true}
         stroke
+        drag
       /> */}
+
       {/* <img
         src="https://drscdn.500px.org/photo/78655895/m%3D900/ff907b64c70732ae8a730f04ba157655"
-        x={550}
-        y={100}
+        x={width / 2}
+        y={height / 2}
+        select={true}
+        drag
+      /> */}
+
+      {/* <line x1={100} y1={250} x2={350} y2={500} color="#fff" /> */}
+
+      {/* <img
+        src="https://drscdn.500px.org/photo/78655895/m%3D900/ff907b64c70732ae8a730f04ba157655"
+        x={width / 2}
+        y={height / 2}
         width={300}
-        height={200}
+        height={250}
+        sx={330}
+        sy={190}
+        sw={60}
+        sh={80}
+        select={true}
         // drag
       /> */}
     </group>

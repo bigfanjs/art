@@ -173,9 +173,6 @@ const Element = {
         y: y + anchorTransition.y,
       };
 
-      // console.log({ x, anchorTransition });
-      // if (points) console.log(this.mouseTransforms);
-
       const { path: hover } = primitive(
         ctx,
         {
@@ -224,6 +221,7 @@ const Element = {
         ...this.props,
         ...(this?.mouseTransforms?.anchorTransitionPos ?? {}), // apply the opposite anchor transition
         points,
+        image: this.image,
         transforms: {
           props: { ...this.mouseTransforms.props },
         },
@@ -234,6 +232,7 @@ const Element = {
         {
           ...this.props,
           points,
+          image: this.image,
           transforms: {
             props: { ...this.mouseTransforms.props, ...translate },
           },
@@ -271,28 +270,7 @@ const Element = {
     this.mouseTransforms = update;
   },
   checkBoundries: function checkBoundries(point, ctx) {
-    let isMouseIn = false;
-
-    // TODO: need major code cleaning or even moving this section away from this method
-    if (this.isPath) {
-      isMouseIn = isPointInPath(this.hover, point, ctx);
-    } else {
-      let rect;
-
-      if (this.type === "text") {
-        isMouseIn = isPointInPath(this.hover, point, ctx);
-      } else {
-        rect = {
-          x: this.props.x,
-          y: this.props.y,
-          width: this.props.width,
-          height: this.props.height,
-        };
-
-        isMouseIn = isPointInRect(rect, point);
-      }
-    }
-
+    const isMouseIn = isPointInPath(this.hover, point, ctx);
     return isMouseIn;
   },
   isInsideOneOfTheAnchors: function (point, ctx) {

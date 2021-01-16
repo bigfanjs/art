@@ -61,7 +61,7 @@ export default function DragAndDrop() {
         // onMouseMove={handleMouseMove}
         drag
       />
-      {/* <hexagon
+      <hexagon
         x={width / 2.2 - 50}
         y={height / 2 - 50}
         color={hexColor}
@@ -71,7 +71,7 @@ export default function DragAndDrop() {
         select={true}
         // transform={{ scaleX: 2 }}
         drag
-      /> */}
+      />
       {/* <text
         x={width / 2}
         y={height / 2}

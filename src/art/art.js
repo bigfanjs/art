@@ -555,17 +555,25 @@ const Art = {
         .filter(({ isIn }) => isIn)
         .map(({ index }) => index);
 
-      const isNotInsideOtherElementsAnchors =
+      const isHighest = Math.max(...indexes);
+
+      const isInsideOtherElementsAnchors =
         eventQueue.filter(
           (eve) => eve.selected && eve.isInsideOneOfTheAnchors(mouse, ctx)
         )?.length > 0;
+
+      const selectedElement = eventQueue.find((eve) => {
+        return eve.isIn && eve.selected;
+      });
 
       eventQueue.forEach((eve) => {
         if (eve.draggable || eve.selectable) return;
 
         if (
-          eve.index === Math.max(...indexes) &&
-          !isNotInsideOtherElementsAnchors
+          (!selectedElement &&
+            eve.index === isHighest &&
+            !isInsideOtherElementsAnchors) ||
+          (selectedElement && eve.selected)
         )
           eve.isIn = true;
         else eve.isIn = false;
@@ -615,32 +623,22 @@ const Art = {
         .filter(({ isIn }) => isIn)
         .map(({ index }) => index);
 
-      // const selectedElement = eventQueue.find((eve) => eve.selected);
-      const isNotInsideOtherElementsAnchors =
-        eventQueue.filter(
-          (eve) => eve.selected && eve.isInsideOneOfTheAnchors(mouse, ctx)
-        )?.length > 0;
+      const selectedElement = eventQueue.find(
+        (eve) => eve.isIn && eve.selected
+      );
 
-      const inBigget = Math.max(...inIndexes);
-      // const highest = Math.max(...inIndexes);
+      const isHighest = Math.max(...inIndexes);
 
       eventQueue.forEach((eve) => {
         const anchor = eve.isInsideOneOfTheAnchors(mouse, ctx);
 
-        // after the mouse down event:
-        // "if the mouse cursor is inside the highest element" AND "the highest element is not selected already"
-        // OR "the element is already selected" AND "mouse is inside one of the anchors".
-
-        // if (selectedElement || (highest && !eve.selected))
-
         if (
-          (eve.index === inBigget &&
-            !eve.selected &&
-            !isNotInsideOtherElementsAnchors) ||
+          (selectedElement && eve.selected) ||
+          (!selectedElement && eve.index === isHighest) ||
           (eve.selected && anchor)
         ) {
           eve.selected = true;
-        } else if (eve.selected && eve.index !== inBigget) {
+        } else {
           eve.selected = false;
         }
 

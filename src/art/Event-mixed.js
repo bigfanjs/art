@@ -16,37 +16,27 @@ export default class Event {
   previousScaleY = 1;
   anchorTransition = { x: 0, y: 0 };
 
-  constructor({
-    checkBoundries,
-    isInsideOneOfTheAnchors,
-    absolute = false,
-    selected,
-    element,
-  }) {
+  constructor({ absolute = false, selected, element }) {
     eventQueue.push(this);
 
     this.absolute = absolute;
 
-    if (checkBoundries) {
-      this.checkBoundries = (point, ctx) => {
-        // don't check boundaries while dragging.
-        if (this.draggable) return;
+    this.checkBoundries = (point, ctx) => {
+      // don't check boundaries while dragging.
+      if (this.draggable) return;
 
-        this.isPreviousMouseIn = this.isIn;
+      this.isPreviousMouseIn = this.isIn;
 
-        this.isIn = checkBoundries(point, ctx);
-      };
-    }
+      this.isIn = element.checkBoundries(point, ctx);
+    };
 
-    if (isInsideOneOfTheAnchors) {
-      this.isInsideOneOfTheAnchors = (point, ctx) => {
-        if (this.scalable) return this.anchor;
+    this.isInsideOneOfTheAnchors = (point, ctx) => {
+      if (this.scalable) return this.anchor;
 
-        this.anchor = isInsideOneOfTheAnchors(point, ctx);
+      this.anchor = element.isInsideOneOfTheAnchors(point, ctx);
 
-        return this.anchor;
-      };
-    }
+      return this.anchor;
+    };
 
     if (selected) {
       // TODO support polygons:

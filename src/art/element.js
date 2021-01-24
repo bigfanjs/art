@@ -2,7 +2,7 @@ import { polygonGetBounds } from "math2d/esm/polygonFunctions/polygonGetBounds";
 
 import primitives from "./primitives";
 import boundingBoxes from "./boundingBox";
-import { isPointInPath, isPointInRect } from "./isPointInside";
+import { isPointInPath } from "./isPointInside";
 
 const Element = {
   props: null,
@@ -23,126 +23,8 @@ const Element = {
     const bound = boundingBoxes[this.type];
     const offsets = this.update && this.update.offsets;
 
-    let shouldrestore = false;
-    let shouldrestore2 = false;
-
-    // transform
-    if (this.transform || this.update) {
-      ctx.save();
-      shouldrestore = true;
-
-      let arr =
-        this.update && this.update.props ? Object.keys(this.update.props) : [];
-
-      const transformation = this.transform || {};
-
-      // check if a transformation exists on update but not on transform, and then add it.
-      for (let i = 0; i < arr.length; i++) {
-        const transos = Object.keys(transformation);
-        const reso = transos.find((trans) => trans === arr[i]);
-
-        if (!reso) transformation[arr[i]] = this.update.props[arr[i]];
-      }
-
-      const { x, y, scale, scaleX, scaleY, ...transform } = transformation;
-      const transforms = {
-        ...(x && y && !offsets ? { translate: { x, y } } : {}),
-        ...(scale || scaleX || scaleY
-          ? { scale: { x: scaleX || scale || 1, y: scaleY || scale || 1 } }
-          : {}),
-        ...transform,
-      };
-
-      Object.keys(transforms).forEach((key) => {
-        const value = transforms[key];
-
-        if (ctx[key]) {
-          if (key === "scale") {
-            ctx.scale(value.x, value.y);
-          } else if (key === "translate") {
-            let x = 0;
-            let y = 0;
-
-            if (this.update && this.update.props) {
-              this.update.props.x && (x = this.update.props.x);
-              this.update.props.y && (y = this.update.props.y);
-            }
-
-            ctx.translate(value.x + x, value.y + y);
-          } else {
-            let val = 0;
-
-            if (this.update && this.update.props) {
-              this.update.props[key] && (val = this.update.props[key]);
-            }
-
-            ctx[key](value + val);
-          }
-        }
-      });
-    }
-
-    // danger area -start
-
-    // mouse transform
-    if (this.mouseTransforms) {
-      ctx.save();
-      shouldrestore2 = true;
-
-      const transformation = this.mouseTransforms.props || {};
-      const anchorTransition = this.mouseTransforms.anchorTransition || {};
-
-      const { x, y, scale, scaleX, scaleY, ...transform } = transformation;
-      const transforms = {
-        ...(x && y && !offsets ? { translate: { x, y } } : {}),
-
-        ...(typeof scaleX === "number" && typeof scaleY === "number"
-          ? { scale: { x: scaleX, y: scaleY } }
-          : typeof scale === "number"
-          ? { x: scale, y: scale }
-          : {}),
-
-        ...transform,
-      };
-
-      Object.keys(transforms).forEach((key) => {
-        const value = transforms[key];
-
-        if (ctx[key]) {
-          if (key === "translate") {
-            let x = anchorTransition.x || 0;
-            let y = anchorTransition.y || 0;
-
-            // this is not needed:
-            // if (this.update && this.update.props) {
-            //   this.update.props.x && (x = this.update.props.x);
-            //   this.update.props.y && (y = this.update.props.y);
-            // }
-
-            ctx.translate(value.x + x, value.y + y);
-          } else if (key === "scale") {
-            // console.log(value);
-            ctx.scale(value.x, value.y);
-          } else {
-            let val = 0;
-
-            if (this.update && this.update.props) {
-              this.update.props[key] && (val = this.update.props[key]);
-            }
-
-            ctx[key](value + val);
-          }
-        }
-      });
-    }
-
-    // danger area -end
-
-    // console.log({ mouseTransforms: this.mouseTransforms});
-
-    //this.mouseTransforms.anchorTransition
-
-    // console.log(this.mouseTransforms.props);
+    if (this.transform || this.update) this.handleTransforms(ctx);
+    if (this.mouseTransforms) this.handleMouseTransforms(ctx);
 
     // draw
     const { path, points } = primitive(
@@ -156,43 +38,6 @@ const Element = {
     );
 
     this.path = path;
-    this.hover = path;
-
-    // console.log(this.mouseTransforms);
-
-    // draw hover
-    if (this.mouseTransforms) {
-      const { x, y } = this.mouseTransforms.props;
-      const anchorTransition = this?.mouseTransforms?.anchorTransition ?? {
-        x: 0,
-        y: 0,
-      };
-
-      const translate = {
-        x: x + anchorTransition.x,
-        y: y + anchorTransition.y,
-      };
-
-      const { path: hover } = primitive(
-        ctx,
-        {
-          ...this.props,
-          ...(this.update && offsets ? this.update.props : {}),
-          ...(this?.mouseTransforms?.anchorTransitionPos ?? {}),
-        },
-        {
-          image: this.image,
-          isLoaded: this.isLoaded,
-          hover: true,
-          transforms: { ...this.mouseTransforms.props, ...translate },
-        }
-      );
-
-      this.hover = hover;
-    }
-
-    if (shouldrestore2) ctx.restore();
-    if (shouldrestore) ctx.restore();
 
     // translate the bounds
     if (this.mouseTransforms) {
@@ -202,22 +47,18 @@ const Element = {
         y: 0,
       };
 
-      ctx.save();
-      if (x && y) ctx.translate(x + anchorTransition.x, y + anchorTransition.y);
+      ctx.setTransform(
+        1,
+        0,
+        0,
+        1,
+        x + anchorTransition.x,
+        y + anchorTransition.y
+      );
     }
 
     if (this.event?.selected) {
-      const { x, y } = this.mouseTransforms.props;
-      const anchorTransition = this.mouseTransforms?.anchorTransition || {
-        x: 0,
-        y: 0,
-      };
-      const translate = {
-        x: x + anchorTransition.x,
-        y: y + anchorTransition.y,
-      };
-
-      const { bounding } = bound(ctx, {
+      const { bounding, anchors } = bound(ctx, {
         ...this.props,
         ...(this?.mouseTransforms?.anchorTransitionPos ?? {}), // apply the opposite anchor transition
         points,
@@ -227,24 +68,119 @@ const Element = {
         },
       });
 
-      const { anchors } = bound(
-        ctx,
-        {
-          ...this.props,
-          points,
-          image: this.image,
-          transforms: {
-            props: { ...this.mouseTransforms.props, ...translate },
-          },
-        },
-        { hover: true }
-      );
-
       this.anchors = anchors;
       this.bounding = bounding;
     }
 
-    if (this.mouseTransforms) ctx.restore();
+    if (this.mouseTransforms || this.transform || this.update) ctx.restore();
+  },
+  handleTransforms: function handleTransforms(ctx) {
+    ctx.save();
+
+    const offsets = this.update && this.update.offsets;
+    let arr =
+      this.update && this.update.props ? Object.keys(this.update.props) : [];
+
+    const transformation = this.transform || {};
+
+    // check if a transformation exists on update but not on transform, and then add it.
+    for (let i = 0; i < arr.length; i++) {
+      const transos = Object.keys(transformation);
+      const reso = transos.find((trans) => trans === arr[i]);
+
+      if (!reso) transformation[arr[i]] = this.update.props[arr[i]];
+    }
+
+    const { x, y, scale, scaleX, scaleY, ...transform } = transformation;
+    const transforms = {
+      ...(x && y && !offsets ? { translate: { x, y } } : {}),
+
+      ...(typeof scaleX === "number" && typeof scaleY === "number"
+        ? { scale: { x: scaleX, y: scaleY } }
+        : typeof scale === "number"
+        ? { x: scale, y: scale }
+        : {}),
+
+      ...transform,
+    };
+
+    Object.keys(transforms).forEach((key) => {
+      const value = transforms[key];
+
+      if (ctx[key]) {
+        if (key === "scale") {
+          ctx.scale(value.x, value.y);
+        } else if (key === "translate") {
+          let x = 0;
+          let y = 0;
+
+          if (this.update && this.update.props) {
+            this.update.props.x && (x = this.update.props.x);
+            this.update.props.y && (y = this.update.props.y);
+          }
+
+          ctx.translate(value.x + x, value.y + y);
+        } else {
+          let val = 0;
+
+          if (this.update && this.update.props) {
+            this.update.props[key] && (val = this.update.props[key]);
+          }
+
+          ctx[key](value + val);
+        }
+      }
+    });
+  },
+  handleMouseTransforms: function handleMouseTransforms(ctx) {
+    ctx.save();
+
+    const offsets = this.update && this.update.offsets;
+    const transformation = this.mouseTransforms.props || {};
+    const anchorTransition = this.mouseTransforms.anchorTransition || {};
+
+    const { x, y, scale, scaleX, scaleY, ...transform } = transformation;
+    const transforms = {
+      ...(x && y && !offsets ? { translate: { x, y } } : {}),
+
+      ...(typeof scaleX === "number" && typeof scaleY === "number"
+        ? { scale: { x: scaleX, y: scaleY } }
+        : typeof scale === "number"
+        ? { x: scale, y: scale }
+        : {}),
+
+      ...transform,
+    };
+
+    Object.keys(transforms).forEach((key) => {
+      const value = transforms[key];
+
+      if (ctx[key]) {
+        if (key === "translate") {
+          let x = anchorTransition.x || 0;
+          let y = anchorTransition.y || 0;
+
+          // this is not needed:
+          // if (this.update && this.update.props) {
+          //   this.update.props.x && (x = this.update.props.x);
+          //   this.update.props.y && (y = this.update.props.y);
+          // }
+
+          ctx.translate(value.x + x, value.y + y);
+        } else if (key === "scale") {
+          // console.log(value);
+          ctx.scale(value.x, value.y);
+        } else {
+          let val = 0;
+
+          if (this.update && this.update.props) {
+            this.update.props[key] && (val = this.update.props[key]);
+          }
+
+          ctx[key](value + val);
+        }
+      }
+    });
   },
   setPos: function setPos(x, y) {
     if (this.type === "polygon") {
@@ -270,10 +206,37 @@ const Element = {
     this.mouseTransforms = update;
   },
   checkBoundries: function checkBoundries(point, ctx) {
-    const isMouseIn = isPointInPath(this.hover, point, ctx);
+    if (this.transform || this.update) this.handleTransforms(ctx);
+    if (this.mouseTransforms) this.handleMouseTransforms(ctx);
+
+    const isMouseIn = isPointInPath(this.path, point, ctx);
+
+    if (this.transform || this.update) ctx.restore();
+    if (this.mouseTransforms) ctx.restore();
+
     return isMouseIn;
   },
   isInsideOneOfTheAnchors: function (point, ctx) {
+    if (this.transform || this.update) this.handleTransforms(ctx);
+    if (this.mouseTransforms) {
+      this.handleMouseTransforms(ctx);
+
+      const { x, y } = this.mouseTransforms.props;
+      const anchorTransition = this.mouseTransforms?.anchorTransition || {
+        x: 0,
+        y: 0,
+      };
+
+      ctx.setTransform(
+        1,
+        0,
+        0,
+        1,
+        x + anchorTransition.x,
+        y + anchorTransition.y
+      );
+    }
+
     const selectedAnchor = this.anchors.find((anchor) => {
       const isIn = isPointInPath(anchor, point, ctx);
 
@@ -281,6 +244,9 @@ const Element = {
     });
 
     const index = this.anchors.findIndex((anchor) => anchor === selectedAnchor);
+
+    if (this.transform || this.update) ctx.restore();
+    if (this.mouseTransforms) ctx.restore();
 
     return index < 0 ? false : index + 1;
   },

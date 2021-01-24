@@ -258,14 +258,7 @@ const createReconciler = (canvas, ctx) => {
           props.drag ||
           props.select
         ) {
-          event = new Event({
-            checkBoundries: element.checkBoundries.bind(element),
-            isInsideOneOfTheAnchors: element.isInsideOneOfTheAnchors.bind(
-              element
-            ),
-            selected: props.select,
-            element,
-          });
+          event = new Event({ selected: props.select, element });
 
           // TODO: I don't like this, do something better please:
           event.update = element.setPos.bind(element);
@@ -579,26 +572,25 @@ const Art = {
         else eve.isIn = false;
       });
 
-      const events = eventQueue.filter(({ isIn }) => isIn);
-      const events2 = eventQueue.filter(
-        ({ isPreviousMouseIn }) => isPreviousMouseIn
-      );
-
       // dragging
-      events.forEach((event) => {
-        event.mousemove && event.mousemove(mouse);
-        event.dragginghandlers && event.dragginghandlers.mousemove(mouse);
-      });
+      eventQueue
+        .filter(({ isIn }) => isIn)
+        .forEach((event) => {
+          event.mousemove && event.mousemove(mouse);
+          event.dragginghandlers && event.dragginghandlers.mousemove(mouse);
+        });
 
       // mouse in event
-      events.forEach(({ mousein, isIn, isPreviousMouseIn }) => {
-        isIn !== isPreviousMouseIn && mousein && mousein(mouse);
-      });
+      eventQueue
+        .filter(({ isIn }) => isIn)
+        .forEach(({ mousein, isPreviousMouseIn }) => {
+          !isPreviousMouseIn && mousein && mousein(mouse);
+        });
 
       // mouse out event:
-      events2.forEach(({ mouseout, isIn, isPreviousMouseIn }) => {
-        isIn !== isPreviousMouseIn && mouseout && mouseout(mouse);
-      });
+      eventQueue
+        .filter(({ isPreviousMouseIn }) => isPreviousMouseIn)
+        .forEach(({ mouseout, isIn }) => !isIn && mouseout && mouseout(mouse));
 
       // scaling:
       eventQueue.forEach((eve) => {

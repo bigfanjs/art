@@ -19,15 +19,15 @@ function boundingBoxForHexagon(
 
   const result = polygonGetBounds(transformedPoints);
 
-  const { x, y, scaleX = 1, scaleY = 1 } = transforms.props ?? {};
+  const { scaleX = 1, scaleY = 1 } = transforms.props ?? {};
 
   bounding = boxTransformBy(result, {
     a: scaleX, // scaleX
     b: 0,
     c: 0,
     d: scaleY, // scaleY
-    e: hover ? x : 0, // translateX
-    f: hover ? y : 0, // translateY
+    e: 0, // translateX
+    f: 0, // translateY
   });
 
   const { minX, minY, maxX, maxY } = bounding;

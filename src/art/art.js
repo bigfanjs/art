@@ -283,6 +283,7 @@ const createReconciler = (canvas, ctx) => {
           if (props.select) {
             event.startDraggingAnchors(element);
             element.clearOffset(type);
+            element.select = true;
           }
         }
 

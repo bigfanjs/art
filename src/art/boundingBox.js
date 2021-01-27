@@ -21,6 +21,8 @@ function boundingBoxForHexagon(
 
   const { scaleX = 1, scaleY = 1 } = transforms.props ?? {};
 
+  // console.log({ x, y });
+
   bounding = boxTransformBy(result, {
     a: scaleX, // scaleX
     b: 0,
@@ -32,11 +34,9 @@ function boundingBoxForHexagon(
 
   const { minX, minY, maxX, maxY } = bounding;
 
-  if (!hover) {
-    ctx.strokeStyle = "#7a0";
-    ctx.strokeRect(minX, minY, maxX - minX, maxY - minY);
-    ctx.closePath();
-  }
+  ctx.strokeStyle = "#7a0";
+  ctx.strokeRect(minX, minY, maxX - minX, maxY - minY);
+  ctx.closePath();
 
   ctx.fillStyle = "#7a0";
 
@@ -48,7 +48,7 @@ function boundingBoxForHexagon(
     ctx.beginPath();
     ctx.fillStyle = "#7a0";
     anchor.rect(x - halfWidth, y - halfHeight, anchorWidth, anchorHeight);
-    if (!hover) ctx.fill(anchor);
+    ctx.fill(anchor);
     ctx.closePath();
 
     anchors.push(anchor);

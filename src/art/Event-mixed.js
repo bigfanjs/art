@@ -39,9 +39,17 @@ export default class Event {
     };
 
     if (selected) {
+      const { x = 0, y = 0, scale = 1 } = element.transform || {};
+
       // TODO support polygons:
-      this.props.x = element.props.x;
-      this.props.y = element.props.y;
+
+      this.props.x = element.props.x + x;
+      this.props.y = element.props.y + y;
+
+      this.props.scaleX = scale;
+      this.props.scaleY = scale;
+      this.previousScaleX = scale;
+      this.previousScaleY = scale;
 
       element.updateScale(this);
     }
@@ -193,6 +201,12 @@ export default class Event {
 
         const diffX = mouse.x - (this.bound.x + width);
         const diffY = mouse.y - (this.bound.y + height);
+
+        // console.log({
+        //   mouseX: mouse.x,
+        //   boundX: this.bound.x,
+        //   boundWidth: this.bound.width,
+        // });
 
         const scaleX =
           this.previousScaleX -

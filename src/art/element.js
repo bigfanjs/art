@@ -23,8 +23,10 @@ const Element = {
     const bound = boundingBoxes[this.type];
     const offsets = this.update && this.update.offsets;
 
-    if (this.transform || this.update) this.handleTransforms(ctx);
-    if (this.mouseTransforms) this.handleMouseTransforms(ctx);
+    if ((this.transform || this.update) && !this.select)
+      this.handleTransforms({ ctx });
+
+    if (this.mouseTransforms) this.handleMouseTransforms({ ctx });
 
     // draw
     const { path, points } = primitive(
@@ -39,32 +41,25 @@ const Element = {
 
     this.path = path;
 
-    // translate the bounds
-    if (this.mouseTransforms) {
-      const { x, y } = this.mouseTransforms.props;
-      const anchorTransition = this.mouseTransforms?.anchorTransition || {
-        x: 0,
-        y: 0,
-      };
+    // reset
+    if (this.mouseTransforms) ctx.restore();
+    if ((this.transform || this.update) && this.select) ctx.restore();
 
-      ctx.setTransform(
-        1,
-        0,
-        0,
-        1,
-        x + anchorTransition.x,
-        y + anchorTransition.y
-      );
-    }
+    if (this.mouseTransforms)
+      this.handleMouseTransforms({ ctx, skipScale: true });
 
     if (this.event?.selected) {
       const { bounding, anchors } = bound(ctx, {
         ...this.props,
-        ...(this?.mouseTransforms?.anchorTransitionPos ?? {}), // apply the opposite anchor transition
+        ...(this?.mouseTransforms?.anchorTransitionPos ?? {}), // apply the opposite anchor transition [TODO] we might add it directly to the props
+
         points,
         image: this.image,
         transforms: {
-          props: { ...this.mouseTransforms.props },
+          props: {
+            scaleX: this.mouseTransforms.props.scaleX,
+            scaleY: this.mouseTransforms.props.scaleY,
+          },
         },
       });
 
@@ -72,9 +67,9 @@ const Element = {
       this.bounding = bounding;
     }
 
-    if (this.mouseTransforms || this.transform || this.update) ctx.restore();
+    if (this.mouseTransforms) ctx.restore();
   },
-  handleTransforms: function handleTransforms(ctx) {
+  handleTransforms: function handleTransforms({ ctx, skipScale = false }) {
     ctx.save();
 
     const offsets = this.update && this.update.offsets;
@@ -91,14 +86,24 @@ const Element = {
       if (!reso) transformation[arr[i]] = this.update.props[arr[i]];
     }
 
-    const { x, y, scale, scaleX, scaleY, ...transform } = transformation;
-    const transforms = {
-      ...(x && y && !offsets ? { translate: { x, y } } : {}),
+    const {
+      x = 0,
+      y = 0,
+      scale,
+      scaleX,
+      scaleY,
+      ...transform
+    } = transformation;
 
-      ...(typeof scaleX === "number" && typeof scaleY === "number"
-        ? { scale: { x: scaleX, y: scaleY } }
-        : typeof scale === "number"
-        ? { x: scale, y: scale }
+    const transforms = {
+      ...((x || y) && !offsets ? { translate: { x, y } } : {}),
+
+      ...(!skipScale
+        ? typeof scaleX === "number" && typeof scaleY === "number"
+          ? { scale: { x: scaleX, y: scaleY } }
+          : typeof scale === "number"
+          ? { scale: { x: scale, y: scale } }
+          : {}
         : {}),
 
       ...transform,
@@ -114,6 +119,7 @@ const Element = {
           let x = 0;
           let y = 0;
 
+          // this could be a problem when I don't pass transform prop but I have update!
           if (this.update && this.update.props) {
             this.update.props.x && (x = this.update.props.x);
             this.update.props.y && (y = this.update.props.y);
@@ -132,7 +138,10 @@ const Element = {
       }
     });
   },
-  handleMouseTransforms: function handleMouseTransforms(ctx) {
+  handleMouseTransforms: function handleMouseTransforms({
+    ctx,
+    skipScale = false,
+  }) {
     ctx.save();
 
     const offsets = this.update && this.update.offsets;
@@ -143,10 +152,12 @@ const Element = {
     const transforms = {
       ...(x && y && !offsets ? { translate: { x, y } } : {}),
 
-      ...(typeof scaleX === "number" && typeof scaleY === "number"
-        ? { scale: { x: scaleX, y: scaleY } }
-        : typeof scale === "number"
-        ? { x: scale, y: scale }
+      ...(!skipScale
+        ? typeof scaleX === "number" && typeof scaleY === "number"
+          ? { scale: { x: scaleX, y: scaleY } }
+          : typeof scale === "number"
+          ? { x: scale, y: scale }
+          : {}
         : {}),
 
       ...transform,
@@ -160,15 +171,8 @@ const Element = {
           let x = anchorTransition.x || 0;
           let y = anchorTransition.y || 0;
 
-          // this is not needed:
-          // if (this.update && this.update.props) {
-          //   this.update.props.x && (x = this.update.props.x);
-          //   this.update.props.y && (y = this.update.props.y);
-          // }
-
           ctx.translate(value.x + x, value.y + y);
         } else if (key === "scale") {
-          // console.log(value);
           ctx.scale(value.x, value.y);
         } else {
           let val = 0;
@@ -206,36 +210,21 @@ const Element = {
     this.mouseTransforms = update;
   },
   checkBoundries: function checkBoundries(point, ctx) {
-    if (this.transform || this.update) this.handleTransforms(ctx);
-    if (this.mouseTransforms) this.handleMouseTransforms(ctx);
+    if ((this.transform || this.update) && !this.select)
+      this.handleTransforms({ ctx });
+
+    if (this.mouseTransforms) this.handleMouseTransforms({ ctx });
 
     const isMouseIn = isPointInPath(this.path, point, ctx);
 
-    if (this.transform || this.update) ctx.restore();
+    if ((this.transform || this.update) && !this.select) ctx.restore();
     if (this.mouseTransforms) ctx.restore();
 
     return isMouseIn;
   },
   isInsideOneOfTheAnchors: function (point, ctx) {
-    if (this.transform || this.update) this.handleTransforms(ctx);
-    if (this.mouseTransforms) {
-      this.handleMouseTransforms(ctx);
-
-      const { x, y } = this.mouseTransforms.props;
-      const anchorTransition = this.mouseTransforms?.anchorTransition || {
-        x: 0,
-        y: 0,
-      };
-
-      ctx.setTransform(
-        1,
-        0,
-        0,
-        1,
-        x + anchorTransition.x,
-        y + anchorTransition.y
-      );
-    }
+    if (this.mouseTransforms)
+      this.handleMouseTransforms({ ctx, skipScale: true });
 
     const selectedAnchor = this.anchors.find((anchor) => {
       const isIn = isPointInPath(anchor, point, ctx);
@@ -243,10 +232,9 @@ const Element = {
       return isIn;
     });
 
-    const index = this.anchors.findIndex((anchor) => anchor === selectedAnchor);
-
-    if (this.transform || this.update) ctx.restore();
     if (this.mouseTransforms) ctx.restore();
+
+    const index = this.anchors.findIndex((anchor) => anchor === selectedAnchor);
 
     return index < 0 ? false : index + 1;
   },

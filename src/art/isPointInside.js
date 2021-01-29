@@ -1,5 +1,9 @@
 export function isPointInPath(path, point, ctx) {
-  return ctx.isPointInPath(path, point.x, point.y, "evenodd");
+  return ctx.isPointInPath(path, point.x, point.y);
+}
+
+export function isPointInStroke(stroke, point, ctx) {
+  return ctx.isPointInStroke(stroke, point.x, point.y);
 }
 
 export function isPointInRect(rect, point) {

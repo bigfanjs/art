@@ -1,5 +1,6 @@
 import { polygonTransformBy } from "math2d/esm/polygonFunctions/polygonTransformBy";
 import { boxTransformBy } from "math2d/esm/boxFunctions/boxTransformBy";
+import { vecTransformBy } from "math2d/esm/vecFunctions/vecTransformBy";
 
 const primitives = {
   rect: (
@@ -123,61 +124,36 @@ const primitives = {
     return { path };
   },
   polygon: (ctx, { points, color, stroke }, { hover = false, transforms }) => {
-    let path;
+    const { scaleX = 1, scaleY = 1 } = transforms ?? {};
 
-    if (hover) {
-      const { x, y, scaleX = 1, scaleY = 1 } = transforms ?? {};
+    const pp = points
+      .replace(/,/gi, " ")
+      .split(" ")
+      .map((p) => parseFloat(p));
 
-      const pp = points
-        .replace(/,/gi, " ")
-        .split(" ")
-        .map((p) => parseFloat(p));
+    const result = polygonTransformBy(pp, {
+      a: scaleX, // scaleX
+      b: 0,
+      c: 0,
+      d: scaleY, // scaleY
+      e: 0,
+      f: 0,
+    });
 
-      const result = polygonTransformBy(pp, {
-        a: scaleX, // scaleX
-        b: 0,
-        c: 0,
-        d: scaleY, // scaleY
-        e: x, // translateX
-        f: y, // translateY
-      });
+    const path = new Path2D();
 
-      const hoverpath = new Path2D();
-      const array = result.reduce((sum, item, idx) => {
-        const i = Math.floor(idx / 2);
+    const array = result.reduce((sum, item, idx) => {
+      const i = Math.floor(idx / 2);
 
-        sum[i] = [...(sum[i] || []), item];
+      sum[i] = [...(sum[i] || []), item];
 
-        return sum;
-      }, []);
+      return sum;
+    }, []);
 
-      hoverpath.moveTo(array[0][0], array[0][1]);
-      array
-        .filter((_, idx) => idx !== 0)
-        .forEach(([x, y]) => hoverpath.lineTo(x, y));
+    path.moveTo(array[0][0], array[0][1]);
+    array.filter((_, idx) => idx !== 0).forEach(([x, y]) => path.lineTo(x, y));
 
-      hoverpath.closePath();
-
-      path = hoverpath;
-    } else {
-      const polygon = new Path2D();
-
-      const array = points.split(" ").map((point) => {
-        const [x, y] = point.split(",");
-
-        return { x, y };
-      });
-
-      // console.log(array);
-
-      polygon.moveTo(array[0].x, array[0].y);
-      array
-        .filter((_, idx) => idx !== 0)
-        .forEach(({ x, y }) => polygon.lineTo(x, y));
-
-      path = polygon;
-      polygon.closePath();
-    }
+    path.closePath();
 
     if (!hover) {
       ctx[stroke ? "strokeStyle" : "fillStyle"] = color;
@@ -309,14 +285,32 @@ const primitives = {
 
     return { path, points };
   },
-  line: (ctx, { x1, y1, x2, y2, color }) => {
+  line: (ctx, { x1, y1, x2, y2, strokeWidth, color }, { transforms }) => {
+    const { scaleX = 1, scaleY = 1 } = transforms ?? {};
+
+    const P1 = vecTransformBy(
+      { x: x1, y: y1 },
+      { a: scaleX, b: 0, c: 0, d: scaleY, e: 0, f: 0 }
+    );
+
+    const P2 = vecTransformBy(
+      { x: x2, y: y2 },
+      { a: scaleX, b: 0, c: 0, d: scaleY, e: 0, f: 0 }
+    );
+
     const path = new Path2D();
 
     ctx.beginPath();
+    ctx.lineWidth = strokeWidth;
     ctx.strokeStyle = color;
-    path.moveTo(x1, y1);
-    path.lineTo(x2, y2);
+
+    // console.log({ P1, P2 });
+
+    path.moveTo(P1.x, P1.y);
+    path.lineTo(P2.x, P2.y);
+
     ctx.stroke(path);
+    ctx.closePath();
 
     return { path };
   },

@@ -61,7 +61,7 @@ export default function DragAndDrop() {
         // onMouseMove={handleMouseMove}
         drag
       /> */}
-      <hexagon
+      {/* <hexagon
         x={width / 2.2 - 50}
         y={height / 2 - 50}
         color={hexColor}
@@ -73,7 +73,7 @@ export default function DragAndDrop() {
         // transform={{ y: height / 2 }}
         // transform={{ scale: 2 }}
         drag
-      />
+      /> */}
       {/* <text
         x={width / 2}
         y={height / 2}
@@ -110,7 +110,16 @@ export default function DragAndDrop() {
         drag
       /> */}
 
-      {/* <line x1={100} y1={250} x2={350} y2={500} color="#fff" /> */}
+      <line
+        x1={200}
+        y1={250}
+        x2={450}
+        y2={500}
+        strokeWidth={1}
+        drag
+        color="#fff"
+        select
+      />
 
       {/* <img
         src="https://drscdn.500px.org/photo/78655895/m%3D900/ff907b64c70732ae8a730f04ba157655"

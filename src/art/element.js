@@ -2,7 +2,7 @@ import { polygonGetBounds } from "math2d/esm/polygonFunctions/polygonGetBounds";
 
 import primitives from "./primitives";
 import boundingBoxes from "./boundingBox";
-import { isPointInPath } from "./isPointInside";
+import { isPointInPath, isPointInStroke } from "./isPointInside";
 
 const Element = {
   props: null,
@@ -28,18 +28,21 @@ const Element = {
 
     if (this.mouseTransforms) this.handleMouseTransforms({ ctx });
 
-    // draw
-    const { path, points } = primitive(
-      ctx,
-      {
-        ...this.props,
-        ...(this.update && offsets ? this.update.props : {}),
-        ...(this?.mouseTransforms?.anchorTransitionPos ?? {}), // apply the opposite anchor transition
-      },
-      { image: this.image, isLoaded: this.isLoaded }
-    );
+    // draw filled elements
+    if (!this.props.stroke) {
+      const { path, points } = primitive(
+        ctx,
+        {
+          ...this.props,
+          ...(this.update && offsets ? this.update.props : {}),
+          ...(this?.mouseTransforms?.anchorTransitionPos ?? {}), // apply the opposite anchor transition
+        },
+        { image: this.image, isLoaded: this.isLoaded }
+      );
 
-    this.path = path;
+      this.path = path;
+      this.points = points;
+    }
 
     // reset
     if (this.mouseTransforms) ctx.restore();
@@ -48,12 +51,33 @@ const Element = {
     if (this.mouseTransforms)
       this.handleMouseTransforms({ ctx, skipScale: true });
 
+    // draw stroke based elements:
+    if (this.props.stroke) {
+      const { path, points } = primitive(
+        ctx,
+        {
+          ...this.props,
+          ...(this.update && offsets ? this.update.props : {}),
+          ...(this?.mouseTransforms?.anchorTransitionPos ?? {}), // apply the opposite anchor transition
+        },
+        {
+          transforms: {
+            scaleX: this.mouseTransforms.props.scaleX,
+            scaleY: this.mouseTransforms.props.scaleY,
+          },
+        }
+      );
+
+      this.path = path;
+      this.points = points;
+    }
+
     if (this.event?.selected) {
       const { bounding, anchors } = bound(ctx, {
         ...this.props,
         ...(this?.mouseTransforms?.anchorTransitionPos ?? {}), // apply the opposite anchor transition [TODO] we might add it directly to the props
 
-        points,
+        points: this.points,
         image: this.image,
         transforms: {
           props: {
@@ -149,6 +173,9 @@ const Element = {
     const anchorTransition = this.mouseTransforms.anchorTransition || {};
 
     const { x, y, scale, scaleX, scaleY, ...transform } = transformation;
+
+    // console.log({ x, y });
+
     const transforms = {
       ...(x && y && !offsets ? { translate: { x, y } } : {}),
 
@@ -199,6 +226,13 @@ const Element = {
           })
           .reduce((sum, { x, y }) => `${sum} ${x},${y}`, "")
           .trim();
+    } else if (this.type === "line") {
+      // console.log({ x, y });
+
+      this.props.x1 = this.props.x1 + x;
+      this.props.y1 = this.props.y1 + y;
+      this.props.x2 = this.props.x2 + x;
+      this.props.y2 = this.props.y2 + y;
     } else {
       this.props.x = this.props.x + x;
       this.props.y = this.props.y + y;
@@ -215,9 +249,34 @@ const Element = {
 
     if (this.mouseTransforms) this.handleMouseTransforms({ ctx });
 
-    const isMouseIn = isPointInPath(this.path, point, ctx);
+    let isMouseIn;
+
+    if (!this.props.stroke) {
+      if (this.type === "line") {
+        ctx.lineWidth = 10;
+        isMouseIn = isPointInStroke(this.path, point, ctx);
+        ctx.lineWidth = this.props.strokeWidth;
+      } else {
+        isMouseIn = isPointInPath(this.path, point, ctx);
+      }
+    }
 
     if ((this.transform || this.update) && !this.select) ctx.restore();
+    if (this.mouseTransforms) ctx.restore();
+
+    if (this.mouseTransforms)
+      this.handleMouseTransforms({ ctx, skipScale: true });
+
+    if (this.props.stroke) {
+      if (this.type === "line") {
+        ctx.lineWidth = 10;
+        isMouseIn = isPointInStroke(this.path, point, ctx);
+        ctx.lineWidth = this.props.strokeWidth;
+      } else {
+        isMouseIn = isPointInPath(this.path, point, ctx);
+      }
+    }
+
     if (this.mouseTransforms) ctx.restore();
 
     return isMouseIn;
@@ -241,9 +300,9 @@ const Element = {
   clearOffset: function () {
     const { x, y } = this.props;
 
-    if (x > 0 && y > 0) this.setPos(-x, -y);
+    if (x > 0 || y > 0) this.setPos(-x, -y);
   },
-  setOffsets: function () {
+  setPlygonOffsets: function () {
     const points = this.props.points
       .replace(/,/gi, " ")
       .split(" ")
@@ -256,6 +315,12 @@ const Element = {
 
     this.props.x = minX + width / 2;
     this.props.y = minY + height / 2;
+  },
+  setLineOffsets: function () {
+    const { x1, y1, x2, y2 } = this.props;
+
+    this.props.x = Math.min(x1, x2) + Math.abs(x1 - x2) / 2;
+    this.props.y = Math.min(y1, y2) + Math.abs(y1 - y2) / 2;
   },
 };
 

@@ -129,6 +129,8 @@ const createReconciler = (canvas, ctx) => {
                   x2: props.x2,
                   y2: props.y2,
                   color: props.color,
+                  strokeWidth: props.strokeWidth || 1,
+                  stroke: true,
                 },
                 configurable: true,
                 enumerable: true,
@@ -246,7 +248,8 @@ const createReconciler = (canvas, ctx) => {
 
         let event = null;
 
-        if (type === "polygon") element.setOffsets();
+        if (type === "polygon") element.setPlygonOffsets();
+        if (type === "line") element.setLineOffsets();
 
         if (
           props.onClick ||

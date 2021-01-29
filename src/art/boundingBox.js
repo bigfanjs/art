@@ -1,5 +1,6 @@
 import { polygonGetBounds } from "math2d/esm/polygonFunctions/polygonGetBounds";
 import { boxTransformBy } from "math2d/esm/boxFunctions/boxTransformBy";
+import { vecTransformBy } from "math2d/esm/vecFunctions/vecTransformBy";
 
 const anchorWidth = 16;
 const anchorHeight = 16;
@@ -353,41 +354,51 @@ function boundingForImage(
   return { anchors, bounding };
 }
 
-function boundlingForLine(
-  ctx,
-  { x1, y1, x2, y2, transforms },
-  { hover = false } = {}
-) {
+function boundlingForLine(ctx, { x1, y1, x2, y2, transforms }) {
   const anchors = [];
-  let bounding;
 
-  const { minX, minY, maxX, maxY } = bounding;
+  const { scaleX = 1, scaleY = 1 } = transforms?.props ?? {};
 
-  const boundWidth = maxX - minX;
-  const boundHeight = maxY - minY;
+  const P1 = vecTransformBy(
+    { x: x1, y: y1 },
+    { a: scaleX, b: 0, c: 0, d: scaleY, e: 0, f: 0 }
+  );
 
-  if (!hover) {
-    ctx.strokeStyle = "#7a0";
-    ctx.strokeRect(minX, minY, boundWidth, boundHeight);
-  }
+  const P2 = vecTransformBy(
+    { x: x2, y: y2 },
+    { a: scaleX, b: 0, c: 0, d: scaleY, e: 0, f: 0 }
+  );
+
+  const strokeHighlight = new Path2D();
+
+  ctx.strokeStyle = "#7a0";
+  strokeHighlight.moveTo(P1.x, P1.y);
+  strokeHighlight.lineTo(P2.x, P2.y);
+  ctx.stroke(strokeHighlight);
+  ctx.closePath();
+
+  ctx.fillStyle = "#7a0";
 
   Array.from(Array(4)).forEach((_, i) => {
     const anchor = new Path2D();
-    const x = i % 2 ? minX : maxX;
-    const y = Math.floor(i / 2) ? minY : maxY;
+    const x = i % 2 ? P1.x : P2.x;
+    const y = Math.floor(i / 2) ? P1.y : P2.y;
 
-    ctx.beginPath();
-    ctx.fillStyle = "#7a0";
-
-    anchor.rect(x - halfWidth, y - halfHeight, anchorWidth, anchorHeight);
-
-    if (!hover) ctx.fill(anchor);
-    ctx.closePath();
+    if (i % 3 === 0) {
+      ctx.beginPath();
+      ctx.fillStyle = "#7a0";
+      anchor.rect(x - halfWidth, y - halfHeight, anchorWidth, anchorHeight);
+      ctx.fill(anchor);
+      ctx.closePath();
+    }
 
     anchors.push(anchor);
   });
 
-  return { anchors, bounding };
+  return {
+    bounding: { minX: P1.x, minY: P1.y, maxX: P2.x, maxY: P2.y },
+    anchors,
+  };
 }
 
 const boundingBoxes = {
@@ -397,7 +408,7 @@ const boundingBoxes = {
   hexagon: boundingBoxForHexagon,
   text: boundingForText,
   img: boundingForImage,
-  // line: boundlingForLine,
+  line: boundlingForLine,
 };
 
 export default boundingBoxes;

@@ -143,6 +143,21 @@ export default class Event {
           x: anchor % 2 ? initialHalfWidth : -initialHalfWidth,
           y: Math.floor(anchor / 3) ? -initialHalfHeight : initialHalfHeight,
         };
+      } else if (element.type === "line") {
+        const { x1, y1, x2, y2 } = element.props;
+
+        this.anchorTransitionPos = {
+          x1: x1 + (anchor % 2 ? initialHalfWidth : -initialHalfWidth),
+          y1:
+            y1 +
+            (Math.floor(anchor / 3) ? -initialHalfHeight : initialHalfHeight),
+          x2: x2 + (anchor % 2 ? initialHalfWidth : -initialHalfWidth),
+          y2:
+            y2 +
+            (Math.floor(anchor / 3) ? -initialHalfHeight : initialHalfHeight),
+          x: anchor % 2 ? initialHalfWidth : -initialHalfWidth,
+          y: Math.floor(anchor / 3) ? -initialHalfHeight : initialHalfHeight,
+        };
       } else {
         this.anchorTransitionPos = {
           x: anchor % 2 ? initialHalfWidth : -initialHalfWidth,
@@ -183,6 +198,16 @@ export default class Event {
         this.anchorTransitionPos.points = newPoints;
         this.anchorTransitionPos.x = 0;
         this.anchorTransitionPos.y = 0;
+      } else if (element.type === "line") {
+        const { x1, y1, x2, y2 } = element.props;
+
+        this.anchorTransitionPos.x1 = x1;
+        this.anchorTransitionPos.y1 = y1;
+        this.anchorTransitionPos.x2 = x2;
+        this.anchorTransitionPos.y2 = y2;
+
+        this.anchorTransitionPos.x = 0;
+        this.anchorTransitionPos.y = 0;
       } else {
         this.anchorTransitionPos.x = 0;
         this.anchorTransitionPos.y = 0;
@@ -201,12 +226,6 @@ export default class Event {
 
         const diffX = mouse.x - (this.bound.x + width);
         const diffY = mouse.y - (this.bound.y + height);
-
-        // console.log({
-        //   mouseX: mouse.x,
-        //   boundX: this.bound.x,
-        //   boundWidth: this.bound.width,
-        // });
 
         const scaleX =
           this.previousScaleX -

@@ -91,14 +91,28 @@ export default class Event {
       this.scalable = true;
       this.mouse = mouse;
 
-      this.bound = {
-        x: element.bounding.minX + this.props.x,
-        y: element.bounding.minY + this.props.y,
-        width:
-          Math.abs(element.bounding.maxX) + Math.abs(element.bounding.minX),
-        height:
-          Math.abs(element.bounding.maxY) + Math.abs(element.bounding.minY),
-      };
+      if (element.type === "line") {
+        const minX = Math.min(element.bounding.minX, element.bounding.maxX);
+        const minY = Math.min(element.bounding.minY, element.bounding.maxY);
+        const maxX = Math.max(element.bounding.maxX, element.bounding.minX);
+        const maxY = Math.max(element.bounding.maxY, element.bounding.minY);
+
+        this.bound = {
+          x: minX + this.props.x,
+          y: minY + this.props.y,
+          width: Math.abs(maxX) + Math.abs(minX),
+          height: Math.abs(maxY) + Math.abs(minY),
+        };
+      } else {
+        this.bound = {
+          x: element.bounding.minX + this.props.x,
+          y: element.bounding.minY + this.props.y,
+          width:
+            Math.abs(element.bounding.maxX) + Math.abs(element.bounding.minX),
+          height:
+            Math.abs(element.bounding.maxY) + Math.abs(element.bounding.minY),
+        };
+      }
 
       this.initialBounds = {
         width: this.bound.width / this.previousScaleX,

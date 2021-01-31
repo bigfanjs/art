@@ -381,16 +381,16 @@ function boundlingForLine(ctx, { x1, y1, x2, y2, transforms }) {
 
   Array.from(Array(4)).forEach((_, i) => {
     const anchor = new Path2D();
-    const x = i % 2 ? P1.x : P2.x;
-    const y = Math.floor(i / 2) ? P1.y : P2.y;
+    const x = i % 2 ? Math.min(P1.x, P2.x) : Math.max(P1.x, P2.x);
+    const y = Math.floor(i / 2) ? Math.min(P1.y, P2.y) : Math.max(P1.y, P2.y);
 
-    if (i % 3 === 0) {
-      ctx.beginPath();
-      ctx.fillStyle = "#7a0";
-      anchor.rect(x - halfWidth, y - halfHeight, anchorWidth, anchorHeight);
-      ctx.fill(anchor);
-      ctx.closePath();
-    }
+    // if (i % 3 === 0) {
+    ctx.beginPath();
+    ctx.fillStyle = "#7a0";
+    anchor.rect(x - halfWidth, y - halfHeight, anchorWidth, anchorHeight);
+    ctx.fill(anchor);
+    ctx.closePath();
+    // }
 
     anchors.push(anchor);
   });

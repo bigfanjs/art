@@ -92,18 +92,55 @@ export default class Event {
       this.mouse = mouse;
 
       if (element.type === "line") {
-        const minX = Math.min(element.bounding.minX, element.bounding.maxX);
-        const minY = Math.min(element.bounding.minY, element.bounding.maxY);
-        const maxX = Math.max(element.bounding.maxX, element.bounding.minX);
-        const maxY = Math.max(element.bounding.maxY, element.bounding.minY);
+        const P1 = element.bounding.P1;
+        const P2 = element.bounding.P2;
 
         this.bound = {
-          x: minX + this.props.x,
-          y: minY + this.props.y,
-          width: Math.abs(maxX) + Math.abs(minX),
-          height: Math.abs(maxY) + Math.abs(minY),
+          x1: P1.x + this.props.x,
+          y1: P1.y + this.props.y,
+          x2: P2.x + this.props.x,
+          y2: P2.y + this.props.y,
+
+          diffX: Math.abs(P1.x - P2.x),
+          diffY: Math.abs(P1.y - P2.y),
+        };
+
+        this.initialBounds = {
+          diffX: this.bound.diffX / this.previousScaleX,
+          diffY: this.bound.diffY / this.previousScaleY,
+        };
+
+        const diffX = Math.abs(P1.x - P2.x) / 2;
+        const diffY = Math.abs(P1.y - P2.y) / 2;
+
+        const Pnt1 = [P1, P2][anchor - 1];
+        const Pnt2 = [P2, P1][anchor - 1];
+
+        this.Pnt1 = Pnt1;
+        this.Pnt2 = Pnt2;
+
+        this.anchorTransition = {
+          x: Pnt1.x > Pnt2.x ? -diffX : diffX,
+          y: Pnt1.y > Pnt2.y ? -diffY : diffY,
+        };
+
+        const initialHalfDiffX = this.initialBounds.diffX / 2;
+        const initialHalfDiffY = this.initialBounds.diffY / 2;
+
+        const { x1, y1, x2, y2 } = element.props;
+
+        this.anchorTransitionPos = {
+          x1: x1 + (Pnt1.x > Pnt2.x ? initialHalfDiffX : -initialHalfDiffX),
+          y1: y1 + (Pnt1.y > Pnt2.y ? initialHalfDiffY : -initialHalfDiffY),
+
+          x2: x2 + (Pnt1.x > Pnt2.x ? initialHalfDiffX : -initialHalfDiffX),
+          y2: y2 + (Pnt1.y > Pnt2.y ? initialHalfDiffY : -initialHalfDiffY),
+
+          x: Pnt1.x > Pnt2.x ? initialHalfDiffX : -initialHalfDiffX,
+          y: Pnt1.y > Pnt2.y ? initialHalfDiffY : -initialHalfDiffY,
         };
       } else {
+        // NOT line elements
         this.bound = {
           x: element.bounding.minX + this.props.x,
           y: element.bounding.minY + this.props.y,
@@ -112,71 +149,56 @@ export default class Event {
           height:
             Math.abs(element.bounding.maxY) + Math.abs(element.bounding.minY),
         };
-      }
 
-      this.initialBounds = {
-        width: this.bound.width / this.previousScaleX,
-        height: this.bound.height / this.previousScaleY,
-      };
-
-      const halfWidth = this.bound.width / 2;
-      const halfHeight = this.bound.height / 2;
-
-      const initialHalfWidth = this.initialBounds.width / 2;
-      const initialHalfHeight = this.initialBounds.height / 2;
-
-      this.anchorTransition = {
-        x: anchor % 2 ? -halfWidth : halfWidth,
-        y: Math.floor(anchor / 3) ? halfHeight : -halfHeight,
-      };
-
-      if (element.type === "polygon") {
-        const newPoints =
-          element.props.points &&
-          element.props.points
-            .split(" ")
-            .map((point) => {
-              const [xx, yy] = point.split(",");
-
-              return {
-                x:
-                  parseFloat(xx) +
-                  (anchor % 2 ? initialHalfWidth : -initialHalfWidth),
-                y:
-                  parseFloat(yy) +
-                  (Math.floor(anchor / 3)
-                    ? -initialHalfHeight
-                    : initialHalfHeight),
-              };
-            })
-            .reduce((sum, { x, y }) => `${sum} ${x},${y}`, "")
-            .trim();
-
-        this.anchorTransitionPos = {
-          points: newPoints,
-          x: anchor % 2 ? initialHalfWidth : -initialHalfWidth,
-          y: Math.floor(anchor / 3) ? -initialHalfHeight : initialHalfHeight,
+        this.initialBounds = {
+          width: this.bound.width / this.previousScaleX,
+          height: this.bound.height / this.previousScaleY,
         };
-      } else if (element.type === "line") {
-        const { x1, y1, x2, y2 } = element.props;
 
-        this.anchorTransitionPos = {
-          x1: x1 + (anchor % 2 ? initialHalfWidth : -initialHalfWidth),
-          y1:
-            y1 +
-            (Math.floor(anchor / 3) ? -initialHalfHeight : initialHalfHeight),
-          x2: x2 + (anchor % 2 ? initialHalfWidth : -initialHalfWidth),
-          y2:
-            y2 +
-            (Math.floor(anchor / 3) ? -initialHalfHeight : initialHalfHeight),
-          x: anchor % 2 ? initialHalfWidth : -initialHalfWidth,
-          y: Math.floor(anchor / 3) ? -initialHalfHeight : initialHalfHeight,
+        const halfWidth = this.bound.width / 2;
+        const halfHeight = this.bound.height / 2;
+
+        const initialHalfWidth = this.initialBounds.width / 2;
+        const initialHalfHeight = this.initialBounds.height / 2;
+
+        this.anchorTransition = {
+          x: anchor % 2 ? -halfWidth : halfWidth,
+          y: Math.floor(anchor / 3) ? halfHeight : -halfHeight,
         };
-      } else {
-        this.anchorTransitionPos = {
-          x: anchor % 2 ? initialHalfWidth : -initialHalfWidth,
-          y: Math.floor(anchor / 3) ? -initialHalfHeight : initialHalfHeight,
-        };
+
+        if (element.type === "polygon") {
+          const newPoints =
+            element.props.points &&
+            element.props.points
+              .split(" ")
+              .map((point) => {
+                const [xx, yy] = point.split(",");
+
+                return {
+                  x:
+                    parseFloat(xx) +
+                    (anchor % 2 ? initialHalfWidth : -initialHalfWidth),
+                  y:
+                    parseFloat(yy) +
+                    (Math.floor(anchor / 3)
+                      ? -initialHalfHeight
+                      : initialHalfHeight),
+                };
+              })
+              .reduce((sum, { x, y }) => `${sum} ${x},${y}`, "")
+              .trim();
+
+          this.anchorTransitionPos = {
+            points: newPoints,
+            x: anchor % 2 ? initialHalfWidth : -initialHalfWidth,
+            y: Math.floor(anchor / 3) ? -initialHalfHeight : initialHalfHeight,
+          };
+        } else {
+          this.anchorTransitionPos = {
+            x: anchor % 2 ? initialHalfWidth : -initialHalfWidth,
+            y: Math.floor(anchor / 3) ? -initialHalfHeight : initialHalfHeight,
+          };
+        }
       }
     };
 
@@ -235,29 +257,54 @@ export default class Event {
 
     const mousemove = (mouse, anchor) => {
       if (this.scalable) {
-        const width = anchor % 2 ? this.bound.width : 0;
-        const height = Math.floor(anchor / 3) ? 0 : this.bound.height;
+        if (element.type === "line") {
+          const diffX = mouse.x - [this.bound.x1, this.bound.x2][anchor - 1];
+          const diffY = mouse.y - [this.bound.y1, this.bound.y2][anchor - 1];
 
-        const diffX = mouse.x - (this.bound.x + width);
-        const diffY = mouse.y - (this.bound.y + height);
+          const scaleX =
+            this.previousScaleX -
+            (this.Pnt1.x > this.Pnt2.x ? -diffX : diffX) /
+              this.initialBounds.diffX;
 
-        const scaleX =
-          this.previousScaleX -
-          (anchor % 2 ? diffX * -1 : diffX) / this.initialBounds.width;
+          const scaleY =
+            this.previousScaleY -
+            (this.Pnt1.y > this.Pnt2.y ? -diffY : diffY) /
+              this.initialBounds.diffY;
 
-        const scaleY =
-          this.previousScaleY -
-          (Math.floor(anchor / 3) ? diffY : diffY * -1) /
-            this.initialBounds.height;
+          this.mouse = mouse;
 
-        this.mouse = mouse;
-        this.props = {
-          scaleX,
-          scaleY,
-          x: this.props.x || this.bound.x + this.bound.width / 2,
-          y: this.props.y || this.bound.y + this.bound.height / 2,
-          rotate: 0,
-        };
+          this.props = {
+            scaleX,
+            scaleY,
+            x: this.props.x,
+            y: this.props.y,
+            rotate: 0,
+          };
+        } else {
+          const width = anchor % 2 ? this.bound.width : 0;
+          const height = Math.floor(anchor / 3) ? 0 : this.bound.height;
+
+          const diffX = mouse.x - (this.bound.x + width);
+          const diffY = mouse.y - (this.bound.y + height);
+
+          const scaleX =
+            this.previousScaleX -
+            (anchor % 2 ? diffX * -1 : diffX) / this.initialBounds.width;
+
+          const scaleY =
+            this.previousScaleY -
+            (Math.floor(anchor / 3) ? diffY : diffY * -1) /
+              this.initialBounds.height;
+
+          this.mouse = mouse;
+          this.props = {
+            scaleX,
+            scaleY,
+            x: this.props.x || this.bound.x + this.bound.width / 2,
+            y: this.props.y || this.bound.y + this.bound.height / 2,
+            rotate: 0,
+          };
+        }
 
         this.updateScale(this);
       }

@@ -174,8 +174,6 @@ const Element = {
 
     const { x, y, scale, scaleX, scaleY, ...transform } = transformation;
 
-    // console.log({ x, y });
-
     const transforms = {
       ...(x && y && !offsets ? { translate: { x, y } } : {}),
 

@@ -356,7 +356,6 @@ function boundingForImage(
 
 function boundlingForLine(ctx, { x1, y1, x2, y2, transforms }) {
   const anchors = [];
-
   const { scaleX = 1, scaleY = 1 } = transforms?.props ?? {};
 
   const P1 = vecTransformBy(
@@ -379,26 +378,19 @@ function boundlingForLine(ctx, { x1, y1, x2, y2, transforms }) {
 
   ctx.fillStyle = "#7a0";
 
-  Array.from(Array(4)).forEach((_, i) => {
+  [P1, P2].forEach(({ x, y }) => {
     const anchor = new Path2D();
-    const x = i % 2 ? Math.min(P1.x, P2.x) : Math.max(P1.x, P2.x);
-    const y = Math.floor(i / 2) ? Math.min(P1.y, P2.y) : Math.max(P1.y, P2.y);
 
-    // if (i % 3 === 0) {
     ctx.beginPath();
     ctx.fillStyle = "#7a0";
     anchor.rect(x - halfWidth, y - halfHeight, anchorWidth, anchorHeight);
     ctx.fill(anchor);
     ctx.closePath();
-    // }
 
     anchors.push(anchor);
   });
 
-  return {
-    bounding: { minX: P1.x, minY: P1.y, maxX: P2.x, maxY: P2.y },
-    anchors,
-  };
+  return { bounding: { P1, P2 }, anchors };
 }
 
 const boundingBoxes = {

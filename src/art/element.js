@@ -1,4 +1,5 @@
 import { polygonGetBounds } from "math2d/esm/polygonFunctions/polygonGetBounds";
+import { vecTransformBy } from "math2d/esm/vecFunctions/vecTransformBy";
 
 import primitives from "./primitives";
 import boundingBoxes from "./boundingBox";
@@ -60,12 +61,7 @@ const Element = {
           ...(this.update && offsets ? this.update.props : {}),
           ...(this?.mouseTransforms?.anchorTransitionPos ?? {}), // apply the opposite anchor transition
         },
-        {
-          transforms: {
-            scaleX: this.mouseTransforms.props.scaleX,
-            scaleY: this.mouseTransforms.props.scaleY,
-          },
-        }
+        { transforms: this.mouseTransforms?.props }
       );
 
       this.path = path;
@@ -80,10 +76,9 @@ const Element = {
         points: this.points,
         image: this.image,
         transforms: {
-          props: {
-            scaleX: this.mouseTransforms.props.scaleX,
-            scaleY: this.mouseTransforms.props.scaleY,
-          },
+          props: this.mouseTransforms.props,
+          anchorTransition: this.mouseTransforms?.anchorTransition,
+          isAnchorTransitionActive: this.event?.scalable,
         },
       });
 
@@ -283,9 +278,44 @@ const Element = {
     if (this.mouseTransforms)
       this.handleMouseTransforms({ ctx, skipScale: true });
 
-    const selectedAnchor = this.anchors.find((anchor) => {
+    const { x1, y1, x2, y2 } = this.props;
+    const { scaleX, scaleY } = this.mouseTransforms?.props;
+
+    const P1 = vecTransformBy(
+      { x: x1, y: y1 },
+      { a: scaleX, b: 0, c: 0, d: scaleY, e: 0, f: 0 }
+    );
+
+    const P2 = vecTransformBy(
+      { x: x2, y: y2 },
+      { a: scaleX, b: 0, c: 0, d: scaleY, e: 0, f: 0 }
+    );
+
+    const deltaX = P2.x - P1.x;
+    const deltaY = P2.y - P1.y;
+
+    const radiusX = deltaX / 2;
+    const radiusY = deltaY / 2;
+    const isAnchorTransitionActive = this.event?.scalable;
+
+    const selectedAnchor = this.anchors.find((anchor, i) => {
+      if (this.type === "line") {
+        const { x, y } = [P1, P2][i];
+        const index = i % 2 ? 1 : -1;
+
+        const diffx = isAnchorTransitionActive ? x : radiusX * index;
+        const diffy = isAnchorTransitionActive ? y : radiusY * index;
+
+        const angle = Math.atan2(deltaY * index, deltaX * index);
+
+        ctx.save();
+        ctx.translate(diffx, diffy);
+        ctx.rotate(angle);
+      }
+
       const isIn = isPointInPath(anchor, point, ctx);
 
+      if (this.type === "line") ctx.restore();
       return isIn;
     });
 

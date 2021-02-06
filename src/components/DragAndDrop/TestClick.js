@@ -35,7 +35,7 @@ export default function DragAndDrop() {
 
   return (
     <group>
-      {/* <arc
+      <arc
         x={200}
         y={height / 2}
         radius={50}
@@ -45,9 +45,9 @@ export default function DragAndDrop() {
         onMouseOut={handleCircleClick}
         select={true}
         drag
-      /> */}
+      />
 
-      {/* <rect
+      <rect
         x={width / 2}
         y={height / 2}
         width={300}
@@ -60,8 +60,8 @@ export default function DragAndDrop() {
         select={true}
         // onMouseMove={handleMouseMove}
         drag
-      /> */}
-      {/* <hexagon
+      />
+      <hexagon
         x={width / 2.2 - 50}
         y={height / 2 - 50}
         color={hexColor}
@@ -73,7 +73,7 @@ export default function DragAndDrop() {
         // transform={{ y: height / 2 }}
         // transform={{ scale: 2 }}
         drag
-      /> */}
+      />
       {/* <text
         x={width / 2}
         y={height / 2}
@@ -92,7 +92,7 @@ export default function DragAndDrop() {
         baseLine="middle"
         // drag
       /> */}
-      {/* <polygon
+      <polygon
         points="420,250 500,300 420,300"
         color={polyColor}
         onMouseIn={handlePolClick}
@@ -100,7 +100,7 @@ export default function DragAndDrop() {
         select={true}
         stroke
         drag
-      /> */}
+      />
 
       {/* <img
         src="https://drscdn.500px.org/photo/78655895/m%3D900/ff907b64c70732ae8a730f04ba157655"
@@ -118,6 +118,17 @@ export default function DragAndDrop() {
         strokeWidth={1}
         drag
         color="#fff"
+        select
+      />
+
+      <line
+        x1={550}
+        y1={500}
+        x2={300}
+        y2={250}
+        strokeWidth={1}
+        drag
+        color="yellow"
         select
       />
 

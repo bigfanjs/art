@@ -1,57 +1,17 @@
 import { polygonTransformBy } from "math2d/esm/polygonFunctions/polygonTransformBy";
-import { boxTransformBy } from "math2d/esm/boxFunctions/boxTransformBy";
 import { vecTransformBy } from "math2d/esm/vecFunctions/vecTransformBy";
 
 const primitives = {
-  rect: (
-    ctx,
-    { x, y, width, height, color },
-    { hover = false, transforms = {} }
-  ) => {
+  rect: (ctx, { x, y, width, height, color }) => {
     let path;
+    let rectPath = new Path2D();
 
-    if (hover) {
-      const result = boxTransformBy(
-        {
-          minX: x - width / 2,
-          minY: y - height / 2,
-          maxX: x - width / 2 + width,
-          maxY: y - height / 2 + height,
-        },
-        {
-          a: transforms.scaleX, // scaleX
-          b: 0,
-          c: 0,
-          d: transforms.scaleY, // scaleY
-          e: transforms.x, // translateX
-          f: transforms.y, // translateY
-        }
-      );
+    ctx.beginPath();
+    ctx.fillStyle = color;
+    rectPath.rect(x - width / 2, y - height / 2, width, height);
+    ctx.fill(rectPath);
 
-      const hoverpath = new Path2D();
-
-      ctx.beginPath();
-
-      hoverpath.rect(
-        result.minX,
-        result.minY,
-        result.maxX - result.minX,
-        result.maxY - result.minY
-      );
-
-      path = hoverpath;
-    } else {
-      let rectPath = new Path2D();
-
-      // console.log({ x: x - width / 2, y: y - height / 2, width, height });
-
-      ctx.beginPath();
-      ctx.fillStyle = color;
-      rectPath.rect(x - width / 2, y - height / 2, width, height);
-      ctx.fill(rectPath);
-
-      path = rectPath;
-    }
+    path = rectPath;
 
     path.closePath();
 
@@ -67,57 +27,18 @@ const primitives = {
       end = Math.PI * 2,
       isCounterclockwise = false,
       color,
-    },
-    { hover = false, transforms = {} }
+    }
   ) => {
     let path;
 
-    if (hover) {
-      const result = boxTransformBy(
-        {
-          minX: x - radius,
-          minY: y - radius,
-          maxX: x + radius,
-          maxY: y + radius,
-        },
-        {
-          a: transforms.scaleX, // scaleX
-          b: 0,
-          c: 0,
-          d: transforms.scaleY, // scaleY
-          e: transforms.x, // translateX
-          f: transforms.y, // translateY
-        }
-      );
+    const arcPath = new Path2D();
 
-      const hoverpath = new Path2D();
+    ctx.beginPath();
+    ctx.fillStyle = color;
+    arcPath.ellipse(x, y, radius, radius, 0, start, end);
+    ctx.fill(arcPath);
 
-      ctx.beginPath();
-
-      const radiusX = (result.maxX - result.minX) / 2;
-      const radiusY = (result.maxY - result.minY) / 2;
-
-      hoverpath.ellipse(
-        result.minX + radiusX,
-        result.minY + radiusY,
-        radiusX,
-        radiusY,
-        0,
-        start,
-        end
-      );
-
-      path = hoverpath;
-    } else {
-      const arcPath = new Path2D();
-
-      ctx.beginPath();
-      ctx.fillStyle = color;
-      arcPath.ellipse(x, y, radius, radius, 0, start, end);
-      ctx.fill(arcPath);
-
-      path = arcPath;
-    }
+    path = arcPath;
 
     path.closePath();
 
@@ -162,14 +83,8 @@ const primitives = {
 
     return { path, points };
   },
-  text: (
-    ctx,
-    { x, y, text, size, fontFamily, baseLine, textAlign, color },
-    { hover = false, transforms }
-  ) => {
+  text: (ctx, { x, y, text, size, fontFamily, baseLine, textAlign, color }) => {
     let path;
-
-    // console.log({ y });
 
     ctx.textBaseline = baseLine;
     ctx.textAlign = textAlign;
@@ -184,46 +99,13 @@ const primitives = {
     const TextHalfHeight = (Descent + Ascent) / 2;
     const TextHalfWidth = (Right + Left) / 2;
 
-    if (hover) {
-      const result = boxTransformBy(
-        {
-          minY: y - TextHalfHeight,
-          maxY: y + Descent + Ascent - TextHalfHeight,
-          minX: x - TextHalfWidth,
-          maxX: x + Right + Left - TextHalfWidth,
-        },
-        {
-          a: transforms.scaleX, // scaleX
-          b: 0,
-          c: 0,
-          d: transforms.scaleY, // scaleY
-          e: transforms.x, // translateX
-          f: transforms.y, // translateY
-        }
-      );
-
-      const hoverpath = new Path2D();
-      hoverpath.rect(
-        result.minX,
-        result.minY,
-        result.maxX - result.minX,
-        result.maxY - result.minY
-      );
-
-      path = hoverpath;
-    } else {
-      ctx.beginPath();
-      ctx.fillStyle = color;
-      ctx.fillText(text, x + Left - TextHalfWidth, y + Ascent - TextHalfHeight);
-    }
+    ctx.beginPath();
+    ctx.fillStyle = color;
+    ctx.fillText(text, x + Left - TextHalfWidth, y + Ascent - TextHalfHeight);
 
     return { path };
   },
-  hexagon: function hexagon(
-    ctx,
-    { x, y, radius, color, stroke },
-    { hover = false, transforms }
-  ) {
+  hexagon: function hexagon(ctx, { x, y, radius, color, stroke }) {
     let path = new Path2D();
     const points = [];
 
@@ -244,42 +126,8 @@ const primitives = {
       points.push(...point);
     }
 
-    if (hover) {
-      const { x, y, scaleX = 1, scaleY = 1 } = transforms ?? {};
-
-      // console.log(points);
-      const result = polygonTransformBy(points, {
-        a: scaleX, // scaleX
-        b: 0,
-        c: 0,
-        d: scaleY, // scaleY
-        e: hover ? x : 0, // translateX
-        f: hover ? y : 0, // translateY
-      });
-
-      const hoverpath = new Path2D();
-      const array = result.reduce((sum, item, idx) => {
-        const i = Math.floor(idx / 2);
-
-        sum[i] = [...(sum[i] || []), item];
-
-        return sum;
-      }, []);
-
-      hoverpath.moveTo(array[0][0], array[0][1]);
-      array
-        .filter((_, idx) => idx !== 0)
-        .forEach(([x, y]) => hoverpath.lineTo(x, y));
-
-      hoverpath.closePath();
-
-      path = hoverpath;
-    }
-
-    if (!hover) {
-      ctx[stroke ? "strokeStyle" : "fillStyle"] = color;
-      stroke ? ctx.stroke(path) : ctx.fill(path);
-    }
+    ctx[stroke ? "strokeStyle" : "fillStyle"] = color;
+    stroke ? ctx.stroke(path) : ctx.fill(path);
 
     path.closePath();
 
@@ -321,45 +169,7 @@ const primitives = {
   ) => {
     let path;
 
-    if (hover) {
-      const rectWidth = width || image.width;
-      const rectHeight = height || image.height;
-
-      const result = boxTransformBy(
-        {
-          minX: x - rectWidth / 2,
-          minY: y - rectHeight / 2,
-          maxX: x - rectWidth / 2 + rectWidth,
-          maxY: y - rectHeight / 2 + rectHeight,
-        },
-        {
-          a: transforms.scaleX, // scaleX
-          b: 0,
-          c: 0,
-          d: transforms.scaleY, // scaleY
-          e: transforms.x, // translateX
-          f: transforms.y, // translateY
-        }
-      );
-
-      const hoverpath = new Path2D();
-
-      ctx.beginPath();
-
-      hoverpath.rect(
-        result.minX,
-        result.minY,
-        result.maxX - result.minX,
-        result.maxY - result.minY
-      );
-
-      path = hoverpath;
-      return { path };
-    }
-
     if (isLoaded) {
-      // console.log({ x, y, width, height, sx, sy, sh, sw });
-
       if (
         typeof x === "number" &&
         typeof y === "number" &&

@@ -8,23 +8,11 @@ const anchorHeight = 16;
 const halfWidth = anchorWidth / 2;
 const halfHeight = anchorHeight / 2;
 
-function boundingBoxForHexagon(
-  ctx,
-  { points, transforms },
-  { hover = false } = {}
-) {
+function boundingBoxForHexagon(ctx, { points, transforms }) {
   const anchors = [];
-  let bounding;
-
-  let transformedPoints = points;
-
-  const result = polygonGetBounds(transformedPoints);
-
+  const result = polygonGetBounds(points);
   const { scaleX = 1, scaleY = 1 } = transforms.props ?? {};
-
-  // console.log({ x, y });
-
-  bounding = boxTransformBy(result, {
+  const bounding = boxTransformBy(result, {
     a: scaleX, // scaleX
     b: 0,
     c: 0,
@@ -55,43 +43,31 @@ function boundingBoxForHexagon(
     anchors.push(anchor);
   });
 
-  // what we return here is only for the mouse
   return { anchors, bounding };
 }
 
-function boundingForpolygon(
-  ctx,
-  { points, transforms },
-  { hover = false } = {}
-) {
+function boundingForpolygon(ctx, { points, transforms }) {
   const anchors = [];
-  let bounding;
-
-  let transformedPoints = points
+  const transformedPoints = points
     .replace(/,/gi, " ")
     .split(" ")
     .map((p) => parseFloat(p));
-
   const result = polygonGetBounds(transformedPoints);
-
-  const { x, y, scaleX = 1, scaleY = 1 } = transforms.props ?? {};
-
-  bounding = boxTransformBy(result, {
-    a: scaleX, // scaleX
+  const { scaleX = 1, scaleY = 1 } = transforms.props ?? {};
+  const bounding = boxTransformBy(result, {
+    a: scaleX,
     b: 0,
     c: 0,
-    d: scaleY, // scaleY
-    e: hover ? x : 0, // translateX
-    f: hover ? y : 0, // translateY
+    d: scaleY,
+    e: 0,
+    f: 0,
   });
 
   const { minX, minY, maxX, maxY } = bounding;
 
-  if (!hover) {
-    ctx.strokeStyle = "#7a0";
-    ctx.strokeRect(minX, minY, maxX - minX, maxY - minY);
-    ctx.closePath();
-  }
+  ctx.strokeStyle = "#7a0";
+  ctx.strokeRect(minX, minY, maxX - minX, maxY - minY);
+  ctx.closePath();
 
   ctx.fillStyle = "#7a0";
 
@@ -102,52 +78,37 @@ function boundingForpolygon(
 
     ctx.beginPath();
     ctx.fillStyle = "#7a0";
+
     anchor.rect(x - halfWidth, y - halfHeight, anchorWidth, anchorHeight);
-    if (!hover) ctx.fill(anchor);
+
+    ctx.fill(anchor);
     ctx.closePath();
 
     anchors.push(anchor);
   });
 
-  // what we return here is only for the mouse
   return { anchors, bounding };
 }
 
-function boundingForArc(
-  ctx,
-  { x, y, radius, transforms },
-  { hover = false } = {}
-) {
+function boundingForArc(ctx, { x, y, radius, transforms }) {
   const anchors = [];
-  let bounding;
-
-  const transformsProps = transforms.props ?? {};
-
-  bounding = boxTransformBy(
+  const { scaleX = 1, scaleY = 1 } = transforms.props ?? {};
+  const bounding = boxTransformBy(
     {
       minX: x - radius,
       minY: y - radius,
       maxX: x - radius + radius * 2,
       maxY: y - radius + radius * 2,
     },
-    {
-      a: transformsProps.scaleX, // scaleX
-      b: 0,
-      c: 0,
-      d: transformsProps.scaleY, // scaleY
-      e: hover ? transformsProps.x : 0, // translateX
-      f: hover ? transformsProps.y : 0, // translateY
-    }
+    { a: scaleX, b: 0, c: 0, d: scaleY, e: 0, f: 0 }
   );
 
   const { minX, minY, maxX, maxY } = bounding;
   const boundWidth = maxX - minX;
   const boundHeight = maxY - minY;
 
-  if (!hover) {
-    ctx.strokeStyle = "#7a0";
-    ctx.strokeRect(minX, minY, boundWidth, boundHeight);
-  }
+  ctx.strokeStyle = "#7a0";
+  ctx.strokeRect(minX, minY, boundWidth, boundHeight);
 
   Array.from(Array(4)).forEach((_, i) => {
     const anchor = new Path2D();
@@ -159,7 +120,7 @@ function boundingForArc(
 
     anchor.rect(x - halfWidth, y - halfHeight, anchorWidth, anchorHeight);
 
-    if (!hover) ctx.fill(anchor);
+    ctx.fill(anchor);
     ctx.closePath();
 
     anchors.push(anchor);
@@ -168,42 +129,25 @@ function boundingForArc(
   return { anchors, bounding };
 }
 
-function boundingForRect(
-  ctx,
-  { x, y, width, height, transforms },
-  { hover = false } = {}
-) {
+function boundingForRect(ctx, { x, y, width, height, transforms }) {
   const anchors = [];
-  let bounding;
-
-  const transformsProps = transforms.props ?? {};
-
-  bounding = boxTransformBy(
+  const { scaleX = 1, scaleY = 1 } = transforms.props ?? {};
+  const bounding = boxTransformBy(
     {
       minX: x - width / 2,
       minY: y - height / 2,
       maxX: x - width / 2 + width,
       maxY: y - height / 2 + height,
     },
-    {
-      a: transformsProps.scaleX, // scaleX
-      b: 0,
-      c: 0,
-      d: transformsProps.scaleY, // scaleY
-      e: hover ? transformsProps.x : 0, // translateX
-      f: hover ? transformsProps.y : 0, // translateY
-    }
+    { a: scaleX, b: 0, c: 0, d: scaleY, e: 0, f: 0 }
   );
 
   const { minX, minY, maxX, maxY } = bounding;
-
   const boundWidth = maxX - minX;
   const boundHeight = maxY - minY;
 
-  if (!hover) {
-    ctx.strokeStyle = "#7a0";
-    ctx.strokeRect(minX, minY, boundWidth, boundHeight);
-  }
+  ctx.strokeStyle = "#7a0";
+  ctx.strokeRect(minX, minY, boundWidth, boundHeight);
 
   Array.from(Array(4)).forEach((_, i) => {
     const anchor = new Path2D();
@@ -215,7 +159,7 @@ function boundingForRect(
 
     anchor.rect(x - halfWidth, y - halfHeight, anchorWidth, anchorHeight);
 
-    if (!hover) ctx.fill(anchor);
+    ctx.fill(anchor);
     ctx.closePath();
 
     anchors.push(anchor);
@@ -226,44 +170,30 @@ function boundingForRect(
 
 function boundingForText(
   ctx,
-  { x, y, text, size, baseLine, textAlign, fontFamily, transforms },
-  { hover = false } = {}
+  { x, y, text, size, baseLine, textAlign, fontFamily, transforms }
 ) {
-  const anchors = [];
-
   ctx.textBaseline = baseLine;
   ctx.textAlign = textAlign;
   ctx.font = `${size}px ${fontFamily}`;
 
+  const anchors = [];
   const textMetrics = ctx.measureText(text);
-
-  let bounding;
-
-  const transformsProps = transforms.props ?? {};
-
+  const { scaleX = 1, scaleY = 1 } = transforms.props ?? {};
   const Descent = textMetrics.actualBoundingBoxDescent;
   const Ascent = textMetrics.actualBoundingBoxAscent;
   const TextHalfHeight = (Descent + Ascent) / 2;
-
   const Left = textMetrics.actualBoundingBoxLeft;
   const Right = textMetrics.actualBoundingBoxRight;
   const TextHalfWidth = (Right + Left) / 2;
 
-  bounding = boxTransformBy(
+  const bounding = boxTransformBy(
     {
       minY: y - TextHalfHeight,
       maxY: y + Descent + Ascent - TextHalfHeight,
       minX: x - TextHalfWidth,
       maxX: x + Right + Left - TextHalfWidth,
     },
-    {
-      a: transformsProps.scaleX, // scaleX
-      b: 0,
-      c: 0,
-      d: transformsProps.scaleY, // scaleY
-      e: hover ? transformsProps.x : 0, // translateX
-      f: hover ? transformsProps.y : 0, // translateY
-    }
+    { a: scaleX, b: 0, c: 0, d: scaleY, e: 0, f: 0 }
   );
 
   const { minX, minY, maxX, maxY } = bounding;
@@ -271,10 +201,8 @@ function boundingForText(
   const boundWidth = maxX - minX;
   const boundHeight = maxY - minY;
 
-  if (!hover) {
-    ctx.strokeStyle = "#7a0";
-    ctx.strokeRect(minX, minY, boundWidth, boundHeight);
-  }
+  ctx.strokeStyle = "#7a0";
+  ctx.strokeRect(minX, minY, boundWidth, boundHeight);
 
   Array.from(Array(4)).forEach((_, i) => {
     const anchor = new Path2D();
@@ -286,7 +214,7 @@ function boundingForText(
 
     anchor.rect(x - halfWidth, y - halfHeight, anchorWidth, anchorHeight);
 
-    if (!hover) ctx.fill(anchor);
+    ctx.fill(anchor);
     ctx.closePath();
 
     anchors.push(anchor);
@@ -295,45 +223,27 @@ function boundingForText(
   return { anchors, bounding };
 }
 
-function boundingForImage(
-  ctx,
-  { image, x, y, width, height, transforms },
-  { hover = false } = {}
-) {
+function boundingForImage(ctx, { image, x, y, width, height, transforms }) {
   const anchors = [];
-  let bounding;
-
-  const transformsProps = transforms.props ?? {};
-
+  const { scaleX = 1, scaleY = 1 } = transforms.props ?? {};
   const rectWidth = width || image.width;
   const rectHeight = height || image.height;
-
-  bounding = boxTransformBy(
+  const bounding = boxTransformBy(
     {
       minX: x - rectWidth / 2,
       minY: y - rectHeight / 2,
       maxX: x - rectWidth / 2 + rectWidth,
       maxY: y - rectHeight / 2 + rectHeight,
     },
-    {
-      a: transformsProps.scaleX, // scaleX
-      b: 0,
-      c: 0,
-      d: transformsProps.scaleY, // scaleY
-      e: hover ? transformsProps.x : 0, // translateX
-      f: hover ? transformsProps.y : 0, // translateY
-    }
+    { a: scaleX, b: 0, c: 0, d: scaleY, e: 0, f: 0 }
   );
 
   const { minX, minY, maxX, maxY } = bounding;
-
   const boundWidth = maxX - minX;
   const boundHeight = maxY - minY;
 
-  if (!hover) {
-    ctx.strokeStyle = "#7a0";
-    ctx.strokeRect(minX, minY, boundWidth, boundHeight);
-  }
+  ctx.strokeStyle = "#7a0";
+  ctx.strokeRect(minX, minY, boundWidth, boundHeight);
 
   Array.from(Array(4)).forEach((_, i) => {
     const anchor = new Path2D();
@@ -345,7 +255,7 @@ function boundingForImage(
 
     anchor.rect(x - halfWidth, y - halfHeight, anchorWidth, anchorHeight);
 
-    if (!hover) ctx.fill(anchor);
+    ctx.fill(anchor);
     ctx.closePath();
 
     anchors.push(anchor);
@@ -357,6 +267,7 @@ function boundingForImage(
 function boundlingForLine(ctx, { x1, y1, x2, y2, transforms }) {
   const anchors = [];
   const { scaleX = 1, scaleY = 1 } = transforms?.props ?? {};
+  const isAnchorTransitionActive = transforms?.isAnchorTransitionActive;
 
   const P1 = vecTransformBy(
     { x: x1, y: y1 },
@@ -378,16 +289,38 @@ function boundlingForLine(ctx, { x1, y1, x2, y2, transforms }) {
 
   ctx.fillStyle = "#7a0";
 
-  [P1, P2].forEach(({ x, y }) => {
+  const deltaX = P2.x - P1.x;
+  const deltaY = P2.y - P1.y;
+
+  const radiusX = deltaX / 2;
+  const radiusY = deltaY / 2;
+
+  [P1, P2].forEach(({ x, y }, i) => {
     const anchor = new Path2D();
+    const index = i % 2 ? 1 : -1;
+    const diffx = isAnchorTransitionActive ? x : radiusX * index;
+    const diffy = isAnchorTransitionActive ? y : radiusY * index;
+    const angle = Math.atan2(deltaY * index, deltaX * index);
+
+    ctx.save();
+    ctx.translate(diffx, diffy);
+    ctx.rotate(angle);
 
     ctx.beginPath();
     ctx.fillStyle = "#7a0";
-    anchor.rect(x - halfWidth, y - halfHeight, anchorWidth, anchorHeight);
+
+    anchor.rect(
+      x - halfWidth - diffx,
+      y - halfHeight - diffy,
+      anchorWidth,
+      anchorHeight
+    );
+
     ctx.fill(anchor);
     ctx.closePath();
 
     anchors.push(anchor);
+    ctx.restore();
   });
 
   return { bounding: { P1, P2 }, anchors };

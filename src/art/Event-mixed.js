@@ -113,15 +113,18 @@ export default class Event {
         const diffX = Math.abs(P1.x - P2.x) / 2;
         const diffY = Math.abs(P1.y - P2.y) / 2;
 
-        const Pnt1 = [P1, P2][anchor - 1];
-        const Pnt2 = [P2, P1][anchor - 1];
+        const clickedPoint = [P1, P2][anchor - 1];
+        const otherPoint = [P2, P1][anchor - 1];
 
-        this.Pnt1 = Pnt1;
-        this.Pnt2 = Pnt2;
+        const isClickedPointBiggerX = clickedPoint.x > otherPoint.x;
+        const isClickedPointBiggerY = clickedPoint.y > otherPoint.y;
+
+        this.isClickedPointBiggerX = isClickedPointBiggerX;
+        this.isClickedPointBiggerY = isClickedPointBiggerY;
 
         this.anchorTransition = {
-          x: Pnt1.x > Pnt2.x ? -diffX : diffX,
-          y: Pnt1.y > Pnt2.y ? -diffY : diffY,
+          x: isClickedPointBiggerX ? -diffX : diffX,
+          y: isClickedPointBiggerY ? -diffY : diffY,
         };
 
         const initialHalfDiffX = this.initialBounds.diffX / 2;
@@ -130,14 +133,18 @@ export default class Event {
         const { x1, y1, x2, y2 } = element.props;
 
         this.anchorTransitionPos = {
-          x1: x1 + (Pnt1.x > Pnt2.x ? initialHalfDiffX : -initialHalfDiffX),
-          y1: y1 + (Pnt1.y > Pnt2.y ? initialHalfDiffY : -initialHalfDiffY),
+          x1:
+            x1 + (isClickedPointBiggerX ? initialHalfDiffX : -initialHalfDiffX),
+          y1:
+            y1 + (isClickedPointBiggerY ? initialHalfDiffY : -initialHalfDiffY),
 
-          x2: x2 + (Pnt1.x > Pnt2.x ? initialHalfDiffX : -initialHalfDiffX),
-          y2: y2 + (Pnt1.y > Pnt2.y ? initialHalfDiffY : -initialHalfDiffY),
+          x2:
+            x2 + (isClickedPointBiggerX ? initialHalfDiffX : -initialHalfDiffX),
+          y2:
+            y2 + (isClickedPointBiggerY ? initialHalfDiffY : -initialHalfDiffY),
 
-          x: Pnt1.x > Pnt2.x ? initialHalfDiffX : -initialHalfDiffX,
-          y: Pnt1.y > Pnt2.y ? initialHalfDiffY : -initialHalfDiffY,
+          x: isClickedPointBiggerX ? initialHalfDiffX : -initialHalfDiffX,
+          y: isClickedPointBiggerY ? initialHalfDiffY : -initialHalfDiffY,
         };
       } else {
         // NOT line elements
@@ -263,12 +270,12 @@ export default class Event {
 
           const scaleX =
             this.previousScaleX -
-            (this.Pnt1.x > this.Pnt2.x ? -diffX : diffX) /
+            (this.isClickedPointBiggerX ? -diffX : diffX) /
               this.initialBounds.diffX;
 
           const scaleY =
             this.previousScaleY -
-            (this.Pnt1.y > this.Pnt2.y ? -diffY : diffY) /
+            (this.isClickedPointBiggerY ? -diffY : diffY) /
               this.initialBounds.diffY;
 
           this.mouse = mouse;
@@ -276,8 +283,8 @@ export default class Event {
           this.props = {
             scaleX,
             scaleY,
-            x: this.props.x,
-            y: this.props.y,
+            x: this.props.x || this.bound.x + this.bound.width / 2,
+            y: this.props.y || this.bound.y + this.bound.height / 2,
             rotate: 0,
           };
         } else {
@@ -296,12 +303,14 @@ export default class Event {
             (Math.floor(anchor / 3) ? diffY : diffY * -1) /
               this.initialBounds.height;
 
+          const { x1, y1, x2, y2 } = this.bound;
+
           this.mouse = mouse;
           this.props = {
             scaleX,
             scaleY,
-            x: this.props.x || this.bound.x + this.bound.width / 2,
-            y: this.props.y || this.bound.y + this.bound.height / 2,
+            x: this.props.x || Math.min(x1, x2) + Math.abs(x1 - x2) / 2,
+            y: this.props.y || Math.min(y1, y2) + Math.abs(y1 - y2) / 2,
             rotate: 0,
           };
         }

@@ -44,7 +44,7 @@ const primitives = {
 
     return { path };
   },
-  polygon: (ctx, { points, color, stroke }, { hover = false, transforms }) => {
+  polygon: (ctx, { points, color, stroke }, { transforms }) => {
     const { scaleX = 1, scaleY = 1 } = transforms ?? {};
 
     const pp = points
@@ -76,10 +76,8 @@ const primitives = {
 
     path.closePath();
 
-    if (!hover) {
-      ctx[stroke ? "strokeStyle" : "fillStyle"] = color;
-      stroke ? ctx.stroke(path) : ctx.fill(path);
-    }
+    ctx[stroke ? "strokeStyle" : "fillStyle"] = color;
+    stroke ? ctx.stroke(path) : ctx.fill(path);
 
     return { path, points };
   },

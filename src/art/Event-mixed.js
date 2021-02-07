@@ -27,11 +27,11 @@ export default class Event {
 
       this.isPreviousMouseIn = this.isIn;
 
-      this.isIn = element.checkBoundries(point, ctx);
+      this.isIn = element?.checkBoundries(point, ctx);
     };
 
     this.isInsideOneOfTheAnchors = (point, ctx) => {
-      if (this.scalable) return this.anchor;
+      if (this.scalable || absolute) return;
 
       this.anchor = element.isInsideOneOfTheAnchors(point, ctx);
 

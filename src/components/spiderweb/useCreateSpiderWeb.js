@@ -8,7 +8,7 @@ export default function useCreateSpiderWeb({ depth, resolution, event }) {
   const controls = useUpdate(null, { offsets: true, loop: true });
 
   return useMemo(() => {
-    const spacing = 20;
+    const spacing = 50;
     const angle = (Math.PI * 2) / (resolution + 1);
 
     for (let i = 0; i <= resolution; i++) {

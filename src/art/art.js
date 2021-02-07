@@ -538,8 +538,8 @@ const Art = {
       const mouse = getMouseCoords(e);
 
       eventQueue.forEach(({ mousemove, checkBoundries, absolute }) => {
+        if (absolute && mousemove) mousemove(mouse);
         if (checkBoundries) checkBoundries(mouse, ctx);
-        else if (absolute && mousemove) mousemove(mouse);
       });
 
       const indexes = eventQueue

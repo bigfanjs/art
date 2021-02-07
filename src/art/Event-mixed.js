@@ -31,7 +31,8 @@ export default class Event {
     };
 
     this.isInsideOneOfTheAnchors = (point, ctx) => {
-      if (this.scalable || absolute) return;
+      if (absolute) return;
+      if (this.scalable) return this.anchor;
 
       this.anchor = element.isInsideOneOfTheAnchors(point, ctx);
 

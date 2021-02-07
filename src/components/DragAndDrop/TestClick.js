@@ -74,7 +74,7 @@ export default function DragAndDrop() {
         // transform={{ scale: 2 }}
         drag
       />
-      {/* <text
+      <text
         x={width / 2}
         y={height / 2}
         text="@bigfan/art"
@@ -82,7 +82,7 @@ export default function DragAndDrop() {
         color="orange"
         select
         drag
-      /> */}
+      />
       {/* <text
         x={300}
         y={50}
@@ -102,13 +102,13 @@ export default function DragAndDrop() {
         drag
       />
 
-      {/* <img
+      <img
         src="https://drscdn.500px.org/photo/78655895/m%3D900/ff907b64c70732ae8a730f04ba157655"
         x={width / 2}
         y={height / 2}
         select={true}
         drag
-      /> */}
+      />
 
       <line
         x1={200}

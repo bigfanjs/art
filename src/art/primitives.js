@@ -1,3 +1,4 @@
+import { boxTransformBy } from "math2d/esm/boxFunctions/boxTransformBy";
 import { polygonTransformBy } from "math2d/esm/polygonFunctions/polygonTransformBy";
 import { vecTransformBy } from "math2d/esm/vecFunctions/vecTransformBy";
 
@@ -81,8 +82,15 @@ const primitives = {
 
     return { path, points };
   },
-  text: (ctx, { x, y, text, size, fontFamily, baseLine, textAlign, color }) => {
-    let path;
+  text: (
+    ctx,
+    { x, y, text, size, fontFamily, baseLine, textAlign, color },
+    { transforms }
+  ) => {
+    const path = new Path2D();
+
+    const { x: translateX = 0, y: translateY = 0, scaleX = 1, scaleY = 1 } =
+      transforms ?? {};
 
     ctx.textBaseline = baseLine;
     ctx.textAlign = textAlign;
@@ -94,8 +102,26 @@ const primitives = {
     const Ascent = textMetrics.actualBoundingBoxAscent;
     const Left = textMetrics.actualBoundingBoxLeft;
     const Right = textMetrics.actualBoundingBoxRight;
+
     const TextHalfHeight = (Descent + Ascent) / 2;
     const TextHalfWidth = (Right + Left) / 2;
+
+    const result = boxTransformBy(
+      {
+        minY: y - TextHalfHeight,
+        maxY: y + Descent + Ascent - TextHalfHeight,
+        minX: x - TextHalfWidth,
+        maxX: x + Right + Left - TextHalfWidth,
+      },
+      { a: scaleX, b: 0, c: 0, d: scaleY, e: translateX, f: translateY }
+    );
+
+    path.rect(
+      result.minX,
+      result.minY,
+      result.maxX - result.minX,
+      result.maxY - result.minY
+    );
 
     ctx.beginPath();
     ctx.fillStyle = color;
@@ -163,9 +189,41 @@ const primitives = {
   img: (
     ctx,
     { x, y, width, height, sx, sy, sw, sh },
-    { image, isLoaded = false, hover = false, transforms }
+    { image, isLoaded = false, transforms }
   ) => {
-    let path;
+    const path = new Path2D();
+
+    const rectWidth = width || image.width;
+    const rectHeight = height || image.height;
+
+    const { x: translateX = 0, y: translateY = 0, scaleX = 1, scaleY = 1 } =
+      transforms ?? {};
+
+    const result = boxTransformBy(
+      {
+        minX: x - rectWidth / 2,
+        minY: y - rectHeight / 2,
+        maxX: x - rectWidth / 2 + rectWidth,
+        maxY: y - rectHeight / 2 + rectHeight,
+      },
+      {
+        a: scaleX,
+        b: 0,
+        c: 0,
+        d: scaleY,
+        e: translateX,
+        f: translateY,
+      }
+    );
+
+    ctx.beginPath();
+
+    path.rect(
+      result.minX,
+      result.minY,
+      result.maxX - result.minX,
+      result.maxY - result.minY
+    );
 
     if (isLoaded) {
       if (

@@ -47,7 +47,7 @@ const Element = {
 
     // reset
     if (this.mouseTransforms) ctx.restore();
-    if ((this.transform || this.update) && this.select) ctx.restore();
+    if ((this.transform || this.update) && !this.select) ctx.restore();
 
     if (this.mouseTransforms)
       this.handleMouseTransforms({ ctx, skipScale: true });

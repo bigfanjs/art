@@ -3,9 +3,9 @@ import Art from "./art/art";
 
 import "./index.css";
 
-// import SolarSystem from "./SolarSystem";
+import SolarSystem from "./SolarSystem";
 // import SpiderWeb from "./components/spiderweb/experemantal-web";
-import DragAndDrop from "./components/DragAndDrop/TestClick";
+// import DragAndDrop from "./components/DragAndDrop/TestClick";
 
 import * as serviceWorker from "./serviceWorker";
 
@@ -16,9 +16,9 @@ import * as serviceWorker from "./serviceWorker";
 // );
 
 // solar system
-// Art.render(<SolarSystem />, document.getElementById("canvas"));
+Art.render(<SolarSystem />, document.getElementById("canvas"));
 
 // drag and drop
-Art.render(<DragAndDrop />, document.getElementById("canvas"));
+// Art.render(<DragAndDrop />, document.getElementById("canvas"));
 
 serviceWorker.unregister();

@@ -4,7 +4,7 @@ import Anime from "./Anime";
 
 /*
  * Creates an Anime instance for me.
- * Checks if the coming props is either an instance or bare object.
+ * Checks if the coming props are either an instance or bare object.
  * If configured as offsets, animate x and y and if not animate transforms.
  * If configured with count, we create the count number of animes.
  * Shoud I always return an anime instance even when using count?

@@ -41,8 +41,6 @@ export default class Event {
     if (selected) {
       const { x = 0, y = 0, scale = 1 } = element.transform || {};
 
-      // TODO support polygons:
-
       this.props.x = element.props.x + x;
       this.props.y = element.props.y + y;
 
@@ -51,11 +49,11 @@ export default class Event {
       this.previousScaleX = scale;
       this.previousScaleY = scale;
 
-      element.updateScale(this);
+      element.updateMouseTransformation(this);
     }
   }
 
-  startDrag() {
+  startDrag(element) {
     const mousedown = (mouse) => {
       this.draggable = true;
       this.mouse = mouse;
@@ -75,7 +73,7 @@ export default class Event {
           scaleY: this.props.scaleY,
         };
 
-        this.updateScale(this);
+        element.updateMouseTransformation(this);
       }
     };
 
@@ -259,7 +257,7 @@ export default class Event {
       this.anchorTransition.x = 0;
       this.anchorTransition.y = 0;
 
-      this.updateScale(this);
+      element.updateMouseTransformation(this);
     };
 
     const mousemove = (mouse, anchor) => {
@@ -315,7 +313,7 @@ export default class Event {
           };
         }
 
-        this.updateScale(this);
+        element.updateMouseTransformation(this);
       }
     };
 

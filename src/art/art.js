@@ -263,14 +263,8 @@ const createReconciler = (canvas, ctx) => {
         ) {
           event = new Event({ selected: props.select, element });
 
-          // TODO: I don't like this, do something better please:
-          event.update = element.setPos.bind(element);
-          event.updateScale = element.updateScale.bind(element);
           event.type = type;
           event.index = globalIndex;
-
-          // circular dependency 🤮🤮🤮🤮🤮🤮🤮🤮
-          event.element = element;
           element.event = event;
         }
 
@@ -281,7 +275,7 @@ const createReconciler = (canvas, ctx) => {
           props.onMouseIn && event.schedule("mousein", props.onMouseIn);
           props.onMouseOut && event.schedule("mouseout", props.onMouseOut);
 
-          props.drag && event.startDrag(canvas, ctx);
+          props.drag && event.startDrag(element);
 
           if (props.select) {
             event.startDraggingAnchors(element);
@@ -664,10 +658,3 @@ const Art = {
 };
 
 export default Art;
-
-/*
-
-If I am only inside one of the selected element's anchors, then based on the
-selected anchor's position update the element scale transformation.
-
-*/

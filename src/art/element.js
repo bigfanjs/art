@@ -233,7 +233,7 @@ const Element = {
 
     return this;
   },
-  updateScale: function (update) {
+  updateMouseTransformation: function updateMouseTransformation(update) {
     this.mouseTransforms = update;
   },
   checkBoundries: function checkBoundries(point, ctx) {

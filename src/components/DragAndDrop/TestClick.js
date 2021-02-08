@@ -103,7 +103,7 @@ export default function DragAndDrop() {
       />
 
       <img
-        src="https://drscdn.500px.org/photo/78655895/m%3D900/ff907b64c70732ae8a730f04ba157655"
+        src="https://picsum.photos/800/400"
         x={width / 2}
         y={height / 2}
         select={true}

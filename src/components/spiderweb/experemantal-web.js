@@ -3,7 +3,7 @@ import React, { useEffect } from "react";
 import useCreateSpiderWeb from "./useCreateSpiderWeb";
 import Constraint from "./Constraint";
 import useCalcDistance from "./useCalcDistance";
-import useEvent from "../../art/exp-useEvent";
+import useEvent from "../../art/useEvent";
 
 export default function Web({ resolution, depth }) {
   const mouse = useEvent("mousemove");

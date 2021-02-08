@@ -3,7 +3,7 @@ import ReactReconciler from "react-reconciler";
 
 import Group from "./group";
 import Element from "./element";
-import Event from "./Event-mixed";
+import Event from "./Event";
 
 let globalIndex = 0;
 

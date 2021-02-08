@@ -1,19 +1,19 @@
-import Event from "./Event";
 import { useEffect, useRef } from "react";
-import useArt from "./useArt";
 
-export default function useEvent(defaults) {
+import Event from "./Event";
+
+export default function useEvent(name) {
   const ref = useRef();
-  const { canvas } = useArt();
 
-  if (ref.current === undefined) {
-    ref.current = new Event(defaults, canvas);
-  }
+  if (ref.current === undefined) ref.current = new Event({ absolute: true });
+
+  const eventHandler = (mouse) => (ref.current.props = mouse);
 
   useEffect(() => {
-    ref.current.mount(canvas);
-    return () => ref.current.unmount(canvas);
-  }, [canvas]);
+    ref.current.schedule(name, eventHandler);
+
+    return () => ref.current.remove();
+  }, [name]);
 
   return ref.current;
 }

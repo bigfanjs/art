@@ -1,37 +1,61 @@
 {
-  "name": "canvas-renderer",
-  "version": "0.1.0",
-  "private": true,
-  "dependencies": {
-    "@testing-library/jest-dom": "^4.2.4",
-    "@testing-library/react": "^9.3.2",
-    "@testing-library/user-event": "^7.1.2",
-    "math2d": "^3.0.0",
-    "react": "^16.13.1",
-    "react-dom": "^16.13.1",
-    "react-reconciler": "^0.25.1",
-    "react-scripts": "3.4.1",
-    "react-spring": "^8.0.27"
+  "name": "@bigfan/art",
+  "version": "1.0.0",
+  "description": "react renderer for html5 canvas",
+  "main": "index.js",
+  "module": "es/index.js",
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:bigfanjs/art.git"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "clean-dist": "rm -rf dist",
+    "build": "node build/build.js && npm run copypackage",
+    "watch": "watch -p \"src/**/*.js\" -c \"yarn build\"",
+    "clean": "rm -rf node_modules/ package-lock.json yarn-error.log yarn.lock dist",
+    "copypackage": "cp -rf package.json README.md dist"
   },
-  "eslintConfig": {
-    "extends": "react-app"
+  "keywords": [
+    "react",
+    "canvas",
+    "graphics",
+    "renderer",
+    "2d",
+    "html5",
+    "reconciler"
+  ],
+  "author": "bigfanjs <bigfanjs@gmail.com>",
+  "license": "ISC",
+  "dependencies": {
+    "math2d": "^3.0.0",
+    "react": "17.0.0",
+    "react-reconciler": "^0.25.1"
   },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
+  "devDependencies": {
+    "@babel/cli": "^7.12.13",
+    "@babel/core": "^7.12.13",
+    "@babel/plugin-external-helpers": "^7.12.13",
+    "@babel/plugin-proposal-class-properties": "^7.12.13",
+    "@babel/plugin-proposal-object-rest-spread": "^7.12.13",
+    "@babel/preset-env": "^7.12.13",
+    "@babel/preset-es2017": "^7.0.0-beta.53",
+    "@babel/preset-react": "^7.12.13",
+    "babel-eslint": "^10.1.0",
+    "babel-plugin-dev-expression": "^0.2.2",
+    "babel-plugin-transform-inline-environment-variables": "^0.4.3",
+    "babel-plugin-transform-react-remove-prop-types": "^0.4.24",
+    "eslint": "^7.19.0",
+    "eslint-config-prettier": "^7.2.0",
+    "eslint-config-react-app": "^6.0.0",
+    "eslint-plugin-flowtype": "^5.2.0",
+    "eslint-plugin-import": "^2.22.1",
+    "eslint-plugin-jsx-a11y": "^6.4.1",
+    "eslint-plugin-react": "^7.22.0",
+    "eslint-plugin-react-hooks": "^4.2.0",
+    "prettier": "^2.2.1",
+    "watch-cli": "^0.2.3"
   }
 }

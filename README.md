@@ -1,6 +1,6 @@
 # @bigfan/art
 
-`@Bigfan/art` is a 2D drawing library leveraging the `react-reconciler` package that will help create 2D graphics using a declarative API that renders the output to the canvas. At it's core `@Bigfan/art` is a React custom renderer for HTML5 Canvas.
+`@Bigfan/art` is a 2D drawing library leveraging the `react-reconciler` package that will help create 2D graphics using a declarative API that renders the output to the canvas. At its core `@Bigfan/art` is a React custom renderer for HTML5 Canvas.
 
 It provides re-usable components that makes it as easy as possible to get 2D content on a webpage. These components can react to state changes and are able to animate using `@bigfan/art`'s native animation system.
 
@@ -168,7 +168,9 @@ export default function Bigfan() {
 
 ### useUpdate
 
-The useUpdate hook can be used to imperatively control animations. The update is started as soon as you call the start method. the start method accpets a function which when called it will be passed a time argument that represents the high-resolution timestamp that indicates the current time. useUpdate will return an instance that must be passed to the update prop of the element that you want to update.
+The useUpdate hook can be used to imperatively control animations. The update is started as soon as you call the start method. the start method accpets a function which when called will be passed a time argument that represents the high-resolution timestamp that indicates the current time. useUpdate will return an instance that must be passed to the `update` prop of the element that you want to update.
+
+`useUpdate` recieve the following configs:
 
 #### offsets
 

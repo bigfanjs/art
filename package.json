@@ -31,19 +31,18 @@
   "license": "ISC",
   "dependencies": {
     "math2d": "^3.0.0",
-    "react": "17.0.0",
+    "react": "16.13.1",
     "react-reconciler": "^0.25.1"
   },
   "devDependencies": {
     "@babel/cli": "^7.12.13",
     "@babel/core": "^7.12.13",
+    "@babel/eslint-parser": "^7.12.16",
     "@babel/plugin-external-helpers": "^7.12.13",
     "@babel/plugin-proposal-class-properties": "^7.12.13",
     "@babel/plugin-proposal-object-rest-spread": "^7.12.13",
     "@babel/preset-env": "^7.12.13",
-    "@babel/preset-es2017": "^7.0.0-beta.53",
     "@babel/preset-react": "^7.12.13",
-    "babel-eslint": "^10.1.0",
     "babel-plugin-dev-expression": "^0.2.2",
     "babel-plugin-transform-inline-environment-variables": "^0.4.3",
     "babel-plugin-transform-react-remove-prop-types": "^0.4.24",

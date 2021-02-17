@@ -397,264 +397,257 @@ function setupCanvas(canvas) {
   return ctx;
 }
 
-const Art = {
-  render: (element, canvas) => {
-    const ctx = setupCanvas(canvas);
-    const reconciler = createReconciler(canvas, ctx);
-    const container = reconciler.createContainer(canvas, false, false);
-    const Provider = React.createElement(
-      Context.Provider,
-      { value: { canvas, width: canvas.width, height: canvas.height, ctx } },
-      element
-    );
+export default function render(element, canvas) {
+  const ctx = setupCanvas(canvas);
+  const reconciler = createReconciler(canvas, ctx);
+  const container = reconciler.createContainer(canvas, false, false);
+  const Provider = React.createElement(
+    Context.Provider,
+    { value: { canvas, width: canvas.width, height: canvas.height, ctx } },
+    element
+  );
 
-    reconciler.updateContainer(Provider, container, null, null);
+  reconciler.updateContainer(Provider, container, null, null);
 
-    function renderLoop(time) {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+  function renderLoop(time) {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // updating
-      updateQueue.forEach((animation) => animation.run(time));
+    // updating
+    updateQueue.forEach((animation) => animation.run(time));
 
-      function draw(elem) {
-        let shouldRestore = false;
+    function draw(elem) {
+      let shouldRestore = false;
 
-        if (elem.type === "group") {
-          if (elem.transform || elem.update) {
-            ctx.save();
-            shouldRestore = true;
+      if (elem.type === "group") {
+        if (elem.transform || elem.update) {
+          ctx.save();
+          shouldRestore = true;
 
-            const { x, y, ...transform } = elem.transform || {};
-            const transforms = { translate: { x, y }, ...transform };
+          const { x, y, ...transform } = elem.transform || {};
+          const transforms = { translate: { x, y }, ...transform };
 
-            let arr =
-              elem.update && elem.update.props
-                ? Object.keys(elem.update.props)
-                : [];
+          let arr =
+            elem.update && elem.update.props
+              ? Object.keys(elem.update.props)
+              : [];
 
-            for (let i = 0; i < arr.length; i++) {
-              const transos = Object.keys(transforms);
-              const reso = transos.find((trans) => trans === arr[i]);
+          for (let i = 0; i < arr.length; i++) {
+            const transos = Object.keys(transforms);
+            const reso = transos.find((trans) => trans === arr[i]);
 
-              if (!reso) transforms[arr[i]] = elem.update.props[arr[i]];
-            }
-
-            Object.keys(transforms).forEach((key) => {
-              const value = transforms[key];
-
-              if (ctx[key]) {
-                if (key === "scale") {
-                  let scale = 0;
-
-                  if (elem.update && elem.update.props) {
-                    elem.update.props.scale &&
-                      (scale = elem.update.props.scale);
-                  }
-
-                  ctx.scale(value, value + scale);
-                }
-                if (key === "translate") {
-                  let x = 0;
-                  let y = 0;
-
-                  if (elem.update && elem.update.props) {
-                    elem.update.props.x && (x = elem.update.props.x);
-                    elem.update.props.y && (y = elem.update.props.y);
-                  }
-
-                  ctx.translate(value.x + x, value.y + y);
-                } else {
-                  let val = 0;
-
-                  if (elem.update && elem.update.props) {
-                    elem.update.props[key] && (val = elem.update.props[key]);
-                  }
-
-                  ctx[key](value + val);
-                }
-              }
-            });
+            if (!reso) transforms[arr[i]] = elem.update.props[arr[i]];
           }
 
-          elem.order();
+          Object.keys(transforms).forEach((key) => {
+            const value = transforms[key];
 
-          // draw elements
-          elem.followers.forEach((child) => {
-            draw(elem.attach(child));
+            if (ctx[key]) {
+              if (key === "scale") {
+                let scale = 0;
+
+                if (elem.update && elem.update.props) {
+                  elem.update.props.scale && (scale = elem.update.props.scale);
+                }
+
+                ctx.scale(value, value + scale);
+              }
+              if (key === "translate") {
+                let x = 0;
+                let y = 0;
+
+                if (elem.update && elem.update.props) {
+                  elem.update.props.x && (x = elem.update.props.x);
+                  elem.update.props.y && (y = elem.update.props.y);
+                }
+
+                ctx.translate(value.x + x, value.y + y);
+              } else {
+                let val = 0;
+
+                if (elem.update && elem.update.props) {
+                  elem.update.props[key] && (val = elem.update.props[key]);
+                }
+
+                ctx[key](value + val);
+              }
+            }
           });
+        }
 
-          // draw group:
-          if (elem.hint) elem.draw(ctx);
+        elem.order();
 
-          if (shouldRestore) ctx.restore();
-        } else elem.draw(ctx);
+        // draw elements
+        elem.followers.forEach((child) => {
+          draw(elem.attach(child));
+        });
+
+        // draw group:
+        if (elem.hint) elem.draw(ctx);
+
+        if (shouldRestore) ctx.restore();
+      } else elem.draw(ctx);
+    }
+
+    drawQueue.forEach((elem) => draw(elem));
+
+    window.requestAnimationFrame(renderLoop);
+  }
+
+  // EVENT SYSTEM: (the ugliest code I've ever wrote)
+  // TODO: re-design the event system.
+  function getMouseCoords(e) {
+    const rect = canvas.getBoundingClientRect();
+    const mouse = {
+      x: (e.clientX - rect.left) * DPI,
+      y: (e.clientY - rect.top) * DPI,
+    };
+
+    return mouse;
+  }
+
+  function eventMiddleware(mouse, name) {
+    eventQueue.forEach(
+      (event) =>
+        name &&
+        event[name] &&
+        event.checkBoundries &&
+        event.checkBoundries(mouse, ctx)
+    );
+
+    const indexes = eventQueue
+      .filter(({ isIn }) => isIn)
+      .map(({ index }) => index);
+
+    const events = eventQueue.filter(
+      ({ index }) => index === Math.max(...indexes)
+    );
+
+    return events;
+  }
+
+  canvas.addEventListener("click", (e) => {
+    const mouse = getMouseCoords(e);
+    const events = eventMiddleware(mouse, "click");
+
+    events.forEach((event) => event.click && event.click());
+  });
+
+  canvas.addEventListener("mousemove", (e) => {
+    const mouse = getMouseCoords(e);
+
+    eventQueue.forEach(({ mousemove, checkBoundries, absolute }) => {
+      if (absolute && mousemove) mousemove(mouse);
+      if (checkBoundries) checkBoundries(mouse, ctx);
+    });
+
+    const indexes = eventQueue
+      .filter(({ isIn }) => isIn)
+      .map(({ index }) => index);
+
+    const isHighest = Math.max(...indexes);
+
+    const isInsideOtherElementsAnchors =
+      eventQueue.filter(
+        (eve) => eve.selected && eve.isInsideOneOfTheAnchors(mouse, ctx)
+      )?.length > 0;
+
+    const selectedElement = eventQueue.find((eve) => {
+      return eve.isIn && eve.selected;
+    });
+
+    eventQueue.forEach((eve) => {
+      if (eve.draggable || eve.selectable) return;
+
+      if (
+        (!selectedElement &&
+          eve.index === isHighest &&
+          !isInsideOtherElementsAnchors) ||
+        (selectedElement && eve.selected)
+      )
+        eve.isIn = true;
+      else eve.isIn = false;
+    });
+
+    // dragging
+    eventQueue
+      .filter(({ isIn }) => isIn)
+      .forEach((event) => {
+        event.mousemove && event.mousemove(mouse);
+        event.dragginghandlers && event.dragginghandlers.mousemove(mouse);
+      });
+
+    // mouse in event
+    eventQueue
+      .filter(({ isIn }) => isIn)
+      .forEach(({ mousein, isPreviousMouseIn }) => {
+        !isPreviousMouseIn && mousein && mousein(mouse);
+      });
+
+    // mouse out event:
+    eventQueue
+      .filter(({ isPreviousMouseIn }) => isPreviousMouseIn)
+      .forEach(({ mouseout, isIn }) => !isIn && mouseout && mouseout(mouse));
+
+    // scaling:
+    eventQueue.forEach((eve) => {
+      if (eve.selected) {
+        const anchor = eve.isInsideOneOfTheAnchors(mouse, ctx);
+
+        if (anchor) eve.scalingHandlers.mousemove(mouse, anchor);
+      }
+    });
+  });
+
+  canvas.addEventListener("mousedown", (e) => {
+    const mouse = getMouseCoords(e);
+    const events = eventMiddleware(mouse, "mousedown");
+
+    events.forEach((event) => {
+      event.mousedown && event.mousedown(mouse);
+      event.dragginghandlers && event.dragginghandlers.mousedown(mouse);
+    });
+
+    const inIndexes = eventQueue
+      .filter(({ isIn }) => isIn)
+      .map(({ index }) => index);
+
+    const selectedElement = eventQueue.find((eve) => eve.isIn && eve.selected);
+
+    const isHighest = Math.max(...inIndexes);
+
+    eventQueue.forEach((eve) => {
+      const anchor = eve.isInsideOneOfTheAnchors(mouse, ctx);
+
+      if (
+        (selectedElement && eve.selected) ||
+        (!selectedElement && eve.index === isHighest) ||
+        (eve.selected && anchor)
+      ) {
+        eve.selected = true;
+      } else {
+        eve.selected = false;
       }
 
-      drawQueue.forEach((elem) => draw(elem));
+      if (anchor) eve.scalingHandlers.mousedown(mouse, anchor);
+    });
+  });
 
-      window.requestAnimationFrame(renderLoop);
-    }
+  canvas.addEventListener("mouseup", (e) => {
+    const mouse = getMouseCoords(e);
+    const events = eventMiddleware(mouse, "mouseup");
 
-    // EVENT SYSTEM: (the ugliest code I've ever wrote)
-    // TODO: re-design the event system.
-    function getMouseCoords(e) {
-      const rect = canvas.getBoundingClientRect();
-      const mouse = {
-        x: (e.clientX - rect.left) * DPI,
-        y: (e.clientY - rect.top) * DPI,
-      };
-
-      return mouse;
-    }
-
-    function eventMiddleware(mouse, name) {
-      eventQueue.forEach(
-        (event) =>
-          name &&
-          event[name] &&
-          event.checkBoundries &&
-          event.checkBoundries(mouse, ctx)
-      );
-
-      const indexes = eventQueue
-        .filter(({ isIn }) => isIn)
-        .map(({ index }) => index);
-
-      const events = eventQueue.filter(
-        ({ index }) => index === Math.max(...indexes)
-      );
-
-      return events;
-    }
-
-    canvas.addEventListener("click", (e) => {
-      const mouse = getMouseCoords(e);
-      const events = eventMiddleware(mouse, "click");
-
-      events.forEach((event) => event.click && event.click());
+    //dragging:
+    events.forEach((event) => {
+      event.dragginghandlers && event.dragginghandlers.mouseup(mouse);
     });
 
-    canvas.addEventListener("mousemove", (e) => {
-      const mouse = getMouseCoords(e);
+    // dragging anchor points:
+    eventQueue.forEach((eve) => {
+      const anchor = eve.isInsideOneOfTheAnchors(mouse, ctx);
 
-      eventQueue.forEach(({ mousemove, checkBoundries, absolute }) => {
-        if (absolute && mousemove) mousemove(mouse);
-        if (checkBoundries) checkBoundries(mouse, ctx);
-      });
-
-      const indexes = eventQueue
-        .filter(({ isIn }) => isIn)
-        .map(({ index }) => index);
-
-      const isHighest = Math.max(...indexes);
-
-      const isInsideOtherElementsAnchors =
-        eventQueue.filter(
-          (eve) => eve.selected && eve.isInsideOneOfTheAnchors(mouse, ctx)
-        )?.length > 0;
-
-      const selectedElement = eventQueue.find((eve) => {
-        return eve.isIn && eve.selected;
-      });
-
-      eventQueue.forEach((eve) => {
-        if (eve.draggable || eve.selectable) return;
-
-        if (
-          (!selectedElement &&
-            eve.index === isHighest &&
-            !isInsideOtherElementsAnchors) ||
-          (selectedElement && eve.selected)
-        )
-          eve.isIn = true;
-        else eve.isIn = false;
-      });
-
-      // dragging
-      eventQueue
-        .filter(({ isIn }) => isIn)
-        .forEach((event) => {
-          event.mousemove && event.mousemove(mouse);
-          event.dragginghandlers && event.dragginghandlers.mousemove(mouse);
-        });
-
-      // mouse in event
-      eventQueue
-        .filter(({ isIn }) => isIn)
-        .forEach(({ mousein, isPreviousMouseIn }) => {
-          !isPreviousMouseIn && mousein && mousein(mouse);
-        });
-
-      // mouse out event:
-      eventQueue
-        .filter(({ isPreviousMouseIn }) => isPreviousMouseIn)
-        .forEach(({ mouseout, isIn }) => !isIn && mouseout && mouseout(mouse));
-
-      // scaling:
-      eventQueue.forEach((eve) => {
-        if (eve.selected) {
-          const anchor = eve.isInsideOneOfTheAnchors(mouse, ctx);
-
-          if (anchor) eve.scalingHandlers.mousemove(mouse, anchor);
-        }
-      });
+      if (eve.selected && anchor) eve.scalingHandlers.mouseup(mouse);
     });
+  });
 
-    canvas.addEventListener("mousedown", (e) => {
-      const mouse = getMouseCoords(e);
-      const events = eventMiddleware(mouse, "mousedown");
-
-      events.forEach((event) => {
-        event.mousedown && event.mousedown(mouse);
-        event.dragginghandlers && event.dragginghandlers.mousedown(mouse);
-      });
-
-      const inIndexes = eventQueue
-        .filter(({ isIn }) => isIn)
-        .map(({ index }) => index);
-
-      const selectedElement = eventQueue.find(
-        (eve) => eve.isIn && eve.selected
-      );
-
-      const isHighest = Math.max(...inIndexes);
-
-      eventQueue.forEach((eve) => {
-        const anchor = eve.isInsideOneOfTheAnchors(mouse, ctx);
-
-        if (
-          (selectedElement && eve.selected) ||
-          (!selectedElement && eve.index === isHighest) ||
-          (eve.selected && anchor)
-        ) {
-          eve.selected = true;
-        } else {
-          eve.selected = false;
-        }
-
-        if (anchor) eve.scalingHandlers.mousedown(mouse, anchor);
-      });
-    });
-
-    canvas.addEventListener("mouseup", (e) => {
-      const mouse = getMouseCoords(e);
-      const events = eventMiddleware(mouse, "mouseup");
-
-      //dragging:
-      events.forEach((event) => {
-        event.dragginghandlers && event.dragginghandlers.mouseup(mouse);
-      });
-
-      // dragging anchor points:
-      eventQueue.forEach((eve) => {
-        const anchor = eve.isInsideOneOfTheAnchors(mouse, ctx);
-
-        if (eve.selected && anchor) eve.scalingHandlers.mouseup(mouse);
-      });
-    });
-
-    renderLoop();
-  },
-};
-
-export default Art;
+  renderLoop();
+}

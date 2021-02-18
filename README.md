@@ -12,29 +12,54 @@ using yarn: yarn add @bigfan/art
 
 ## Demos
 
-Grouping: solar system
-Basic: Selection
-Advanced: Spider Web
+<p align="center">
+  <a href="https://codesandbox.io/s/solar-system-0pf6z"><img width="274" src="https://i.imgur.com/MbTAsbj.gif" /></a>
+  <a href="https://codesandbox.io/s/spider-web-5ioch?file=/src/index.js"><img width="274" src="https://i.imgur.com/HyHww11.gif" /></a>
+  <a href="https://codesandbox.io/s/crimson-sun-hpcog?file=/src/index.js"><img width="274" src="https://i.imgur.com/wsjE9uA.gif" /></a>
+</p>
+
+## Why
+
+It makes it painless to create sophisticated 2D drawings by composing small, independent, reusable components that manage their own state. And makes your code more predictable thanks to react's declarative nature and its component-based architecture.
 
 ## Usage
 
 ```jsx
-export default function MyCircle() {
+export default function Rectangle() {
   const { width, height } = useArt(); // get the width & height of the canvas
 
   return <rect x={width / 2} y={height / 2} width={40} height={40} />;
 }
 ```
 
-## Why
-
-It makes it painless to create sophisticated 2D drawings by composing small, independent, reusable components that manage their own state. And makes your code more predictable thanks to react's declarative nature and it’s component-based architecture.
-
 ## grouping
 
 A group acts like a container for elements and other groups. They render nothing on their own but transfoming a group will cause anything inside it to transform as well. Each element rendered inside the group, will be positioned and oriented relative to its parent group.
 
+```jsx
+import React, { useEffect } from "react";
+import { useArt, useUpdate } from "@bigfan/art";
+
+export default function SolarSystem() {
+  const { width, height } = useArt();
+
+  return (
+    <group
+      x={0}
+      y={0}
+      transform={{ x: width / 2, y: height / 2 }}
+      hint={0} // don't visualize the 2 axes
+      update={controls}
+    >
+      <hexagon x={0} y={0} color="gold" radius={150} />
+    </group>
+  );
+}
+```
+
 ## Events
+
+Events in `@bigfan/art` work similarly to React DOM. But it's only limited to listening for click, mouse in, mouse out and mouse move events. Plus the ability to drag and scale out of the box.
 
 - Click Event
 
@@ -58,7 +83,7 @@ export default function MyCircle() {
 }
 ```
 
-### Mouse in / mouse out
+- Mouse in / mouse out
 
 ```jsx
 export default function MyCircle() {
@@ -82,7 +107,7 @@ export default function MyCircle() {
 }
 ```
 
-### mouse move
+- mouse move
 
 ```jsx
 export default function MyCircle() {
@@ -109,7 +134,7 @@ export default function MyCircle() {
 }
 ```
 
-### Drag and drop
+- Drag and drop
 
 ```jsx
 export default function MyCircle() {
@@ -122,7 +147,7 @@ export default function MyCircle() {
 }
 ```
 
-### select and scale
+- select and scale
 
 ```jsx
 export default function MyCircle() {
@@ -135,7 +160,7 @@ export default function MyCircle() {
 }
 ```
 
-Host elements: (or platform-specific components)
+## Host elements: (or platform-specific components)
 
 - rect
 - arc
@@ -149,7 +174,7 @@ Host elements: (or platform-specific components)
 
 ### useEvent
 
-useEvent is built-in custom hook returns an instance of Event class
+`useEvent` is built-in custom hook returns an instance of Event class
 
 ```jsx
 export default function Bigfan() {
@@ -168,7 +193,7 @@ export default function Bigfan() {
 
 ### useUpdate
 
-The useUpdate hook can be used to imperatively control animations. The update is started as soon as you call the start method. the start method accpets a function which when called will be passed a time argument that represents the high-resolution timestamp that indicates the current time. useUpdate will return an instance that must be passed to the `update` prop of the element that you want to update.
+The `useUpdate` hook can be used to imperatively control animations. The update is started as soon as you call the start method. the start method accpets a function which when called will be passed a time argument that represents the high-resolution timestamp that indicates the current time. `useUpdate` will return an instance that must be passed to the `update` prop of the element that you want to update.
 
 `useUpdate` recieve the following configs:
 
@@ -178,7 +203,7 @@ Setting this to true will animate the manual offests of a given element. and whe
 
 #### count
 
-Count can be helpful when you want to create a number of updates using a single useUpdate hook, and let each one of these updates to start after the other in a sequence. Count can either be passed a number or an array.
+Count can be helpful when you want to create a number of updates using a single `useUpdate` hook, and let each one of these updates to start after the other in a sequence. Count can either be passed a number or an array.
 
 - When passed a number, it will generate a number of animation instances which can be controlled in the start method callback function.
 
@@ -238,7 +263,7 @@ export default function Bigfan() {
 
 #### attaching updates
 
-Each Anime instance could have a list of other attached instances and the attach method allows to to add one of more instances to an instance.
+Each update instance could have a list of other attached instances and the attach method allows you to attach one of more instances to an instance.
 
 ### useArt
 

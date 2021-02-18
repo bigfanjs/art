@@ -13,9 +13,9 @@ using yarn: yarn add @bigfan/art
 ## Demos
 
 <p align="center">
-  <a href="https://codesandbox.io/s/solar-system-0pf6z"><img width="274" src="https://i.imgur.com/MbTAsbj.gif" /></a>
-  <a href="https://codesandbox.io/s/spider-web-5ioch?file=/src/index.js"><img width="274" src="https://i.imgur.com/HyHww11.gif" /></a>
-  <a href="https://codesandbox.io/s/crimson-sun-hpcog?file=/src/index.js"><img width="274" src="https://i.imgur.com/wsjE9uA.gif" /></a>
+  <a href="https://codesandbox.io/s/solar-system-0pf6z"><img width="274" src="https://user-images.githubusercontent.com/10690029/108429011-baf42280-723f-11eb-8a41-56c59b637d47.gif" /></a>
+  <a href="https://codesandbox.io/s/spider-web-5ioch?file=/src/index.js"><img width="274" src="https://codesandbox.io/s/selection-hpcog?file=/src/index.js" /></a>
+  <a href="https://codesandbox.io/s/crimson-sun-hpcog?file=/src/index.js"><img width="274" src="https://user-images.githubusercontent.com/10690029/108428511-f7734e80-723e-11eb-9ae4-c15933000895.gif" /></a>
 </p>
 
 ## Why

@@ -2,7 +2,7 @@
 
 `@Bigfan/art` is a 2D drawing library leveraging the `react-reconciler` package that will help create 2D graphics using a declarative API that renders the output to the canvas. At its core `@Bigfan/art` is a React custom renderer for HTML5 Canvas.
 
-It provides re-usable components that makes it as easy as possible to get 2D content on a webpage. These components can react to state changes and are able to animate using `@bigfan/art`'s native animation system.
+It provides reusable components that makes it as easy as possible to get 2D content on a webpage. These components can react to state changes and are able to animate using `@bigfan/art`'s native animation system.
 
 ## Installation
 
@@ -34,7 +34,7 @@ export default function Rectangle() {
 
 ## grouping
 
-A group acts like a container for elements and other groups. They render nothing on their own but transfoming a group will cause anything inside it to transform as well. Each element rendered inside the group, will be positioned and oriented relative to its parent group.
+A group acts like a container for elements and other groups. They render nothing on their own but transforming a group will cause anything inside it to transform as well. Each element rendered inside the group, will be positioned and oriented relative to its parent group.
 
 ```jsx
 import React, { useEffect } from "react";
@@ -193,17 +193,17 @@ export default function Bigfan() {
 
 ### useUpdate
 
-The `useUpdate` hook can be used to imperatively control animations. The update is started as soon as you call the start method. the start method accpets a function which when called will be passed a time argument that represents the high-resolution timestamp that indicates the current time. `useUpdate` will return an instance that must be passed to the `update` prop of the element that you want to update.
+The `useUpdate` hook can be used to imperatively control animations. The update is started as soon as you call the start method. The start method accepts a function which when called will be passed a time argument that represents the high-resolution timestamp that indicates the current time. `useUpdate` will return an instance that must be passed to the `update` prop of the element that you want to update.
 
-`useUpdate` recieve the following configs:
+`useUpdate` receive the following configs:
 
 #### offsets
 
-Setting this to true will animate the manual offests of a given element. and when set to false it will animate transfoms.
+Setting this to true will animate the manual offsets of a given element. and when set to false it will animate transform.
 
 #### count
 
-Count can be helpful when you want to create a number of updates using a single `useUpdate` hook, and let each one of these updates to start after the other in a sequence. Count can either be passed a number or an array.
+Count can be helpful when you want to create a number of updates using a single `useUpdate` hook, and let each one of these updates start after the other in a sequence. Count can either be passed a number or an array.
 
 - When passed a number, it will generate a number of animation instances which can be controlled in the start method callback function.
 
@@ -223,7 +223,7 @@ Count can be helpful when you want to create a number of updates using a single 
     }
   ```
 
-- Similarly when we pass an array, it also generates a number of instances but this way is helpfull when you want to have a list of unrelated default props.
+- Similarly when we pass an array, it also generates a number of instances but this way is helpful when you want to have a list of unrelated default props.
 
   ```jsx
   export default function Bigfan() {
@@ -245,7 +245,7 @@ Count can be helpful when you want to create a number of updates using a single 
 
 #### loop
 
-when you pass a count prop, an attached prop will be passed to the start method and you have to take care of it all. But when set loop to true the start function will automalitacly loop over your attached instances providing you with an extra index prop.
+when you pass a count prop, an attached prop will be passed to the start method and you have to take care of it all. But when set loop to true the start function will automatically loop over your attached instances providing you with an extra index prop.
 
 ```jsx
 export default function Bigfan() {
@@ -263,7 +263,7 @@ export default function Bigfan() {
 
 #### attaching updates
 
-Each update instance could have a list of other attached instances and the attach method allows you to attach one of more instances to an instance.
+Each update instance could have a list of other attached instances and the attach method allows you to attach one or more instances to an instance.
 
 ### useArt
 

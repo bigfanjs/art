@@ -215,20 +215,23 @@ export default function MyCircle() {
 
 ### useEvent
 
-`useEvent` is built-in custom hook returns an instance of Event class
+`useEvent` is built-in custom hook returns an instance of Event class. In the following example the white ball follows the mouse cursor.
 
 ```jsx
+import React, { useEffect } from "react";
+import { useArt, useUpdate } from "@bigfan/art";
+
 export default function Bigfan() {
   const event = useEvent("mousemove");
-  const controls = useUpdate(null, { loop: true, event });
+  const controls = useUpdate(null, { event, offsets: true });
 
   useEffect(() => {
-    controls.start(({ props: { x, y, px, py }, event }) => {
-      console.log({ event }); // { x, y } of mouse move event
+    controls.start(({ event }) => {
+      return { x: event.x, y: event.y };
     });
-  }, []);
+  }, [controls]);
 
-  return <line />;
+  return <arc x={0} y={0} radius={50} color="#fff" update={controls} />;
 }
 ```
 

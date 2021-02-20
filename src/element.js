@@ -76,7 +76,7 @@ const Element = {
         points: this.points,
         image: this.image,
         transforms: {
-          props: this.mouseTransforms.props,
+          props: this.mouseTransforms?.props,
           anchorTransition: this.mouseTransforms?.anchorTransition,
           isAnchorTransitionActive: this.event?.scalable,
         },

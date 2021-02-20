@@ -24,15 +24,35 @@ It makes it painless to create sophisticated 2D drawings by composing small, ind
 
 ## Usage
 
+A rotating react logo:
+
 ```jsx
+import React, { useEffect } from "react";
+import { useArt, useUpdate } from "@bigfan/art";
+
 export default function Rectangle() {
   const { width, height } = useArt(); // get the width & height of the canvas
+  const controls = useUpdate({ rotate: 0 });
 
-  return <rect x={width / 2} y={height / 2} width={40} height={40} />;
+  useEffect(() => {
+    controls.start(({ time }) => {
+      return { rotate: Math.PI * time * 0.0002 };
+    });
+  }, [controls]);
+
+  return (
+    <img
+      src="/react-logo.png"
+      x={0}
+      y={0}
+      update={controls}
+      transform={{ x: width / 2, y: height / 2 }}
+    />
+  );
 }
 ```
 
-## grouping
+## Grouping
 
 A group acts like a container for elements and other groups. They render nothing on their own but transforming a group will cause anything inside it to transform as well. Each element rendered inside the group, will be positioned and oriented relative to its parent group.
 
@@ -42,16 +62,23 @@ import { useArt, useUpdate } from "@bigfan/art";
 
 export default function SolarSystem() {
   const { width, height } = useArt();
+  const controls = useUpdate({ rotate: 0 });
+
+  useEffect(() => {
+    controls.start(({ time }) => {
+      return { x: Math.sin((Math.PI / 2) * time * 0.002) * 100 };
+    });
+  }, [controls]);
 
   return (
     <group
       x={0}
       y={0}
       transform={{ x: width / 2, y: height / 2 }}
-      hint={0} // don't visualize the 2 axes
       update={controls}
     >
-      <hexagon x={0} y={0} color="gold" radius={150} />
+      <hexagon x={0} y={0} color="gold" radius={230} stroke />
+      <text x={0} y={0} text="@bigfan/art" size={80} color="orange" />
     </group>
   );
 }
@@ -59,7 +86,7 @@ export default function SolarSystem() {
 
 ## Events
 
-Events in `@bigfan/art` work similarly to React DOM. But it's only limited to listening for click, mouse in, mouse out and mouse move events. Plus the ability to drag and scale out of the box.
+Events in `@bigfan/art` work similarly to React DOM. But it's only limited to listening for _click_, _mouse in_, _mouse out_ and _mouse move_ events. Plus the ability to _drag_ and _scale_ out of the box.
 
 - Click Event
 
@@ -111,23 +138,25 @@ export default function MyCircle() {
 
 ```jsx
 export default function MyCircle() {
-  const [cords, setCords] = useState({ x: 0, y: 0 });
+  const [color, setColor] = useState("yellow");
 
-  const { width, height } = useArt();
+  const { width, height } = Art.useArt();
 
+  // moving mouse vertically changes the lightness.
+  // moving mouse horizontally changes the hue.
   const onMouseMove = ({ x, y }) => {
-    setCords({
-      x: Math.abs(width / 2 - 50 - x) / 100,
-      y: Math.abs(height / 2 - 50 - y) / 100,
-    });
+    const hue = Math.abs(width / 2 - 100 - x) / 200;
+    const lightness = Math.abs(height / 2 - 100 - y) / 200;
+
+    setColor(`hsl(${Math.round(hue * 360)}, 100%, ${lightness * 100}%)`);
   };
 
   return (
     <arc
       x={width / 2}
       y={height / 2}
-      radius={50}
-      color={`hsl(${cords.x * 360}, ${cords.y * 100}%, 60%)`}
+      radius={100}
+      color={color}
       onMouseMove={onMouseMove}
     />
   );
@@ -142,7 +171,13 @@ export default function MyCircle() {
 
   const { width, height } = useArt(); // get the width & height of the canvas
   return (
-    <arc x={width / 2} y={height / 2} radius={50} color={circlerColor} drag />
+    <arc
+      x={width / 2}
+      y={height / 2}
+      radius={50}
+      color={circlerColor}
+      drag // the drag prop enables the drag and drop on this element
+    />
   );
 }
 ```
@@ -155,7 +190,13 @@ export default function MyCircle() {
 
   const { width, height } = useArt(); // get the width & height of the canvas
   return (
-    <arc x={width / 2} y={height / 2} radius={50} color={circlerColor} select />
+    <arc
+      x={width / 2}
+      y={height / 2}
+      radius={50}
+      color={circlerColor}
+      select // the select prop enables select and scale
+    />
   );
 }
 ```

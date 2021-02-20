@@ -279,8 +279,11 @@ const createReconciler = (canvas, ctx) => {
 
           if (props.select) {
             event.startDraggingAnchors(element);
+            event.selectable = true;
             element.clearOffset(type);
             element.select = true;
+          } else {
+            event.selectable = false;
           }
         }
 
@@ -556,7 +559,7 @@ export default function render(element, canvas) {
     });
 
     eventQueue.forEach((eve) => {
-      if (eve.draggable || eve.selectable) return;
+      if (eve.draggable || eve.scalable) return;
 
       if (
         (!selectedElement &&
@@ -612,24 +615,25 @@ export default function render(element, canvas) {
       .map(({ index }) => index);
 
     const selectedElement = eventQueue.find((eve) => eve.isIn && eve.selected);
-
     const isHighest = Math.max(...inIndexes);
 
-    eventQueue.forEach((eve) => {
-      const anchor = eve.isInsideOneOfTheAnchors(mouse, ctx);
+    eventQueue
+      .filter(({ selectable }) => selectable)
+      .forEach((eve) => {
+        const anchor = eve.isInsideOneOfTheAnchors(mouse, ctx);
 
-      if (
-        (selectedElement && eve.selected) ||
-        (!selectedElement && eve.index === isHighest) ||
-        (eve.selected && anchor)
-      ) {
-        eve.selected = true;
-      } else {
-        eve.selected = false;
-      }
+        if (
+          (selectedElement && eve.selected) ||
+          (!selectedElement && eve.index === isHighest) ||
+          (eve.selected && anchor)
+        ) {
+          eve.selected = true;
+        } else {
+          eve.selected = false;
+        }
 
-      if (anchor) eve.scalingHandlers.mousedown(mouse, anchor);
-    });
+        if (anchor) eve.scalingHandlers.mousedown(mouse, anchor);
+      });
   });
 
   canvas.addEventListener("mouseup", (e) => {
@@ -642,11 +646,13 @@ export default function render(element, canvas) {
     });
 
     // dragging anchor points:
-    eventQueue.forEach((eve) => {
-      const anchor = eve.isInsideOneOfTheAnchors(mouse, ctx);
+    eventQueue
+      .filter(({ selectable }) => selectable)
+      .forEach((eve) => {
+        const anchor = eve.isInsideOneOfTheAnchors(mouse, ctx);
 
-      if (eve.selected && anchor) eve.scalingHandlers.mouseup(mouse);
-    });
+        if (eve.selected && anchor) eve.scalingHandlers.mouseup(mouse);
+      });
   });
 
   renderLoop();

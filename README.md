@@ -239,7 +239,9 @@ export default function Bigfan() {
 
 The `useUpdate` hook can be used to imperatively control animations. The update is started as soon as you call the start method. The start method accepts a function which when called will be passed a time argument that represents the high-resolution timestamp that indicates the current time. `useUpdate` will return an instance that must be passed to the `update` prop of the element that you want to update.
 
-`useUpdate` receive the following configs:
+_Each update instance could have a list of other attached instances and the `attach` method allows you to attach one or more instances to an instance._
+
+`useUpdate` receives the following configs:
 
 #### offsets
 
@@ -252,62 +254,85 @@ Count can be helpful when you want to create a number of updates using a single 
 - When passed a number, it will generate a number of animation instances which can be controlled in the start method callback function.
 
   ```jsx
-    export default function Bigfan() {
-      const controls = useUpdate((n) => ({ x: 0 + n, y: 0 }), { count: 10 });
+  import React, { useEffect } from "react";
+  import { useArt, useUpdate } from "@bigfan/art";
 
-      useEffect(() => {
-        controls.start(({ time, props, attached }) => {
+  export function Art() {
+    const { width, height } = useArt(); // get the width & height of the canvas
+    const controls = useUpdate({ x: 0, y: 0 }, { count: 10, offsets: true });
 
-          // 10 update instances:
-          attached.map(({ x, y }) => { return { x: x * time } })
+    useEffect(() => {
+      controls.attached.forEach((control, i) => {
+        control.start(({ time }) => {
+          return {
+            x: width / 2 + Math.cos(Math.PI * time * 0.001 + i * 0.6) * 300,
+            y: height / 2 + Math.sin(Math.PI * time * 0.001 + i * 0.6) * 300,
+          };
         });
-      }, []);
+      });
+    }, [controls, width, height]);
 
-      return controls.map(({ x, y } index) => <rect key={index} x={x} y={y} />);
-    }
-  ```
-
-- Similarly when we pass an array, it also generates a number of instances but this way is helpful when you want to have a list of unrelated default props.
-
-  ```jsx
-  export default function Bigfan() {
-  const controls = useUpdate(
-    ({ x, y }) => ({ x, y }),
-    { count: [{ x: 10, y: 10 }, { x: 350, y: 0 }] }
-  );
-
-  useEffect(() => {
-    controls.start(({ time, props, event, attached }) => {
-      // our two update instances:
-      attached.map(({ x, y }) => { return { x: x * time } })
-    });
-  }, []);
-
-  return controls.map(({ x, y } index) => <line key={index} />);
+    return (
+      <group>
+        {controls.map((update, index) => (
+          <rect
+            key={index}
+            x={0}
+            y={0}
+            color="#fff"
+            width={50}
+            height={50}
+            update={update}
+          />
+        ))}
+      </group>
+    );
   }
   ```
+
+- Similarly when we pass an array, it also generates a number of instances but it's more helpful when you want to have a list of unrelated default props.
 
 #### loop
 
 when you pass a count prop, an attached prop will be passed to the start method and you have to take care of it all. But when set loop to true the start function will automatically loop over your attached instances providing you with an extra index prop.
 
 ```jsx
-export default function Bigfan() {
-  const controls = useUpdate((n) => ({ x: n * 10 }), { count: 10, loop: true });
+import React, { useEffect } from "react";
+import { useArt, useUpdate } from "@bigfan/art";
+
+export default function Art() {
+  const { width, height } = useArt(); // get the width & height of the canvas
+  const controls = useUpdate(
+    { x: 0, y: 0 },
+    { count: 10, offsets: true, loop: true }
+  );
 
   useEffect(() => {
-    controls.start(({ time, index, props, event, attached }) => {
-      return { x: 1 + time * index }
+    controls.start(({ time, index }) => {
+      return {
+        x: width / 2 + Math.cos(Math.PI * time * 0.001 + index * 0.6) * 300,
+        y: height / 2 + Math.sin(Math.PI * time * 0.001 + index * 0.6) * 300,
+      };
     });
-  }, []);
+  }, [controls, width, height]);
 
-  return controls.map(({ x, y } index) => <rect key={index} x={x} y={y} />);
+  return (
+    <group>
+      {controls.map((update, index) => (
+        <rect
+          key={index}
+          x={0}
+          y={0}
+          color="#fff"
+          width={50}
+          height={50}
+          update={update}
+        />
+      ))}
+    </group>
+  );
 }
 ```
-
-#### attaching updates
-
-Each update instance could have a list of other attached instances and the attach method allows you to attach one or more instances to an instance.
 
 ### useArt
 

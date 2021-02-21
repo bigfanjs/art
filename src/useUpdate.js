@@ -41,6 +41,7 @@ export default function useUpdate(
             });
           }),
         },
+        loop: { value: configs.loop },
         updates: {
           value: [],
           configurable: true,
@@ -78,6 +79,7 @@ export default function useUpdate(
             });
           }),
         },
+        loop: { value: configs.loop },
         updates: {
           value: [],
           configurable: true,

@@ -92,6 +92,9 @@ const Anime = {
           attached: this.attached.map((att) =>
             att.props ? att.props : att.default
           ),
+          // attached: this.attached.map((att) =>
+          //   att.props ? att.props : att.default
+          // ),
         });
 
         this.props = { ...newProps, ...props };
@@ -100,6 +103,7 @@ const Anime = {
   },
   mount: function mount() {
     updateQueue.push(this);
+
     if (this.attached && this.attached.length) {
       this.attached.forEach((attached) => {
         updateQueue.push(attached);

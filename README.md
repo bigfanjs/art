@@ -340,4 +340,4 @@ export default function Art() {
 
 ### useArt
 
-This hook allows you to access the canvas width and height as well as the current canvas context.
+This hook allows you to access the canvas `width` and `height` as well as the current canvas context.

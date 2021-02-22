@@ -30,7 +30,7 @@ A rotating react logo:
 import React, { useEffect } from "react";
 import { useArt, useUpdate } from "@bigfan/art";
 
-export default function Rectangle() {
+export default function Art() {
   const { width, height } = useArt(); // get the width & height of the canvas
   const controls = useUpdate({ rotate: 0 });
 
@@ -62,7 +62,7 @@ A group acts like a container for elements and other groups. They render nothing
 import React, { useEffect } from "react";
 import { useArt, useUpdate } from "@bigfan/art";
 
-export default function SolarSystem() {
+export default function Art() {
   const { width, height } = useArt();
   const controls = useUpdate({ rotate: 0 });
 
@@ -95,7 +95,7 @@ Events in `@bigfan/art` work similarly to React DOM. But it's only limited to li
 - Click Event
 
 ```jsx
-export default function MyCircle() {
+export default function Art() {
   const [color, setColor] = useState();
 
   const { width, height } = useArt(); // get the width & height of the canvas
@@ -117,7 +117,7 @@ export default function MyCircle() {
 - Mouse in / mouse out
 
 ```jsx
-export default function MyCircle() {
+export default function Art() {
   const [color, setColor] = useState();
 
   const { width, height } = useArt(); // get the width & height of the canvas
@@ -141,7 +141,7 @@ export default function MyCircle() {
 - mouse move
 
 ```jsx
-export default function MyCircle() {
+export default function Art() {
   const [color, setColor] = useState("yellow");
 
   const { width, height } = Art.useArt();
@@ -170,7 +170,7 @@ export default function MyCircle() {
 - Drag and drop
 
 ```jsx
-export default function MyCircle() {
+export default function Art() {
   const [color, setColor] = useState();
 
   const { width, height } = useArt(); // get the width & height of the canvas
@@ -189,7 +189,7 @@ export default function MyCircle() {
 - select and scale
 
 ```jsx
-export default function MyCircle() {
+export default function Art() {
   const [color, setColor] = useState();
 
   const { width, height } = useArt(); // get the width & height of the canvas
@@ -225,7 +225,7 @@ export default function MyCircle() {
 import React, { useEffect } from "react";
 import { useArt, useUpdate } from "@bigfan/art";
 
-export default function Bigfan() {
+export default function Art() {
   const event = useEvent("mousemove");
   const controls = useUpdate(null, { event, offsets: true });
 

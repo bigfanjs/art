@@ -313,6 +313,7 @@ const createReconciler = (canvas, ctx) => {
       let payload;
 
       if (oldProps.x !== newProps.x) payload = { ...payload, x: newProps.x };
+      if (oldProps.y !== newProps.y) payload = { ...payload, y: newProps.y };
 
       if (oldProps.color !== newProps.color)
         payload = { ...payload, color: newProps.color };
@@ -341,6 +342,46 @@ const createReconciler = (canvas, ctx) => {
         payload = { ...payload, text: newProps.text };
       }
 
+      if (oldProps.size !== newProps.size) {
+        payload = { ...payload, size: newProps.size };
+      }
+
+      if (oldProps.stroke !== newProps.stroke) {
+        payload = { ...payload, stroke: newProps.stroke };
+      }
+
+      if (oldProps.radius !== newProps.radius) {
+        payload = { ...payload, radius: newProps.radius };
+      }
+
+      if (oldProps.x1 !== newProps.x1) {
+        payload = { ...payload, x1: newProps.x1 };
+      }
+
+      if (oldProps.y1 !== newProps.y1) {
+        payload = { ...payload, y1: newProps.y1 };
+      }
+
+      if (oldProps.x2 !== newProps.x2) {
+        payload = { ...payload, x2: newProps.x2 };
+      }
+
+      if (oldProps.y2 !== newProps.y2) {
+        payload = { ...payload, y2: newProps.y2 };
+      }
+
+      if (oldProps.strokeWidth !== newProps.strokeWidth) {
+        payload = { ...payload, strokeWidth: newProps.strokeWidth };
+      }
+
+      if (oldProps.select !== newProps.select) {
+        payload = { ...payload, select: newProps.select };
+      }
+
+      if (oldProps.drag !== newProps.drag) {
+        payload = { ...payload, drag: newProps.drag };
+      }
+
       return payload;
     },
     commitUpdate: (
@@ -352,6 +393,7 @@ const createReconciler = (canvas, ctx) => {
       finishWork
     ) => {
       if (updatePayload.x) instance.setPos(updatePayload.x, 0);
+      if (updatePayload.y) instance.setPos(updatePayload.y, 0);
       if (updatePayload.color) instance.props.color = updatePayload.color;
 
       // events:
@@ -372,6 +414,16 @@ const createReconciler = (canvas, ctx) => {
         event.schedule("mouseout", updatePayload.onMouseOut);
 
       if (updatePayload.text) instance.props.text = updatePayload.text;
+      if (updatePayload.size) instance.props.size = updatePayload.size;
+      if (updatePayload.stroke) instance.props.stroke = updatePayload.stroke;
+      if (updatePayload.radius) instance.props.radius = updatePayload.radius;
+      if (updatePayload.x1) instance.props.x1 = updatePayload.x1;
+      if (updatePayload.y1) instance.props.y1 = updatePayload.y1;
+      if (updatePayload.x2) instance.props.x2 = updatePayload.x2;
+      if (updatePayload.y2) instance.props.y2 = updatePayload.y2;
+      if (updatePayload.select) instance.props.select = updatePayload.select;
+      if (updatePayload.strokeWidth)
+        instance.props.strokeWidth = updatePayload.strokeWidth;
     },
     getRootHostContext: () => {},
     resetAfterCommit: () => {},

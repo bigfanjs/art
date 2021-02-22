@@ -52,6 +52,8 @@ export default function Rectangle() {
 }
 ```
 
+[View on Codesandbox](https://codesandbox.io/s/rotating-react-logo-0mdk4)
+
 ## Grouping
 
 A group acts like a container for elements and other groups. They render nothing on their own but transforming a group will cause anything inside it to transform as well. Each element rendered inside the group, will be positioned and oriented relative to its parent group.
@@ -83,6 +85,8 @@ export default function SolarSystem() {
   );
 }
 ```
+
+[View on Codesandbox](https://codesandbox.io/s/grouping-usdu2)
 
 ## Events
 
@@ -245,7 +249,7 @@ _Each update instance could have a list of other attached instances and the `att
 
 #### offsets
 
-Setting this to true will animate the manual offsets of a given element. and when set to false it will animate transform.
+Setting this to true will animate the manual offsets of a given element. And when set to false it will animate the transforms.
 
 #### count
 
@@ -294,7 +298,7 @@ Count can be helpful when you want to create a number of updates using a single 
 
 #### loop
 
-when you pass a count prop, an attached prop will be passed to the start method and you have to take care of it all. But when set loop to true the start function will automatically loop over your attached instances providing you with an extra index prop.
+When you pass a count prop, an attached prop will be passed to the start method and you have to take care of it all. But when set loop to true the start function will automatically loop over your attached instances providing you with an extra index prop.
 
 ```jsx
 import React, { useEffect } from "react";

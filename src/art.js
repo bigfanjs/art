@@ -438,7 +438,9 @@ const createReconciler = (canvas, ctx) => {
     shouldSetTextContent: () => {},
     finalizeInitialChildren: () => {},
     updateFundamentalComponent: () => {},
-    unmountFundamentalComponent: () => {},
+    unmountFundamentalComponent: (x) => {
+      console.log("unmountFundamentalComponent", x);
+    },
     clearContainer: (container) => {
       console.log("clearContainer", container);
       const index = drawQueue.indexOf(container);

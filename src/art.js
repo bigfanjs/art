@@ -434,6 +434,7 @@ const createReconciler = (canvas, ctx) => {
     updateFundamentalComponent: () => {},
     unmountFundamentalComponent: () => {},
     clearContainer: (container) => {
+      console.log("container cleared");
       const index = drawQueue.indexOf(container);
       drawQueue.splice(index, 1);
     },

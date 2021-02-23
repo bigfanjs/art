@@ -9,6 +9,7 @@ let globalIndex = 0;
 
 const DPI = window.devicePixelRatio;
 
+console.log("is this called!");
 export const drawQueue = [];
 export const updateQueue = [];
 export const eventQueue = [];
@@ -291,10 +292,15 @@ const createReconciler = (canvas, ctx) => {
       }
     },
     prepareForCommit: (parent, child) => {},
-    appendChildToContainer: (_, child) => drawQueue.push(child),
+    appendChildToContainer: (_, child) => {
+      drawQueue.push(child);
+      console.log("I am adding to draw queue");
+    },
     appendInitialChild: (group, child) => group.add(child),
     createTextInstance: () => {},
-    removeChildFromContainer: () => {},
+    removeChildFromContainer: (x) => {
+      console.log("removeChildFromContainer", x);
+    },
     removeChild: (parent, child) => {
       if (child.coco && child.props.onClick) {
         canvas.removeEventListener("click", child.coco, false);

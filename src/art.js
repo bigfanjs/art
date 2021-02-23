@@ -432,8 +432,9 @@ const createReconciler = (canvas, ctx) => {
     finalizeInitialChildren: () => {},
     updateFundamentalComponent: () => {},
     unmountFundamentalComponent: () => {},
-    clearContainer: () => {
-      drawQueue = [];
+    clearContainer: (container) => {
+      const index = drawQueue.indexOf(container);
+      drawQueue.splice(index, 1);
     },
     supportsMutation: true,
     isPrimaryRenderer: true,
@@ -456,6 +457,10 @@ function setupCanvas(canvas) {
 }
 
 export default function render(element, canvas) {
+  updateQueue.splice(0, updateQueue.length);
+  drawQueue.splice(0, drawQueue.length);
+  eventQueue.splice(0, eventQueue.length);
+
   const ctx = setupCanvas(canvas);
   const reconciler = createReconciler(canvas, ctx);
   const container = reconciler.createContainer(canvas, false, false);

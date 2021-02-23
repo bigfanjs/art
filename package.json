@@ -29,11 +29,11 @@
   "dependencies": {
     "math2d": "^3.0.0",
     "react": "17.0.1",
-    "react-reconciler": "^0.25.1"
+    "react-reconciler": "^0.25.1",
+    "@babel/core": "^7.12.13"
   },
   "devDependencies": {
     "@babel/cli": "^7.12.13",
-    "@babel/core": "^7.12.13",
     "@babel/eslint-parser": "^7.12.16",
     "@babel/plugin-external-helpers": "^7.12.13",
     "@babel/plugin-proposal-class-properties": "^7.12.13",

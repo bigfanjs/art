@@ -6,6 +6,7 @@ import Element from "./element";
 import Event from "./Event";
 
 let globalIndex = 0;
+let running = false;
 
 const DPI = window.devicePixelRatio;
 
@@ -457,9 +458,7 @@ function setupCanvas(canvas) {
 }
 
 export default function render(element, canvas) {
-  updateQueue.splice(0, updateQueue.length);
-  drawQueue.splice(0, drawQueue.length);
-  eventQueue.splice(0, eventQueue.length);
+  if (running) return;
 
   const ctx = setupCanvas(canvas);
   const reconciler = createReconciler(canvas, ctx);
@@ -716,4 +715,6 @@ export default function render(element, canvas) {
   });
 
   renderLoop();
+
+  running = true;
 }

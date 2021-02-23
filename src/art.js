@@ -432,7 +432,9 @@ const createReconciler = (canvas, ctx) => {
     finalizeInitialChildren: () => {},
     updateFundamentalComponent: () => {},
     unmountFundamentalComponent: () => {},
-    clearContainer: () => {},
+    clearContainer: () => {
+      drawQueue = [];
+    },
     supportsMutation: true,
   };
 

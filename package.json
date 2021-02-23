@@ -4,9 +4,6 @@
   "description": "react renderer for html5 canvas",
   "main": "index.js",
   "module": "es/index.js",
-  "publishConfig": {
-    "registry": "https://registry.npmjs.org/"
-  },
   "repository": {
     "type": "git",
     "url": "git@github.com:bigfanjs/art.git"

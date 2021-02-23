@@ -436,6 +436,7 @@ const createReconciler = (canvas, ctx) => {
       drawQueue = [];
     },
     supportsMutation: true,
+    isPrimaryRenderer: true,
   };
 
   return ReactReconciler(canvas2DConfigs);

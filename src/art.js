@@ -302,6 +302,7 @@ const createReconciler = (canvas, ctx) => {
       console.log("removeChildFromContainer", x);
     },
     removeChild: (parent, child) => {
+      console.log("removeChild", parent, child);
       if (child.coco && child.props.onClick) {
         canvas.removeEventListener("click", child.coco, false);
       }
@@ -439,6 +440,7 @@ const createReconciler = (canvas, ctx) => {
     updateFundamentalComponent: () => {},
     unmountFundamentalComponent: () => {},
     clearContainer: (container) => {
+      console.log("clearContainer", container);
       const index = drawQueue.indexOf(container);
       drawQueue.splice(index, 1);
     },

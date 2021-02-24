@@ -9,12 +9,13 @@ const rootHostContext = {};
 const childHostContext = {};
 
 let globalIndex = 0;
+let requestId;
 
 const DPI = window.devicePixelRatio;
 
-const drawQueue = [];
-export const updateQueue = [];
-export const eventQueue = [];
+let drawQueue;
+export let updateQueue;
+export let eventQueue;
 
 export const Context = createContext({});
 
@@ -293,24 +294,17 @@ const createReconciler = (canvas, ctx) => {
         return element;
       }
     },
-    prepareForCommit: (parent, child) => {
-      console.log("prepareForCommit", { parent, child });
-    },
+    prepareForCommit: (parent, child) => {},
     appendChildToContainer: (_, child) => {
-      console.log("appendChildToContainer", child);
+      drawQueue.push(child);
     },
     appendInitialChild: (group, child) => {
-      console.log("appendInitialChild", { parent, child });
       group.add(child);
     },
-    createTextInstance: (x) => {
-      console.log("createTextInstance", x);
-    },
-    removeChildFromContainer: (y) => {
-      console.log("removeChildFromContainer", y);
-    },
+    createTextInstance: () => {},
+    removeChildFromContainer: () => {},
     removeChild: (parent, child) => {
-      console.log("removeChild", { parent, child });
+      // console.log("removeChild", { parent, child });
       if (child.coco && child.props.onClick) {
         canvas.removeEventListener("click", child.coco, false);
       }
@@ -322,12 +316,10 @@ const createReconciler = (canvas, ctx) => {
       child.endDrag(canvas);
     },
     appendChild: (parent, child) => {
-      console.log("appendChild", { parent, child });
       removeChild;
       parent.followers = [...parent.followers, child];
     },
     prepareUpdate: (instance, type, oldProps, newProps) => {
-      console.log("prepareUpdate", { oldProps, newProps });
       let payload;
 
       if (oldProps.x !== newProps.x) payload = { ...payload, x: newProps.x };
@@ -410,8 +402,6 @@ const createReconciler = (canvas, ctx) => {
       newProps,
       finishWork
     ) => {
-      console.log("commitUpdate", { instance, updatePayload });
-
       if (updatePayload.x) instance.setPos(updatePayload.x, 0);
       if (updatePayload.y) instance.setPos(updatePayload.y, 0);
       if (updatePayload.color) instance.props.color = updatePayload.color;
@@ -445,32 +435,14 @@ const createReconciler = (canvas, ctx) => {
       if (updatePayload.strokeWidth)
         instance.props.strokeWidth = updatePayload.strokeWidth;
     },
-    getRootHostContext: (x) => {
-      console.log("getRootHostContext", { x });
-      return rootHostContext;
-    },
-    resetAfterCommit: (x) => {
-      console.log("resetAfterCommit", { x });
-    },
-    getChildHostContext: (x) => {
-      console.log("getChildHostContext", { x });
-      return childHostContext;
-    },
-    shouldSetTextContent: (x) => {
-      console.log("shouldSetTextContent", { x });
-    },
-    finalizeInitialChildren: (x) => {
-      console.log("finalizeInitialChildren", { x });
-    },
-    updateFundamentalComponent: (x) => {
-      console.log("updateFundamentalComponent", { x });
-    },
-    unmountFundamentalComponent: (x) => {
-      console.log("unmountFundamentalComponent", { x });
-    },
-    clearContainer: (x) => {
-      console.log("unmountFundamentalComponent", { x });
-    },
+    getRootHostContext: () => rootHostContext,
+    resetAfterCommit: () => {},
+    getChildHostContext: () => childHostContext,
+    shouldSetTextContent: () => {},
+    finalizeInitialChildren: () => {},
+    updateFundamentalComponent: () => {},
+    unmountFundamentalComponent: () => {},
+    clearContainer: () => {},
     supportsMutation: true,
     isPrimaryRenderer: true,
   };
@@ -487,6 +459,12 @@ export default function render(element, canvas) {
     { value: { canvas, width: canvas.width, height: canvas.height, ctx } },
     element
   );
+
+  // clear ups because of codesandbox's stupid fast refresh
+  drawQueue = [];
+  updateQueue = [];
+  eventQueue = [];
+  globalIndex = 0;
 
   reconciler.updateContainer(Provider, container, null, null);
 
@@ -571,7 +549,7 @@ export default function render(element, canvas) {
 
     drawQueue.forEach((elem) => draw(elem));
 
-    window.requestAnimationFrame(renderLoop);
+    requestId = window.requestAnimationFrame(renderLoop);
   }
 
   function setupCanvas(canvas) {
@@ -744,10 +722,18 @@ export default function render(element, canvas) {
       });
   }
 
+  // clear ups because of codesandbox's stupid fast refresh
+  canvas.removeEventListener("click", clickHanlder);
+  canvas.removeEventListener("mousemove", mouseMoveHandler);
+  canvas.removeEventListener("mousedown", mouseDownHandler);
+  canvas.removeEventListener("mouseup", mouseUpHandler);
+
   canvas.addEventListener("click", clickHanlder);
   canvas.addEventListener("mousemove", mouseMoveHandler);
   canvas.addEventListener("mousedown", mouseDownHandler);
   canvas.addEventListener("mouseup", mouseUpHandler);
 
+  // clear ups because of codesandbox's stupid fast refresh
+  window.cancelAnimationFrame(requestId);
   renderLoop();
 }

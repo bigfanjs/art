@@ -9,7 +9,6 @@ let globalIndex = 0;
 
 const DPI = window.devicePixelRatio;
 
-console.log("is this called!");
 export const drawQueue = [];
 export const updateQueue = [];
 export const eventQueue = [];
@@ -292,17 +291,11 @@ const createReconciler = (canvas, ctx) => {
       }
     },
     prepareForCommit: (parent, child) => {},
-    appendChildToContainer: (_, child) => {
-      drawQueue.push(child);
-      console.log("I am adding to draw queue");
-    },
+    appendChildToContainer: (_, child) => {},
     appendInitialChild: (group, child) => group.add(child),
     createTextInstance: () => {},
-    removeChildFromContainer: (x) => {
-      console.log("removeChildFromContainer", x);
-    },
+    removeChildFromContainer: () => {},
     removeChild: (parent, child) => {
-      console.log("removeChild", parent, child);
       if (child.coco && child.props.onClick) {
         canvas.removeEventListener("click", child.coco, false);
       }
@@ -438,13 +431,13 @@ const createReconciler = (canvas, ctx) => {
     shouldSetTextContent: () => {},
     finalizeInitialChildren: () => {},
     updateFundamentalComponent: () => {},
-    unmountFundamentalComponent: (x) => {
-      console.log("unmountFundamentalComponent", x);
-    },
-    clearContainer: (container) => {
-      console.log("clearContainer", container);
-      const index = drawQueue.indexOf(container);
-      drawQueue.splice(index, 1);
+    unmountFundamentalComponent: () => {},
+    clearContainer: () => {
+      drawQueue.splice(0, drawQueue.length);
+      updateQueue.splice(0, updateQueue.length);
+      eventQueue.splice(0, eventQueue.length);
+
+      globalIndex = 0;
     },
     supportsMutation: true,
     isPrimaryRenderer: true,

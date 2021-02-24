@@ -4,6 +4,8 @@
 
 It provides reusable components that makes it as easy as possible to get 2D content on a webpage. These components can react to state changes and are able to animate using `@bigfan/art`'s native animation system.
 
+> **_NOTE:_** _Please note that this is a beta version of the library which is still undergoing development. It contains most of the major features, but it's not yet complete and it might have bugs._
+
 ## Installation
 
 using npm: npm i @bigfan/art

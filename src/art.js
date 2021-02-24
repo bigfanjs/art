@@ -9,7 +9,6 @@ let globalIndex = 0;
 
 const DPI = window.devicePixelRatio;
 
-export const drawQueue = [];
 export const updateQueue = [];
 export const eventQueue = [];
 
@@ -432,13 +431,7 @@ const createReconciler = (canvas, ctx) => {
     finalizeInitialChildren: () => {},
     updateFundamentalComponent: () => {},
     unmountFundamentalComponent: () => {},
-    clearContainer: () => {
-      drawQueue.splice(0, drawQueue.length);
-      updateQueue.splice(0, updateQueue.length);
-      eventQueue.splice(0, eventQueue.length);
-
-      globalIndex = 0;
-    },
+    clearContainer: () => {},
     supportsMutation: true,
     isPrimaryRenderer: true,
   };
@@ -459,7 +452,166 @@ function setupCanvas(canvas) {
   return ctx;
 }
 
+function getMouseCoords(e) {
+  const rect = canvas.getBoundingClientRect();
+  const mouse = {
+    x: (e.clientX - rect.left) * DPI,
+    y: (e.clientY - rect.top) * DPI,
+  };
+
+  return mouse;
+}
+
+function eventMiddleware(mouse, name) {
+  eventQueue.forEach(
+    (event) =>
+      name &&
+      event[name] &&
+      event.checkBoundries &&
+      event.checkBoundries(mouse, ctx)
+  );
+
+  const indexes = eventQueue
+    .filter(({ isIn }) => isIn)
+    .map(({ index }) => index);
+
+  const events = eventQueue.filter(
+    ({ index }) => index === Math.max(...indexes)
+  );
+
+  return events;
+}
+
+function clickHanlder(e) {
+  const mouse = getMouseCoords(e);
+  const events = eventMiddleware(mouse, "click");
+
+  events.forEach((event) => event.click && event.click());
+}
+
+function mouseMoveHandler(e) {
+  const mouse = getMouseCoords(e);
+
+  eventQueue.forEach(({ mousemove, checkBoundries, absolute }) => {
+    if (absolute && mousemove) mousemove(mouse);
+    if (checkBoundries) checkBoundries(mouse, ctx);
+  });
+
+  const indexes = eventQueue
+    .filter(({ isIn }) => isIn)
+    .map(({ index }) => index);
+
+  const isHighest = Math.max(...indexes);
+
+  const isInsideOtherElementsAnchors =
+    eventQueue.filter(
+      (eve) => eve.selected && eve.isInsideOneOfTheAnchors(mouse, ctx)
+    )?.length > 0;
+
+  const selectedElement = eventQueue.find((eve) => {
+    return eve.isIn && eve.selected;
+  });
+
+  eventQueue.forEach((eve) => {
+    if (eve.draggable || eve.scalable) return;
+
+    if (
+      (!selectedElement &&
+        eve.index === isHighest &&
+        !isInsideOtherElementsAnchors) ||
+      (selectedElement && eve.selected)
+    )
+      eve.isIn = true;
+    else eve.isIn = false;
+  });
+
+  // dragging
+  eventQueue
+    .filter(({ isIn }) => isIn)
+    .forEach((event) => {
+      event.mousemove && event.mousemove(mouse);
+      event.dragginghandlers && event.dragginghandlers.mousemove(mouse);
+    });
+
+  // mouse in event
+  eventQueue
+    .filter(({ isIn }) => isIn)
+    .forEach(({ mousein, isPreviousMouseIn }) => {
+      !isPreviousMouseIn && mousein && mousein(mouse);
+    });
+
+  // mouse out event:
+  eventQueue
+    .filter(({ isPreviousMouseIn }) => isPreviousMouseIn)
+    .forEach(({ mouseout, isIn }) => !isIn && mouseout && mouseout(mouse));
+
+  // scaling:
+  eventQueue.forEach((eve) => {
+    if (eve.selected) {
+      const anchor = eve.isInsideOneOfTheAnchors(mouse, ctx);
+
+      if (anchor) eve.scalingHandlers.mousemove(mouse, anchor);
+    }
+  });
+}
+
+function mouseDownHandler(e) {
+  const mouse = getMouseCoords(e);
+  const events = eventMiddleware(mouse, "mousedown");
+
+  events.forEach((event) => {
+    event.mousedown && event.mousedown(mouse);
+    event.dragginghandlers && event.dragginghandlers.mousedown(mouse);
+  });
+
+  const inIndexes = eventQueue
+    .filter(({ isIn }) => isIn)
+    .map(({ index }) => index);
+
+  const selectedElement = eventQueue.find((eve) => eve.isIn && eve.selected);
+  const isHighest = Math.max(...inIndexes);
+
+  eventQueue
+    .filter(({ selectable }) => selectable)
+    .forEach((eve) => {
+      const anchor = eve.isInsideOneOfTheAnchors(mouse, ctx);
+
+      if (
+        (selectedElement && eve.selected) ||
+        (!selectedElement && eve.index === isHighest) ||
+        (eve.selected && anchor)
+      ) {
+        eve.selected = true;
+      } else {
+        eve.selected = false;
+      }
+
+      if (anchor) eve.scalingHandlers.mousedown(mouse, anchor);
+    });
+}
+
+function mouseUpHandler(e) {
+  const mouse = getMouseCoords(e);
+  const events = eventMiddleware(mouse, "mouseup");
+
+  //dragging:
+  events.forEach((event) => {
+    event.dragginghandlers && event.dragginghandlers.mouseup(mouse);
+  });
+
+  // dragging anchor points:
+  eventQueue
+    .filter(({ selectable }) => selectable)
+    .forEach((eve) => {
+      const anchor = eve.isInsideOneOfTheAnchors(mouse, ctx);
+
+      if (eve.selected && anchor) eve.scalingHandlers.mouseup(mouse);
+    });
+}
+
 export default function render(element, canvas) {
+  const drawQueue = [];
+
   const ctx = setupCanvas(canvas);
   const reconciler = createReconciler(canvas, ctx);
   const container = reconciler.createContainer(canvas, false, false);
@@ -555,164 +707,10 @@ export default function render(element, canvas) {
     window.requestAnimationFrame(renderLoop);
   }
 
-  // EVENT SYSTEM: (the ugliest code I've ever wrote)
-  // TODO: re-design the event system.
-  function getMouseCoords(e) {
-    const rect = canvas.getBoundingClientRect();
-    const mouse = {
-      x: (e.clientX - rect.left) * DPI,
-      y: (e.clientY - rect.top) * DPI,
-    };
-
-    return mouse;
-  }
-
-  function eventMiddleware(mouse, name) {
-    eventQueue.forEach(
-      (event) =>
-        name &&
-        event[name] &&
-        event.checkBoundries &&
-        event.checkBoundries(mouse, ctx)
-    );
-
-    const indexes = eventQueue
-      .filter(({ isIn }) => isIn)
-      .map(({ index }) => index);
-
-    const events = eventQueue.filter(
-      ({ index }) => index === Math.max(...indexes)
-    );
-
-    return events;
-  }
-
-  canvas.addEventListener("click", (e) => {
-    const mouse = getMouseCoords(e);
-    const events = eventMiddleware(mouse, "click");
-
-    events.forEach((event) => event.click && event.click());
-  });
-
-  canvas.addEventListener("mousemove", (e) => {
-    const mouse = getMouseCoords(e);
-
-    eventQueue.forEach(({ mousemove, checkBoundries, absolute }) => {
-      if (absolute && mousemove) mousemove(mouse);
-      if (checkBoundries) checkBoundries(mouse, ctx);
-    });
-
-    const indexes = eventQueue
-      .filter(({ isIn }) => isIn)
-      .map(({ index }) => index);
-
-    const isHighest = Math.max(...indexes);
-
-    const isInsideOtherElementsAnchors =
-      eventQueue.filter(
-        (eve) => eve.selected && eve.isInsideOneOfTheAnchors(mouse, ctx)
-      )?.length > 0;
-
-    const selectedElement = eventQueue.find((eve) => {
-      return eve.isIn && eve.selected;
-    });
-
-    eventQueue.forEach((eve) => {
-      if (eve.draggable || eve.scalable) return;
-
-      if (
-        (!selectedElement &&
-          eve.index === isHighest &&
-          !isInsideOtherElementsAnchors) ||
-        (selectedElement && eve.selected)
-      )
-        eve.isIn = true;
-      else eve.isIn = false;
-    });
-
-    // dragging
-    eventQueue
-      .filter(({ isIn }) => isIn)
-      .forEach((event) => {
-        event.mousemove && event.mousemove(mouse);
-        event.dragginghandlers && event.dragginghandlers.mousemove(mouse);
-      });
-
-    // mouse in event
-    eventQueue
-      .filter(({ isIn }) => isIn)
-      .forEach(({ mousein, isPreviousMouseIn }) => {
-        !isPreviousMouseIn && mousein && mousein(mouse);
-      });
-
-    // mouse out event:
-    eventQueue
-      .filter(({ isPreviousMouseIn }) => isPreviousMouseIn)
-      .forEach(({ mouseout, isIn }) => !isIn && mouseout && mouseout(mouse));
-
-    // scaling:
-    eventQueue.forEach((eve) => {
-      if (eve.selected) {
-        const anchor = eve.isInsideOneOfTheAnchors(mouse, ctx);
-
-        if (anchor) eve.scalingHandlers.mousemove(mouse, anchor);
-      }
-    });
-  });
-
-  canvas.addEventListener("mousedown", (e) => {
-    const mouse = getMouseCoords(e);
-    const events = eventMiddleware(mouse, "mousedown");
-
-    events.forEach((event) => {
-      event.mousedown && event.mousedown(mouse);
-      event.dragginghandlers && event.dragginghandlers.mousedown(mouse);
-    });
-
-    const inIndexes = eventQueue
-      .filter(({ isIn }) => isIn)
-      .map(({ index }) => index);
-
-    const selectedElement = eventQueue.find((eve) => eve.isIn && eve.selected);
-    const isHighest = Math.max(...inIndexes);
-
-    eventQueue
-      .filter(({ selectable }) => selectable)
-      .forEach((eve) => {
-        const anchor = eve.isInsideOneOfTheAnchors(mouse, ctx);
-
-        if (
-          (selectedElement && eve.selected) ||
-          (!selectedElement && eve.index === isHighest) ||
-          (eve.selected && anchor)
-        ) {
-          eve.selected = true;
-        } else {
-          eve.selected = false;
-        }
-
-        if (anchor) eve.scalingHandlers.mousedown(mouse, anchor);
-      });
-  });
-
-  canvas.addEventListener("mouseup", (e) => {
-    const mouse = getMouseCoords(e);
-    const events = eventMiddleware(mouse, "mouseup");
-
-    //dragging:
-    events.forEach((event) => {
-      event.dragginghandlers && event.dragginghandlers.mouseup(mouse);
-    });
-
-    // dragging anchor points:
-    eventQueue
-      .filter(({ selectable }) => selectable)
-      .forEach((eve) => {
-        const anchor = eve.isInsideOneOfTheAnchors(mouse, ctx);
-
-        if (eve.selected && anchor) eve.scalingHandlers.mouseup(mouse);
-      });
-  });
+  canvas.addEventListener("click", clickHanlder);
+  canvas.addEventListener("mousemove", mouseMoveHandler);
+  canvas.addEventListener("mousedown", mouseDownHandler);
+  canvas.addEventListener("mouseup", mouseUpHandler);
 
   renderLoop();
 }

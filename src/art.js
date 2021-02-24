@@ -9,6 +9,7 @@ let globalIndex = 0;
 
 const DPI = window.devicePixelRatio;
 
+const drawQueue = [];
 export const updateQueue = [];
 export const eventQueue = [];
 
@@ -440,8 +441,6 @@ const createReconciler = (canvas, ctx) => {
 };
 
 export default function render(element, canvas) {
-  const drawQueue = [];
-
   const ctx = setupCanvas(canvas);
   const reconciler = createReconciler(canvas, ctx);
   const container = reconciler.createContainer(canvas, false, false);

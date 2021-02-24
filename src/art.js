@@ -5,6 +5,9 @@ import Group from "./group";
 import Element from "./element";
 import Event from "./Event";
 
+const rootHostContext = {};
+const childHostContext = {};
+
 let globalIndex = 0;
 
 const DPI = window.devicePixelRatio;
@@ -290,12 +293,24 @@ const createReconciler = (canvas, ctx) => {
         return element;
       }
     },
-    prepareForCommit: (parent, child) => {},
-    appendChildToContainer: (_, child) => {},
-    appendInitialChild: (group, child) => group.add(child),
-    createTextInstance: () => {},
-    removeChildFromContainer: () => {},
+    prepareForCommit: (parent, child) => {
+      console.log("prepareForCommit", { parent, child });
+    },
+    appendChildToContainer: (_, child) => {
+      console.log("appendChildToContainer", child);
+    },
+    appendInitialChild: (group, child) => {
+      console.log("appendInitialChild", { parent, child });
+      group.add(child);
+    },
+    createTextInstance: (x) => {
+      console.log("createTextInstance", x);
+    },
+    removeChildFromContainer: (y) => {
+      console.log("removeChildFromContainer", y);
+    },
     removeChild: (parent, child) => {
+      console.log("removeChild", { parent, child });
       if (child.coco && child.props.onClick) {
         canvas.removeEventListener("click", child.coco, false);
       }
@@ -307,9 +322,12 @@ const createReconciler = (canvas, ctx) => {
       child.endDrag(canvas);
     },
     appendChild: (parent, child) => {
+      console.log("appendChild", { parent, child });
+      removeChild;
       parent.followers = [...parent.followers, child];
     },
     prepareUpdate: (instance, type, oldProps, newProps) => {
+      console.log("prepareUpdate", { oldProps, newProps });
       let payload;
 
       if (oldProps.x !== newProps.x) payload = { ...payload, x: newProps.x };
@@ -392,6 +410,8 @@ const createReconciler = (canvas, ctx) => {
       newProps,
       finishWork
     ) => {
+      console.log("commitUpdate", { instance, updatePayload });
+
       if (updatePayload.x) instance.setPos(updatePayload.x, 0);
       if (updatePayload.y) instance.setPos(updatePayload.y, 0);
       if (updatePayload.color) instance.props.color = updatePayload.color;
@@ -425,14 +445,32 @@ const createReconciler = (canvas, ctx) => {
       if (updatePayload.strokeWidth)
         instance.props.strokeWidth = updatePayload.strokeWidth;
     },
-    getRootHostContext: () => {},
-    resetAfterCommit: () => {},
-    getChildHostContext: () => {},
-    shouldSetTextContent: () => {},
-    finalizeInitialChildren: () => {},
-    updateFundamentalComponent: () => {},
-    unmountFundamentalComponent: () => {},
-    clearContainer: () => {},
+    getRootHostContext: (x) => {
+      console.log("getRootHostContext", { x });
+      return rootHostContext;
+    },
+    resetAfterCommit: (x) => {
+      console.log("resetAfterCommit", { x });
+    },
+    getChildHostContext: (x) => {
+      console.log("getChildHostContext", { x });
+      return childHostContext;
+    },
+    shouldSetTextContent: (x) => {
+      console.log("shouldSetTextContent", { x });
+    },
+    finalizeInitialChildren: (x) => {
+      console.log("finalizeInitialChildren", { x });
+    },
+    updateFundamentalComponent: (x) => {
+      console.log("updateFundamentalComponent", { x });
+    },
+    unmountFundamentalComponent: (x) => {
+      console.log("unmountFundamentalComponent", { x });
+    },
+    clearContainer: (x) => {
+      console.log("unmountFundamentalComponent", { x });
+    },
     supportsMutation: true,
     isPrimaryRenderer: true,
   };

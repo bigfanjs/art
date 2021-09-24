@@ -12,7 +12,7 @@ using npm: npm i @bigfan/art
 
 using yarn: yarn add @bigfan/art
 
-## Demos
+## Demos (Click on images to see demos)
 
 <p align="center">
   <a href="https://codesandbox.io/s/solar-system-0pf6z"><img width="274" height="268" src="https://user-images.githubusercontent.com/10690029/108429011-baf42280-723f-11eb-8a41-56c59b637d47.gif" /></a>
